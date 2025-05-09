@@ -11,19 +11,6 @@ import {
 import LoginForm from './components/login-form'
 
 export default function page() {
-  //   const handleSubmit = async (e: React.FormEvent) => {
-  //     e.preventDefault()
-
-  //     // Show loading state briefly for better UX
-  //     setIsSubmitting(true)
-
-  //     // Simulate a brief loading state
-  //     setTimeout(() => {
-  //       // Simply redirect to dashboard
-  //       router.push('/dashboard')
-  //     }, 500)
-  //   }
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">

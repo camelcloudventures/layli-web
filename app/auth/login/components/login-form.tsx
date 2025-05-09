@@ -5,9 +5,21 @@ import React from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Link from 'next/link'
+import { signIn } from '../../actions/actions'
+import { toast } from 'sonner'
 
 export default function LoginForm() {
-  async function handleSubmit() {}
+  async function handleSubmit(formData: FormData) {
+    const res = await signIn(formData)
+
+    if (res.error) {
+      toast.error(res.error)
+    }
+
+    if (res.success) {
+      toast.success(res.success)
+    }
+  }
   return (
     <form action={handleSubmit} className="space-y-4">
       <div className="space-y-2">

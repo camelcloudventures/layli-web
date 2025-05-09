@@ -3,11 +3,23 @@ import SubmitBtn from '@/components/custom/submit-btn'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import React from 'react'
+import { signUp } from '../../actions/actions'
+import { toast } from 'sonner'
 
 export default function SignUpForm() {
-  async function handleSubmit() {}
+  async function handleSubmit(formData: FormData) {
+    const res = await signUp(formData)
+
+    if (res.error) {
+      toast.error(res.error)
+    }
+
+    if (res.success) {
+      toast.success(res.success)
+    }
+  }
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form action={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="fullName">Full Name</Label>
         <Input id="fullName" name="fullName" placeholder="John Doe" />

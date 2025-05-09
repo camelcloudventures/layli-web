@@ -22,13 +22,14 @@ export default function SignUpForm() {
     <form action={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="fullName">Full Name</Label>
-        <Input id="fullName" name="fullName" placeholder="John Doe" />
+        <Input id="fullName" name="fullName" placeholder="John Doe" required />
       </div>
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input
           id="email"
           name="email"
+          required
           type="email"
           placeholder="name@example.com"
         />
@@ -40,6 +41,7 @@ export default function SignUpForm() {
           name="phoneNumber"
           type="tel"
           placeholder="1234567890"
+          required
         />
       </div>
       <div className="space-y-2">
@@ -49,6 +51,7 @@ export default function SignUpForm() {
           name="password"
           type="password"
           placeholder="••••••••"
+          required
         />
       </div>
       <div className="space-y-2">
@@ -58,6 +61,7 @@ export default function SignUpForm() {
           name="confirmPassword"
           type="password"
           placeholder="••••••••"
+          required
         />
       </div>
       <SubmitBtn label="Create account" variant="default" className="w-full" />

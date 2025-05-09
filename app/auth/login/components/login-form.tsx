@@ -29,6 +29,7 @@ export default function LoginForm() {
           type="email"
           placeholder="name@example.com"
           name="email"
+          required
         />
       </div>
       <div className="space-y-2">
@@ -46,6 +47,7 @@ export default function LoginForm() {
           type="password"
           name="password"
           placeholder="••••••••"
+          required
         />
       </div>
 

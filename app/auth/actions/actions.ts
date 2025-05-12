@@ -99,35 +99,6 @@ export async function updateProfile(formData: FormData) {
   }
 }
 
-// export async function inviteUser(formData: FormData, role: string) {
-//   const supabase = await createAdminClient()
-//   const {
-//     data: { user },
-//     error: userError,
-//   } = await supabase.auth.getUser()
-//   if (userError || !user) return { error: 'User not authenticated.' }
-
-//   const email = formData.get('email')
-//   try {
-//     const { data, error } = await supabase.auth.admin.inviteUserByEmail(
-//       email as string,
-//       {
-//         redirectTo: 'http://localhost:3000/auth/invite',
-//         data: { user_email: user.email },
-//       },
-//     )
-
-//     if (error) return { error: error.message }
-
-//     console.log('data', data)
-
-//     return { success: `An invitation has been sent to ${email}` }
-//   } catch (err) {
-//     //@ts-expect-error - error is not typed
-//     return { error: err.message }
-//   }
-// }
-
 export async function acceptInvite(
   formData: FormData,
   router: string,
@@ -137,15 +108,11 @@ export async function acceptInvite(
   const supabase = await createClient()
 
   try {
-    // 1. Validate token
-
-    // 2. Parse hash
     const { accessToken, refreshToken } = extractTokens(router)
     if (!accessToken || !refreshToken) {
       return { error: 'Invalid or expired invite link.' }
     }
 
-    // 3. Set session
     const {
       data: sessionData,
       error: sessionError,
@@ -159,7 +126,6 @@ export async function acceptInvite(
 
     console.log('sessionData', sessionData)
 
-    // 4. Set password
     const password = formData.get('password') as string
     const { error: updateError } = await supabase.auth.updateUser({
       password,
@@ -175,7 +141,6 @@ export async function acceptInvite(
       return { error: validateRes?.error }
     }
 
-    // 5. Update profile (optional, via your backend or Supabase)
     const fullName = formData.get('fullName') as string
     const phoneNumber = formData.get('phoneNumber') as string
     const { error: profileError } = await supabase.from('profile').insert({
@@ -196,5 +161,4 @@ export async function acceptInvite(
     //@ts-expect-error - error is not typed
     return { error: error.message }
   }
-  // Redirect to dashboard, etc.
 }

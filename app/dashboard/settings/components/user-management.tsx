@@ -67,7 +67,6 @@ export function UserManagement({ invites }: { invites: InvitesResponse }) {
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [inviteForm, setInviteForm] = useState({
-    email: '',
     role: 'auditor' as UserRole,
   })
 
@@ -111,8 +110,7 @@ export function UserManagement({ invites }: { invites: InvitesResponse }) {
       return
     }
     toast.success(res.success)
-    // Optionally refresh user list here
-    setInviteForm({ email: '', role: 'auditor' })
+    setInviteForm({ role: inviteForm.role })
     setIsInviteDialogOpen(false)
   }
 
@@ -172,7 +170,6 @@ export function UserManagement({ invites }: { invites: InvitesResponse }) {
                     id="email"
                     name="email"
                     type="email"
-                    value={inviteForm.email}
                     onChange={handleInviteChange}
                     placeholder="user@example.com"
                     required

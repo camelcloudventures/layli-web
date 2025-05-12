@@ -1,46 +1,55 @@
 'use client'
 
 import type React from 'react'
-
 import { useState } from 'react'
-// import { useAuth } from '@/lib/context/auth-context'
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Loader2, Upload } from 'lucide-react'
+import { Upload } from 'lucide-react'
+import { useAuth } from '@/lib/context/auth-provider'
+import { updateProfile } from '@/app/auth/actions/actions'
+import SubmitBtn from '@/components/custom/submit-btn'
+import { uploadImage } from '@/utils/common'
 
 export function UserProfileForm() {
-  // const { user } = useAuth()
+  const { user, refreshUser } = useAuth()
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
 
-  //mock data
-  const [isLoading, setIsLoading] = useState(false)
-  const [formData, setFormData] = useState({
-    fullName: 'John Doe',
-    email: 'john.doe@example.com',
-    phoneNumber: '1234567890',
-  })
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setSelectedFile(file)
+    setPreviewUrl(URL.createObjectURL(file))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      toast.success('Profile updated')
-    } catch (error) {
-      console.error(error)
-      toast.error('Failed to update profile. Please try again.')
-    } finally {
-      setIsLoading(false)
+  async function handleUpdateProfile(formData: FormData) {
+    let imageUrl = user?.image || ''
+    if (selectedFile) {
+      setUploading(true)
+      const { fileUrl, error } = await uploadImage(
+        { file: selectedFile },
+        'avatars',
+      )
+      setUploading(false)
+      if (error) {
+        toast.error(error)
+        return
+      }
+      imageUrl = fileUrl || ''
+    }
+    if (imageUrl) formData.set('image', imageUrl)
+    const res = await updateProfile(formData)
+    if (res.error) toast.error(res.error)
+    if (res.success) {
+      toast.success(res.success)
+      await refreshUser()
+      setSelectedFile(null)
+      setPreviewUrl(null)
     }
   }
 
@@ -52,18 +61,36 @@ export function UserProfileForm() {
       .toUpperCase()
   }
 
+  console.log('user', user?.image)
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form action={handleUpdateProfile} className="space-y-6">
       <div className="flex items-center space-x-4">
         <Avatar className="h-20 w-20">
-          <AvatarImage src={''} alt={'User'} />
+          <AvatarImage src={previewUrl || user?.image || ''} alt={'User'} />
           <AvatarFallback className="text-lg">
-            {formData.fullName ? getInitials(formData.fullName) : 'U'}
+            {user?.full_name ? getInitials(user.full_name) : 'U'}
           </AvatarFallback>
         </Avatar>
-        <Button type="button" variant="outline" size="sm">
-          <Upload className="mr-2 h-4 w-4" />
-          Change Avatar
+        <Button
+          asChild
+          type="button"
+          variant="outline"
+          size="sm"
+          aria-label="Change Avatar"
+        >
+          <label tabIndex={0}>
+            <Upload className="mr-2 h-4 w-4" />
+            Change Avatar
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarChange}
+              aria-label="Upload avatar"
+              tabIndex={-1}
+            />
+          </label>
         </Button>
       </div>
 
@@ -73,8 +100,7 @@ export function UserProfileForm() {
           <Input
             id="fullName"
             name="fullName"
-            value={formData.fullName}
-            onChange={handleChange}
+            defaultValue={user?.full_name}
             required
           />
         </div>
@@ -85,8 +111,7 @@ export function UserProfileForm() {
             id="email"
             name="email"
             type="email"
-            value={formData.email}
-            onChange={handleChange}
+            defaultValue={user?.email}
             disabled
           />
           <p className="text-sm text-muted-foreground">
@@ -100,16 +125,17 @@ export function UserProfileForm() {
             id="phoneNumber"
             name="phoneNumber"
             type="tel"
-            value={formData.phoneNumber}
-            onChange={handleChange}
+            defaultValue={user?.phone_number}
           />
         </div>
       </div>
 
-      <Button type="submit" disabled={isLoading}>
-        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        Save Changes
-      </Button>
+      <SubmitBtn
+        label={uploading ? 'Uploading...' : 'Save Changes'}
+        variant="default"
+        className=""
+        isDisabled={uploading}
+      />
     </form>
   )
 }

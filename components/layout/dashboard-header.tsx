@@ -23,6 +23,8 @@ export function DashboardHeader() {
     }
   }, [isMobile])
 
+  console.log('user', user)
+
   return (
     <header className="sticky top-0  z-40 border-b bg-background">
       <div className="container flex h-16 items-center justify-between py-4">
@@ -46,12 +48,12 @@ export function DashboardHeader() {
             </Sheet>
           )}
           <Link href="/dashboard" className="flex items-center gap-2">
-            <h1 className="hidden text-xl font-bold md:inline-block">
+            <h1 className="text-xl font-bold">
               {user?.role === 'admin'
-                ? 'Audit Management'
+                ? 'Admin Dashboard'
                 : user?.role === 'auditor'
-                ? 'Audit'
-                : 'Supervisor'}
+                ? 'Auditor Dashboard'
+                : 'Supervisor Dashboard'}
             </h1>
           </Link>
         </div>

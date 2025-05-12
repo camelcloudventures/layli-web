@@ -47,15 +47,21 @@ import SubmitBtn from '@/components/custom/submit-btn'
 
 type UserRole = 'admin' | 'auditor' | 'supervisor'
 
-// interface User {
-//   id: string
-//   name: string
-//   email: string
-//   role: UserRole
-//   status: 'active' | 'invited' | 'inactive'
-// }
+interface Invite {
+  id: string
+  email: string
+  role: UserRole
+  token: string
+  invited_by: string
+  created_at: string
+  used: boolean
+}
 
-export function UserManagement({ invites }: { invites: any }) {
+interface InvitesResponse {
+  data: Invite[]
+}
+
+export function UserManagement({ invites }: { invites: InvitesResponse }) {
   const { user } = useAuth()
 
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false)
@@ -65,37 +71,7 @@ export function UserManagement({ invites }: { invites: any }) {
     role: 'auditor' as UserRole,
   })
 
-  // Mock users data
-  // const [users, setUsers] = useState<User[]>([
-  //   {
-  //     id: '1',
-  //     name: 'Demo User',
-  //     email: 'demo@example.com',
-  //     role: 'admin',
-  //     status: 'active',
-  //   },
-  //   {
-  //     id: '2',
-  //     name: 'John Doe',
-  //     email: 'john@example.com',
-  //     role: 'auditor',
-  //     status: 'active',
-  //   },
-  //   {
-  //     id: '3',
-  //     name: 'Jane Smith',
-  //     email: 'jane@example.com',
-  //     role: 'supervisor',
-  //     status: 'active',
-  //   },
-  //   {
-  //     id: '4',
-  //     name: 'Pending User',
-  //     email: 'pending@example.com',
-  //     role: 'auditor',
-  //     status: 'invited',
-  //   },
-  // ])
+  console.log('invites', invites)
 
   const handleInviteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -143,11 +119,11 @@ export function UserManagement({ invites }: { invites: any }) {
   const getRoleBadgeColor = (role: UserRole) => {
     switch (role) {
       case 'admin':
-        return 'bg-red-100 text-red-800 hover:bg-red-100/80'
+        return 'bg-purple-100 text-purple-800 hover:bg-purple-100/80 dark:bg-purple-900/30 dark:text-purple-300'
       case 'supervisor':
-        return 'bg-blue-100 text-blue-800 hover:bg-blue-100/80'
+        return 'bg-blue-100 text-blue-800 hover:bg-blue-100/80 dark:bg-blue-900/30 dark:text-blue-300'
       case 'auditor':
-        return 'bg-green-100 text-green-800 hover:bg-green-100/80'
+        return 'bg-orange-100 text-orange-800 hover:bg-orange-100/80 dark:bg-orange-900/30 dark:text-orange-300'
       default:
         return ''
     }
@@ -164,6 +140,10 @@ export function UserManagement({ invites }: { invites: any }) {
       default:
         return ''
     }
+  }
+
+  const getUserStatus = (used: boolean) => {
+    return used ? 'active' : 'invited'
   }
 
   return (
@@ -244,24 +224,24 @@ export function UserManagement({ invites }: { invites: any }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {invites?.data?.map((user: any) => (
+            {invites?.data?.map((user: Invite) => (
               <TableRow key={user.id}>
-                <TableCell>{user?.email}</TableCell>
+                <TableCell>{user.email}</TableCell>
                 <TableCell>
                   <Badge
                     variant="outline"
                     className={getRoleBadgeColor(user.role)}
                   >
-                    {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1)}
+                    {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                   </Badge>
                 </TableCell>
                 <TableCell>
                   <Badge
                     variant="outline"
-                    className={getStatusBadgeColor(user.status)}
+                    className={getStatusBadgeColor(getUserStatus(user.used))}
                   >
-                    {user?.status?.charAt(0).toUpperCase() +
-                      user?.status?.slice(1)}
+                    {getUserStatus(user.used).charAt(0).toUpperCase() +
+                      getUserStatus(user.used).slice(1)}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -294,7 +274,7 @@ export function UserManagement({ invites }: { invites: any }) {
                         Set as Auditor
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      {user?.status === 'active' ? (
+                      {getUserStatus(user.used) === 'active' ? (
                         <DropdownMenuItem
                           // onClick={() =>
                           //   handleStatusChange(user.id, 'inactive')

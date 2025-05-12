@@ -168,8 +168,6 @@ export async function acceptInvite(
       return { error: updateError.message }
     }
 
-    console.log('updateError', updateError)
-
     const validateRes = await GET(`/invites/validate/${token}`)
     //@ts-expect-error - error is not typed
     if (!validateRes?.success) {

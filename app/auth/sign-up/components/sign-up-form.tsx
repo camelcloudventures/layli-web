@@ -5,8 +5,10 @@ import { Label } from '@/components/ui/label'
 import React from 'react'
 import { signUp } from '../../actions/actions'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 export default function SignUpForm() {
+  const router = useRouter()
   async function handleSubmit(formData: FormData) {
     const res = await signUp(formData)
 
@@ -16,6 +18,7 @@ export default function SignUpForm() {
 
     if (res.success) {
       toast.success(res.success)
+      router.push('/auth/login')
     }
   }
   return (

@@ -7,8 +7,10 @@ import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 import { signIn } from '../../actions/actions'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 export default function LoginForm() {
+  const router = useRouter()
   async function handleSubmit(formData: FormData) {
     const res = await signIn(formData)
 
@@ -19,6 +21,7 @@ export default function LoginForm() {
     //Se
     if (res.success) {
       toast.success(res.success)
+      router.push('/dashboard/settings')
     }
   }
   return (

@@ -1,6 +1,7 @@
 'use server'
 
 import { GET, POST } from '@/app/backend/apiMethods'
+import { revalidateTag } from 'next/cache'
 
 export async function inviteUser(
   formData: FormData,
@@ -18,10 +19,11 @@ export async function inviteUser(
   }
 
   const res = await POST('/invites/create', data)
+  revalidateTag('invites')
   return res
 }
 
 export async function getInvites(userId: string) {
-  const res = await GET(`/invites/${userId}`)
+  const res = await GET(`/invites/${userId}`, ['invites'])
   return res
 }

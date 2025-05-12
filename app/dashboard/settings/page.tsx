@@ -1,4 +1,3 @@
-'use client'
 import {
   Card,
   CardContent,
@@ -10,8 +9,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { UserProfileForm } from './components/user-profile-form'
 import { UserPreferences } from './components/user-preferences'
 import { UserManagement } from './components/user-management'
+import { getUser } from '@/utils/common'
+import { getInvites } from './actions/actions'
 
-export default function page() {
+export default async function page() {
+  const user = await getUser()
+
+  const invites = await getInvites(user?.id || '')
+  console.log('invites', invites)
   return (
     <div className="space-y-6">
       <div>
@@ -62,7 +67,7 @@ export default function page() {
               <CardDescription>Invite users and manage roles</CardDescription>
             </CardHeader>
             <CardContent>
-              <UserManagement />
+              <UserManagement invites={invites} />
             </CardContent>
           </Card>
         </TabsContent>

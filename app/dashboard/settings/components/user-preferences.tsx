@@ -105,24 +105,6 @@ export function UserPreferences() {
             </SelectContent>
           </Select>
         </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="language">Language</Label>
-          <Select
-            value={preferences.language}
-            onValueChange={(value) => handleSelectChange('language', value)}
-          >
-            <SelectTrigger id="language" className="w-full">
-              <SelectValue placeholder="Select language" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="en">English</SelectItem>
-              <SelectItem value="es">Spanish</SelectItem>
-              <SelectItem value="fr">French</SelectItem>
-              <SelectItem value="de">German</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
       </div>
 
       <Button type="submit" disabled={isLoading}>

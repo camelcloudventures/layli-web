@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, MoreHorizontal, UserPlus } from 'lucide-react'
+import { MoreHorizontal, UserPlus } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,18 +41,23 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { toast } from 'sonner'
+import { inviteUser } from '@/app/dashboard/settings/actions/actions'
+import { useAuth } from '@/lib/context/auth-provider'
+import SubmitBtn from '@/components/custom/submit-btn'
 
 type UserRole = 'admin' | 'auditor' | 'supervisor'
 
-interface User {
-  id: string
-  name: string
-  email: string
-  role: UserRole
-  status: 'active' | 'invited' | 'inactive'
-}
+// interface User {
+//   id: string
+//   name: string
+//   email: string
+//   role: UserRole
+//   status: 'active' | 'invited' | 'inactive'
+// }
 
-export function UserManagement() {
+export function UserManagement({ invites }: { invites: any }) {
+  const { user } = useAuth()
+
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [inviteForm, setInviteForm] = useState({
@@ -61,95 +66,78 @@ export function UserManagement() {
   })
 
   // Mock users data
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: '1',
-      name: 'Demo User',
-      email: 'demo@example.com',
-      role: 'admin',
-      status: 'active',
-    },
-    {
-      id: '2',
-      name: 'John Doe',
-      email: 'john@example.com',
-      role: 'auditor',
-      status: 'active',
-    },
-    {
-      id: '3',
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      role: 'supervisor',
-      status: 'active',
-    },
-    {
-      id: '4',
-      name: 'Pending User',
-      email: 'pending@example.com',
-      role: 'auditor',
-      status: 'invited',
-    },
-  ])
+  // const [users, setUsers] = useState<User[]>([
+  //   {
+  //     id: '1',
+  //     name: 'Demo User',
+  //     email: 'demo@example.com',
+  //     role: 'admin',
+  //     status: 'active',
+  //   },
+  //   {
+  //     id: '2',
+  //     name: 'John Doe',
+  //     email: 'john@example.com',
+  //     role: 'auditor',
+  //     status: 'active',
+  //   },
+  //   {
+  //     id: '3',
+  //     name: 'Jane Smith',
+  //     email: 'jane@example.com',
+  //     role: 'supervisor',
+  //     status: 'active',
+  //   },
+  //   {
+  //     id: '4',
+  //     name: 'Pending User',
+  //     email: 'pending@example.com',
+  //     role: 'auditor',
+  //     status: 'invited',
+  //   },
+  // ])
 
   const handleInviteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setInviteForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleRoleChange = (userId: string, role: UserRole) => {
-    setUsers((prev) =>
-      prev.map((user) => (user.id === userId ? { ...user, role } : user)),
-    )
+  // const handleRoleChange = (userId: string, role: UserRole) => {
+  //   setUsers((prev) =>
+  //     prev.map((user) => (user.id === userId ? { ...user, role } : user)),
+  //   )
 
-    toast.success('User role has been updated successfully.')
-  }
+  //   toast.success('User role has been updated successfully.')
+  // }
 
-  const handleStatusChange = (
-    userId: string,
-    status: 'active' | 'inactive',
-  ) => {
-    setUsers((prev) =>
-      prev.map((user) => (user.id === userId ? { ...user, status } : user)),
-    )
+  // const handleStatusChange = (
+  //   userId: string,
+  //   status: 'active' | 'inactive',
+  // ) => {
+  //   setUsers((prev) =>
+  //     prev.map((user) => (user.id === userId ? { ...user, status } : user)),
+  //   )
 
-    toast.success(
-      `User has been ${
-        status === 'active' ? 'activated' : 'deactivated'
-      } successfully.`,
-    )
-  }
+  //   toast.success(
+  //     `User has been ${
+  //       status === 'active' ? 'activated' : 'deactivated'
+  //     } successfully.`,
+  //   )
+  // }
 
-  const handleInviteSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleInviteSubmit = async (formData: FormData) => {
     setIsLoading(true)
-
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Add new invited user to the list
-      const newUser: User = {
-        id: Date.now().toString(),
-        name: inviteForm.email.split('@')[0],
-        email: inviteForm.email,
-        role: inviteForm.role,
-        status: 'invited',
-      }
-
-      setUsers((prev) => [...prev, newUser])
-
-      toast.success(`An invitation has been sent to ${inviteForm.email}.`)
-
-      // Reset form and close dialog
-      setInviteForm({ email: '', role: 'auditor' })
-      setIsInviteDialogOpen(false)
-    } catch (error) {
-      console.error(error)
-      toast.error('Failed to send invitation. Please try again.')
-    } finally {
-      setIsLoading(false)
+    const res = await inviteUser(formData, inviteForm.role, user?.id || '')
+    console.log('res', res)
+    setIsLoading(false)
+    if (res.error) {
+      toast.error(res.error || 'Invitation failed, please try again.')
+      return
     }
+    toast.success(res.success)
+    // Optionally refresh user list here
+    setInviteForm({ email: '', role: 'auditor' })
+    setIsInviteDialogOpen(false)
   }
 
   const getRoleBadgeColor = (role: UserRole) => {
@@ -196,7 +184,7 @@ export function UserManagement() {
                 Send an invitation to join your organization.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleInviteSubmit}>
+            <form action={handleInviteSubmit}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
@@ -233,12 +221,12 @@ export function UserManagement() {
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  Send Invitation
-                </Button>
+                <SubmitBtn
+                  label={isLoading ? 'Sending...' : 'Send Invitation'}
+                  variant="default"
+                  className=""
+                  isDisabled={isLoading}
+                />
               </DialogFooter>
             </form>
           </DialogContent>
@@ -249,7 +237,6 @@ export function UserManagement() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
@@ -257,16 +244,15 @@ export function UserManagement() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.map((user) => (
+            {invites?.data?.map((user: any) => (
               <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
+                <TableCell>{user?.email}</TableCell>
                 <TableCell>
                   <Badge
                     variant="outline"
                     className={getRoleBadgeColor(user.role)}
                   >
-                    {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                    {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1)}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -274,7 +260,8 @@ export function UserManagement() {
                     variant="outline"
                     className={getStatusBadgeColor(user.status)}
                   >
-                    {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                    {user?.status?.charAt(0).toUpperCase() +
+                      user?.status?.slice(1)}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -289,36 +276,36 @@ export function UserManagement() {
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
-                        onClick={() => handleRoleChange(user.id, 'admin')}
-                        disabled={user.role === 'admin'}
+                        // onClick={() => handleRoleChange(user.id, 'admin')}
+                        disabled={user?.role === 'admin'}
                       >
                         Set as Admin
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => handleRoleChange(user.id, 'supervisor')}
-                        disabled={user.role === 'supervisor'}
+                        // onClick={() => handleRoleChange(user.id, 'supervisor')}
+                        disabled={user?.role === 'supervisor'}
                       >
                         Set as Supervisor
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => handleRoleChange(user.id, 'auditor')}
-                        disabled={user.role === 'auditor'}
+                        // onClick={() => handleRoleChange(user.id, 'auditor')}
+                        disabled={user?.role === 'auditor'}
                       >
                         Set as Auditor
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      {user.status === 'active' ? (
+                      {user?.status === 'active' ? (
                         <DropdownMenuItem
-                          onClick={() =>
-                            handleStatusChange(user.id, 'inactive')
-                          }
+                          // onClick={() =>
+                          //   handleStatusChange(user.id, 'inactive')
+                          // }
                           className="text-red-600"
                         >
                           Deactivate User
                         </DropdownMenuItem>
                       ) : (
                         <DropdownMenuItem
-                          onClick={() => handleStatusChange(user.id, 'active')}
+                          // onClick={() => handleStatusChange(user.id, 'active')}
                           className="text-green-600"
                         >
                           Activate User

@@ -4,15 +4,15 @@ import Link from 'next/link'
 import { UserAccountNav } from '@/components/layout/user-account-nav'
 import { Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-// import { useAuth } from '@/lib/context/auth-context'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { SidebarNav } from '@/components/layout/sidebar-nav'
 import { dashboardNavItems } from '@/lib/config/dashboard-nav'
 import { useEffect, useState } from 'react'
 import { useMobile } from '@/hooks/use-mobile'
+import { useAuth } from '@/lib/context/auth-provider'
 
 export function DashboardHeader() {
-  // const { user } = useAuth()
+  const { user } = useAuth()
   const [open, setOpen] = useState(false)
   const isMobile = useMobile()
 
@@ -47,7 +47,11 @@ export function DashboardHeader() {
           )}
           <Link href="/dashboard" className="flex items-center gap-2">
             <h1 className="hidden text-xl font-bold md:inline-block">
-              Audit Management
+              {user?.role === 'admin'
+                ? 'Audit Management'
+                : user?.role === 'auditor'
+                ? 'Audit'
+                : 'Supervisor'}
             </h1>
           </Link>
         </div>

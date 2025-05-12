@@ -1,6 +1,6 @@
-"use client"
+'use client'
 
-import Link from "next/link"
+import Link from 'next/link'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,24 +8,21 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { LogOut, Settings, UserCircle } from "lucide-react"
-import { useRouter } from "next/navigation"
-
+} from '@/components/ui/dropdown-menu'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { LogOut, Settings, UserCircle } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/lib/context/auth-provider'
 // Mock user data
-const mockUser = {
-  fullName: "Demo User",
-  email: "demo@example.com",
-  image: "",
-}
 
 export function UserAccountNav() {
+  const { user, signOut } = useAuth()
   const router = useRouter()
 
   const handleLogout = () => {
-    router.push("/auth/login")
+    signOut()
+    router.push('/auth/login')
   }
 
   return (
@@ -33,12 +30,12 @@ export function UserAccountNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={mockUser.image || "/placeholder.svg"} alt={mockUser.fullName} />
+            <AvatarImage src={user?.image || ''} alt={'User'} />
             <AvatarFallback>
-              {mockUser.fullName
-                .split(" ")
+              {user?.full_name
+                ?.split(' ')
                 .map((n) => n[0])
-                .join("")
+                .join('')
                 .toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -47,8 +44,12 @@ export function UserAccountNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{mockUser.fullName}</p>
-            <p className="text-xs leading-none text-muted-foreground">{mockUser.email}</p>
+            <p className="text-sm font-medium leading-none">
+              {user?.full_name}
+            </p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {user?.email}
+            </p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

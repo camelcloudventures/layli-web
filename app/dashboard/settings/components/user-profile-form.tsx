@@ -1,67 +1,24 @@
 'use client'
 
 import type React from 'react'
-import { useState } from 'react'
-
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { toast } from 'sonner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Upload } from 'lucide-react'
 import { useAuth } from '@/lib/context/auth-provider'
-import { updateProfile } from '@/app/auth/actions/actions'
 import SubmitBtn from '@/components/custom/submit-btn'
-import { uploadImage } from '@/utils/common'
+import { useUserProfile } from '../hooks/useUserProfile'
 
 export function UserProfileForm() {
-  const { user, refreshUser } = useAuth()
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [uploading, setUploading] = useState(false)
-
-  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setSelectedFile(file)
-    setPreviewUrl(URL.createObjectURL(file))
-  }
-
-  async function handleUpdateProfile(formData: FormData) {
-    let imageUrl = user?.image || ''
-    if (selectedFile) {
-      setUploading(true)
-      const { fileUrl, error } = await uploadImage(
-        { file: selectedFile },
-        'avatars',
-      )
-      setUploading(false)
-      if (error) {
-        toast.error(error)
-        return
-      }
-      imageUrl = fileUrl || ''
-    }
-    if (imageUrl) formData.set('image', imageUrl)
-    const res = await updateProfile(formData)
-    if (res.error) toast.error(res.error)
-    if (res.success) {
-      toast.success(res.success)
-      await refreshUser()
-      setSelectedFile(null)
-      setPreviewUrl(null)
-    }
-  }
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-  }
-
-  console.log('user', user?.image)
+  const { user } = useAuth()
+  const {
+    handleUpdateProfile,
+    getInitials,
+    previewUrl,
+    handleAvatarChange,
+    uploading,
+  } = useUserProfile()
 
   return (
     <form action={handleUpdateProfile} className="space-y-6">

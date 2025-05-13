@@ -5,28 +5,49 @@ import { toast } from 'sonner'
 import { cookies } from 'next/headers'
 
 function getSupabaseCookieName() {
-  // Extract project ref from your Supabase URL
-  const projectRef = process.env.NEXT_PUBLIC_SUPABASE_URL?.split(
-    'https://',
-  )[1]?.split('.')[0]
+  const projectRef = process.env
+    .NEXT_PUBLIC_SUPABASE_URL!.replace('https://', '')
+    .split('.')[0]
   return `sb-${projectRef}-auth-token`
 }
 
-export async function getAccessToken() {
-  const cookieStore = cookies()
-  const cookieName = getSupabaseCookieName()
-  const accessToken = (await cookieStore).get(cookieName)?.value
-  console.log('accessToken', accessToken)
-  return accessToken
+export async function getAccessToken(): Promise<string | null> {
+  const cookieStore = await cookies()
+  const raw = cookieStore.get(getSupabaseCookieName())?.value
+  if (!raw) return null
+
+  const [prefix, b64] = raw.split('-', 2)
+  if (prefix !== 'base64' || !b64) {
+    console.error('Unexpected cookie format:', raw)
+    return null
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let sessionObj: any
+  try {
+    sessionObj = JSON.parse(Buffer.from(b64, 'base64').toString('utf8'))
+  } catch (e) {
+    console.error('Failed to decode session cookie', e)
+    return null
+  }
+
+  // <-- take the top‐level access_token
+  const token = sessionObj?.access_token
+
+  if (!token) {
+    console.error('No access_token found in session cookie:', sessionObj)
+    return null
+  }
+
+  return token
 }
 
 export async function UPDATE<T>(url: string, data: T): Promise<T | null> {
   try {
     const accessToken = await getAccessToken()
     if (!accessToken) {
-      toast.error('You are not logged in')
-      redirect('/')
-      return null
+      //@ts-expect-error --need to fix this
+      return { error: 'You are not logged in' }
     }
 
     const response = await fetch(`${baseUrl}/api${url}`, {
@@ -78,7 +99,6 @@ export async function POST<T>(
     }
 
     const thisUrl = `${baseUrl}/api${url}`
-    console.log('thisUrl', thisUrl)
     const response = await fetch(thisUrl, {
       method: 'POST',
       headers: {

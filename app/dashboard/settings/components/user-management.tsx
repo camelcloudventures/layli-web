@@ -29,6 +29,7 @@ import { useAuth } from '@/lib/context/auth-provider'
 import SubmitBtn from '@/components/custom/submit-btn'
 import { DataTable } from '@/components/custom/data-table'
 import { columns } from './columns'
+import { UserPlus } from 'lucide-react'
 
 type UserRole = 'admin' | 'auditor' | 'supervisor'
 
@@ -54,8 +55,6 @@ export function UserManagement({ invites }: { invites: InvitesResponse }) {
   const [inviteForm, setInviteForm] = useState({
     role: 'auditor' as UserRole,
   })
-
-  console.log('invites', invites)
 
   const handleInviteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -97,36 +96,6 @@ export function UserManagement({ invites }: { invites: InvitesResponse }) {
     toast.success(res.success)
     setInviteForm({ role: inviteForm.role })
     setIsInviteDialogOpen(false)
-  }
-
-  const getRoleBadgeColor = (role: UserRole) => {
-    switch (role) {
-      case 'admin':
-        return 'bg-purple-100 text-purple-800 hover:bg-purple-100/80 dark:bg-purple-900/30 dark:text-purple-300'
-      case 'supervisor':
-        return 'bg-blue-100 text-blue-800 hover:bg-blue-100/80 dark:bg-blue-900/30 dark:text-blue-300'
-      case 'auditor':
-        return 'bg-orange-100 text-orange-800 hover:bg-orange-100/80 dark:bg-orange-900/30 dark:text-orange-300'
-      default:
-        return ''
-    }
-  }
-
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800'
-      case 'invited':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'inactive':
-        return 'bg-gray-100 text-gray-800'
-      default:
-        return ''
-    }
-  }
-
-  const getUserStatus = (used: boolean) => {
-    return used ? 'active' : 'invited'
   }
 
   return (
@@ -196,7 +165,11 @@ export function UserManagement({ invites }: { invites: InvitesResponse }) {
       </div>
 
       <div className="border rounded-md">
-        <DataTable columns={columns} data={invites?.data} />
+        <DataTable
+          columns={columns}
+          //@ts-expect-error -0e
+          data={invites?.error ? [] : invites?.data}
+        />
       </div>
     </div>
   )

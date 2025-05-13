@@ -16,6 +16,7 @@ export default async function page() {
   const user = await getUser()
 
   const invites = await getInvites(user?.id || '')
+  console.log('invites', invites)
   return (
     <div className="space-y-6">
       <div>

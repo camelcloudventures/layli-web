@@ -152,9 +152,24 @@ export async function acceptInvite(
       email_verified_at: new Date(),
     })
 
+    //Add the user to the invite table
+    const { error: inviteError } = await supabase
+      .from('invites')
+      .update({
+        user_id: sessionData.user?.id,
+      })
+      .eq('token', token)
+
+    if (inviteError) {
+      return { error: inviteError.message }
+    }
+
+    console.log('inviteError', inviteError)
     if (profileError) {
       return { error: profileError.message }
     }
+
+    console.log('profileError', profileError)
 
     return { success: 'Account setup complete! Redirecting...' }
   } catch (error) {

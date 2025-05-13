@@ -13,6 +13,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { RoleActionItem } from './role-action-item'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { updateUserRole } from '../actions/actions'
+import { toast } from 'sonner'
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -24,6 +31,7 @@ export type Invite = {
   invited_by: string
   created_at: string
   used: boolean
+  user_id: string
 }
 
 function getRoleBadgeColor(role: string) {
@@ -61,9 +69,16 @@ function capitalize(str: string) {
 }
 
 async function handleRoleChange(userId: string, role: string) {
-  // Implement role change logic here (e.g., API call)
-  // This can be replaced or passed down from parent as needed
-  console.log(`Change user ${userId} to role ${role}`)
+  const res = await updateUserRole(userId, role)
+  console.log('res here is', res)
+
+  //@ts-expect-error -0e
+  if (res.error) {
+    //@ts-expect-error -0e
+    toast.error(res.error)
+  } else {
+    toast.success(`Role updated to ${role} successfully`)
+  }
 }
 
 export const columns: ColumnDef<Invite>[] = [
@@ -105,34 +120,63 @@ export const columns: ColumnDef<Invite>[] = [
     id: 'actions',
     cell: ({ row }) => {
       const user = row.original
+      const isActive = getUserStatus(user.used) === 'active'
+      if (isActive) {
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="z-10 bg-white" align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <RoleActionItem
+                user={user}
+                role="admin"
+                onChange={handleRoleChange}
+              />
+              <RoleActionItem
+                user={user}
+                role="supervisor"
+                onChange={handleRoleChange}
+              />
+              <RoleActionItem
+                user={user}
+                role="auditor"
+                onChange={handleRoleChange}
+              />
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      }
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="z-10 bg-white" align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <RoleActionItem
-              user={user}
-              role="admin"
-              onChange={handleRoleChange}
-            />
-            <RoleActionItem
-              user={user}
-              role="supervisor"
-              onChange={handleRoleChange}
-            />
-            <RoleActionItem
-              user={user}
-              role="auditor"
-              onChange={handleRoleChange}
-            />
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span
+              aria-disabled="true"
+              className="inline-flex opacity-50 cursor-not-allowed"
+              tabIndex={0}
+            >
+              <Button
+                variant="ghost"
+                className="h-8 w-8 p-0 pointer-events-none"
+                tabIndex={-1}
+                aria-label="Actions unavailable"
+              >
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </span>
+          </TooltipTrigger>
+          <TooltipContent className="">
+            <p className="font-medium">
+              Role changes are only available for active users.
+            </p>
+          </TooltipContent>
+        </Tooltip>
       )
     },
   },

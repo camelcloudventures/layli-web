@@ -44,6 +44,8 @@ import { toast } from 'sonner'
 import { inviteUser } from '@/app/dashboard/settings/actions/actions'
 import { useAuth } from '@/lib/context/auth-provider'
 import SubmitBtn from '@/components/custom/submit-btn'
+import { DataTable } from '@/components/custom/data-table'
+import { columns } from './columns'
 
 type UserRole = 'admin' | 'auditor' | 'supervisor'
 
@@ -211,7 +213,9 @@ export function UserManagement({ invites }: { invites: InvitesResponse }) {
       </div>
 
       <div className="border rounded-md">
-        <Table>
+        <DataTable columns={columns} data={invites?.data} />
+
+        {/* <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Email</TableHead>
@@ -294,7 +298,7 @@ export function UserManagement({ invites }: { invites: InvitesResponse }) {
               </TableRow>
             ))}
           </TableBody>
-        </Table>
+        </Table> */}
       </div>
     </div>
   )

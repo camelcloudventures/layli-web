@@ -121,6 +121,7 @@ export async function GET<T>(url: string, tags?: string[]): Promise<T | null> {
       method: 'GET',
       headers: {
         Accept: 'application/json',
+        Authorization: `Bearer ${accessToken}`,
       },
       cache: 'no-store',
       next: tags ? { tags } : undefined,

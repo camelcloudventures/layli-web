@@ -3,7 +3,7 @@
 import { formatDate } from '@/lib/utils'
 import { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
-import { MoreHorizontal } from 'lucide-react'
+import { Loader2, MoreHorizontal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/tooltip'
 import { updateUserRole } from '../actions/actions'
 import { toast } from 'sonner'
+import { useState } from 'react'
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -81,6 +82,87 @@ async function handleRoleChange(userId: string, role: string) {
   }
 }
 
+function ActionsCell({ user }: { user: Invite }) {
+  const [isLoading, setIsLoading] = useState(false)
+  const isActive = getUserStatus(user.used) === 'active'
+
+  const handleRoleChangeWithLoading = async (userId: string, role: string) => {
+    if (isLoading) return
+    setIsLoading(true)
+    try {
+      await handleRoleChange(userId, role)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isLoading) {
+    return <Loader2 className="h-4 w-4 animate-spin" />
+  }
+
+  if (isActive) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="z-10 bg-white" align="end">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <RoleActionItem
+            user={user}
+            role="admin"
+            onChange={handleRoleChangeWithLoading}
+            disabled={isLoading}
+          />
+          <RoleActionItem
+            user={user}
+            role="supervisor"
+            onChange={handleRoleChangeWithLoading}
+            disabled={isLoading}
+          />
+          <RoleActionItem
+            user={user}
+            role="auditor"
+            onChange={handleRoleChangeWithLoading}
+            disabled={isLoading}
+          />
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span
+          aria-disabled="true"
+          className="inline-flex opacity-50 cursor-not-allowed"
+          tabIndex={0}
+        >
+          <Button
+            variant="ghost"
+            className="h-8 w-8 p-0 pointer-events-none"
+            tabIndex={-1}
+            aria-label="Actions unavailable"
+          >
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent className="">
+        <p className="font-medium">
+          Role changes are only available for active users.
+        </p>
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
 export const columns: ColumnDef<Invite>[] = [
   {
     accessorKey: 'email',
@@ -118,66 +200,6 @@ export const columns: ColumnDef<Invite>[] = [
   // actions
   {
     id: 'actions',
-    cell: ({ row }) => {
-      const user = row.original
-      const isActive = getUserStatus(user.used) === 'active'
-      if (isActive) {
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="z-10 bg-white" align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <RoleActionItem
-                user={user}
-                role="admin"
-                onChange={handleRoleChange}
-              />
-              <RoleActionItem
-                user={user}
-                role="supervisor"
-                onChange={handleRoleChange}
-              />
-              <RoleActionItem
-                user={user}
-                role="auditor"
-                onChange={handleRoleChange}
-              />
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )
-      }
-      return (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span
-              aria-disabled="true"
-              className="inline-flex opacity-50 cursor-not-allowed"
-              tabIndex={0}
-            >
-              <Button
-                variant="ghost"
-                className="h-8 w-8 p-0 pointer-events-none"
-                tabIndex={-1}
-                aria-label="Actions unavailable"
-              >
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent className="">
-            <p className="font-medium">
-              Role changes are only available for active users.
-            </p>
-          </TooltipContent>
-        </Tooltip>
-      )
-    },
+    cell: ({ row }) => <ActionsCell user={row.original} />,
   },
 ]

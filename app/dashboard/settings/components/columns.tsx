@@ -22,8 +22,6 @@ import { updateUserRole } from '../actions/actions'
 import { toast } from 'sonner'
 import { useState } from 'react'
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
 export type Invite = {
   id: string
   email: string

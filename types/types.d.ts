@@ -1,5 +1,3 @@
-// Invite types
-
 type UserRole = 'admin' | 'auditor' | 'supervisor'
 
 export interface Invite {

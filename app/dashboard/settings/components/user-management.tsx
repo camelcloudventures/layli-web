@@ -30,6 +30,7 @@ import SubmitBtn from '@/components/custom/submit-btn'
 import { DataTable } from '@/components/custom/data-table'
 import { columns } from './columns'
 import { UserPlus } from 'lucide-react'
+import { Permission, hasPermission } from '@/lib/auth/auth'
 
 type UserRole = 'admin' | 'auditor' | 'supervisor'
 
@@ -61,33 +62,9 @@ export function UserManagement({ invites }: { invites: InvitesResponse }) {
     setInviteForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  // const handleRoleChange = (userId: string, role: UserRole) => {
-  //   setUsers((prev) =>
-  //     prev.map((user) => (user.id === userId ? { ...user, role } : user)),
-  //   )
-
-  //   toast.success('User role has been updated successfully.')
-  // }
-
-  // const handleStatusChange = (
-  //   userId: string,
-  //   status: 'active' | 'inactive',
-  // ) => {
-  //   setUsers((prev) =>
-  //     prev.map((user) => (user.id === userId ? { ...user, status } : user)),
-  //   )
-
-  //   toast.success(
-  //     `User has been ${
-  //       status === 'active' ? 'activated' : 'deactivated'
-  //     } successfully.`,
-  //   )
-  // }
-
   const handleInviteSubmit = async (formData: FormData) => {
     setIsLoading(true)
     const res = await inviteUser(formData, inviteForm.role, user?.id || '')
-    console.log('res', res)
     setIsLoading(false)
     if (res.error) {
       toast.error(res.error || 'Invitation failed, please try again.')
@@ -104,10 +81,12 @@ export function UserManagement({ invites }: { invites: InvitesResponse }) {
         <h3 className="text-lg font-medium">Users</h3>
         <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => setIsInviteDialogOpen(true)}>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Invite User
-            </Button>
+            {hasPermission(user, Permission.MANAGE_USERS) && (
+              <Button onClick={() => setIsInviteDialogOpen(true)}>
+                <UserPlus className="mr-2 h-4 w-4" />
+                Invite User
+              </Button>
+            )}
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>

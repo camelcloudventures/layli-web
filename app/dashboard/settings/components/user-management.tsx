@@ -7,14 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -30,16 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { MoreHorizontal, UserPlus } from 'lucide-react'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+
 import { toast } from 'sonner'
 import { inviteUser } from '@/app/dashboard/settings/actions/actions'
 import { useAuth } from '@/lib/context/auth-provider'
@@ -214,91 +197,6 @@ export function UserManagement({ invites }: { invites: InvitesResponse }) {
 
       <div className="border rounded-md">
         <DataTable columns={columns} data={invites?.data} />
-
-        {/* <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="w-[80px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {invites?.data?.map((user: Invite) => (
-              <TableRow key={user.id}>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant="outline"
-                    className={getRoleBadgeColor(user.role)}
-                  >
-                    {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant="outline"
-                    className={getStatusBadgeColor(getUserStatus(user.used))}
-                  >
-                    {getUserStatus(user.used).charAt(0).toUpperCase() +
-                      getUserStatus(user.used).slice(1)}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        // onClick={() => handleRoleChange(user.id, 'admin')}
-                        disabled={user?.role === 'admin'}
-                      >
-                        Set as Admin
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        // onClick={() => handleRoleChange(user.id, 'supervisor')}
-                        disabled={user?.role === 'supervisor'}
-                      >
-                        Set as Supervisor
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        // onClick={() => handleRoleChange(user.id, 'auditor')}
-                        disabled={user?.role === 'auditor'}
-                      >
-                        Set as Auditor
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      {getUserStatus(user.used) === 'active' ? (
-                        <DropdownMenuItem
-                          // onClick={() =>
-                          //   handleStatusChange(user.id, 'inactive')
-                          // }
-                          className="text-red-600"
-                        >
-                          Deactivate User
-                        </DropdownMenuItem>
-                      ) : (
-                        <DropdownMenuItem
-                          // onClick={() => handleStatusChange(user.id, 'active')}
-                          className="text-green-600"
-                        >
-                          Activate User
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table> */}
       </div>
     </div>
   )

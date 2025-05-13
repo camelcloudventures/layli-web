@@ -1,9 +1,18 @@
 'use client'
 
-import { capsFirstLetter, formatDate } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
 import { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
 import { MoreHorizontal } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { RoleActionItem } from './role-action-item'
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -47,6 +56,16 @@ function getUserStatus(used: boolean) {
   return used ? 'active' : 'invited'
 }
 
+function capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+async function handleRoleChange(userId: string, role: string) {
+  // Implement role change logic here (e.g., API call)
+  // This can be replaced or passed down from parent as needed
+  console.log(`Change user ${userId} to role ${role}`)
+}
+
 export const columns: ColumnDef<Invite>[] = [
   {
     accessorKey: 'email',
@@ -57,7 +76,7 @@ export const columns: ColumnDef<Invite>[] = [
     header: 'Role',
     cell: ({ row }) => (
       <Badge className={getRoleBadgeColor(row.original.role)}>
-        {capsFirstLetter(row.original.role)}
+        {capitalize(row.original.role)}
       </Badge>
     ),
   },
@@ -68,14 +87,14 @@ export const columns: ColumnDef<Invite>[] = [
       const status = getUserStatus(row.original.used)
       return (
         <Badge className={getStatusBadgeColor(status)}>
-          {capsFirstLetter(status)}
+          {capitalize(status)}
         </Badge>
       )
     },
   },
   {
     accessorKey: 'created_at',
-    header: 'Invited On',
+    header: 'Invited At',
     cell: ({ row }) => {
       return <span>{formatDate(row.original.created_at)}</span>
     },
@@ -83,14 +102,37 @@ export const columns: ColumnDef<Invite>[] = [
 
   // actions
   {
-    accessorKey: 'actions',
-    header: 'Actions',
+    id: 'actions',
     cell: ({ row }) => {
-      //have the three dot icon
+      const user = row.original
       return (
-        <span>
-          <MoreHorizontal className="h-4 w-4" />
-        </span>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="z-10 bg-white" align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <RoleActionItem
+              user={user}
+              role="admin"
+              onChange={handleRoleChange}
+            />
+            <RoleActionItem
+              user={user}
+              role="supervisor"
+              onChange={handleRoleChange}
+            />
+            <RoleActionItem
+              user={user}
+              role="auditor"
+              onChange={handleRoleChange}
+            />
+          </DropdownMenuContent>
+        </DropdownMenu>
       )
     },
   },

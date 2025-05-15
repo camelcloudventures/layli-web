@@ -11,12 +11,13 @@ import { UserPreferences } from './components/user-preferences'
 import { UserManagement } from './components/user-management'
 import { getUser } from '@/utils/common'
 import { getInvites } from './actions/actions'
+import { Permission } from '@/lib/auth/auth'
+import HasPermission from '../components/has-permission'
 
 export default async function page() {
   const user = await getUser()
 
   const invites = await getInvites(user?.id || '')
-  console.log('invites', invites)
   return (
     <div className="space-y-6">
       <div>
@@ -29,7 +30,9 @@ export default async function page() {
       <Tabs defaultValue="general" className="space-y-4">
         <TabsList>
           <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="advanced">Advanced</TabsTrigger>
+          <HasPermission permission={Permission.MANAGE_USERS}>
+            <TabsTrigger value="advanced">Advanced</TabsTrigger>
+          </HasPermission>
         </TabsList>
 
         <TabsContent value="general">

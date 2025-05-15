@@ -88,6 +88,8 @@ export function hasPermission(
 ): boolean {
   if (!user) return false
 
+  console.log('user here is ', user)
+  console.log('permission', permission)
   // Only treat it as a valid Role if it’s one of the enum values
   if (!Object.values(Role).includes(user.role as Role)) {
     console.warn(`Unknown role "${user.role}" for user ${user.id}`)

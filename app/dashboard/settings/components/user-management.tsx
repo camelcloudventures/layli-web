@@ -30,7 +30,6 @@ import SubmitBtn from '@/components/custom/submit-btn'
 import { DataTable } from '@/components/custom/data-table'
 import { columns } from './columns'
 import { UserPlus } from 'lucide-react'
-import { Permission, hasPermission } from '@/lib/auth/auth'
 
 type UserRole = 'admin' | 'auditor' | 'supervisor'
 
@@ -81,12 +80,10 @@ export function UserManagement({ invites }: { invites: InvitesResponse }) {
         <h3 className="text-lg font-medium">Users</h3>
         <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
           <DialogTrigger asChild>
-            {/* {hasPermission(user, Permission.MANAGE_USERS) && ( */}
             <Button onClick={() => setIsInviteDialogOpen(true)}>
               <UserPlus className="mr-2 h-4 w-4" />
               Invite User
             </Button>
-            {/* )} */}
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>

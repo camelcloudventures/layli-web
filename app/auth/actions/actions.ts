@@ -56,7 +56,10 @@ export async function signIn(formData: FormData) {
   const password = formData.get('password')
 
   try {
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const {
+      data: signInData,
+      error: signInError,
+    } = await supabase.auth.signInWithPassword({
       email: email as string,
       password: password as string,
     })
@@ -65,7 +68,12 @@ export async function signIn(formData: FormData) {
       return { error: signInError.message }
     }
 
-    return { success: 'Signed in successfully!' }
+    await supabase.auth.setSession({
+      access_token: signInData.session?.access_token,
+      refresh_token: signInData.session?.refresh_token,
+    })
+
+    return { success: 'Signed in successfully! Redirecting...' }
   } catch (err) {
     //@ts-expect-error - error is not typed
     return { error: err.message }

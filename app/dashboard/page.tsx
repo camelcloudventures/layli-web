@@ -7,7 +7,7 @@ export default function page() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
-            Welcome back, Gerald! Here's an overview of your audit system.
+            Welcome back, Gerald! Here&apos;s an overview of your audit system.
           </p>
         </div>
       </div>

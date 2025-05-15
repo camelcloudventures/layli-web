@@ -68,10 +68,14 @@ export async function signIn(formData: FormData) {
       return { error: signInError.message }
     }
 
-    await supabase.auth.setSession({
+    const { error: setSessionError } = await supabase.auth.setSession({
       access_token: signInData.session?.access_token,
       refresh_token: signInData.session?.refresh_token,
     })
+
+    if (setSessionError) {
+      return { error: setSessionError.message }
+    }
 
     return { success: 'Signed in successfully! Redirecting...' }
   } catch (err) {

@@ -6,7 +6,7 @@ import { FileText, MoreVertical, Copy, Edit, Trash2, Eye } from 'lucide-react'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import type { AuditTemplate } from '@/types/audit-types'
+import type { AuditTemplate } from '@/lib/types/audit-types'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,7 +19,8 @@ interface TemplateGridProps {
 }
 
 export function TemplateGrid({ templates }: TemplateGridProps) {
-  const formatDate = (date: Date | undefined) => {
+  console.log('templates', templates)
+  const formatDate = (date: string) => {
     if (!date) return 'N/A'
     return new Date(date).toLocaleDateString()
   }
@@ -35,7 +36,7 @@ export function TemplateGrid({ templates }: TemplateGridProps) {
     }, 0)
   }
 
-  const deleteTemplate = (templateId: string) => {
+  const deleteTemplate = (templateId: number) => {
     // Retrieve current templates
     const savedTemplates = localStorage.getItem('auditTemplates')
     if (!savedTemplates) return
@@ -126,7 +127,7 @@ export function TemplateGrid({ templates }: TemplateGridProps) {
           </CardContent>
           <CardFooter className="border-t bg-muted/50 p-3">
             <div className="flex w-full items-center justify-between text-xs text-muted-foreground">
-              <span>Created: {formatDate(template.created_at as Date)}</span>
+              <span>Created: {formatDate(template.created_at)}</span>
               <Button asChild size="sm" variant="ghost">
                 <Link href={`/dashboard/templates/${template.id}/preview`}>
                   Preview

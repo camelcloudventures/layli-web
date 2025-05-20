@@ -1,6 +1,12 @@
-export type IssuePriority = "low" | "medium" | "high" | "critical"
-export type IssueStatus = "open" | "in-progress" | "resolved" | "closed"
-export type IssueCategory = "safety" | "compliance" | "operational" | "environmental" | "quality" | "other"
+export type IssuePriority = 'low' | 'medium' | 'high' | 'critical'
+export type IssueStatus = 'open' | 'in-progress' | 'resolved' | 'closed'
+export type IssueCategory =
+  | 'safety'
+  | 'compliance'
+  | 'operational'
+  | 'environmental'
+  | 'quality'
+  | 'other'
 
 export interface IssueFile {
   id: string
@@ -45,56 +51,59 @@ export interface Issue {
 }
 
 export interface ResponseOption {
-  id: string
-  question_id: string
-  label: string
+  id: number
   code: string
-  sort_order: number
-  score: number
-  is_flagged: boolean
   color: string
+  label: string
+  score: number
+  created_at: string
+  is_flagged: boolean
+  sort_order: number
+  question_id: number
 }
 
 export interface Question {
-  id: string
-  page_id: string
-  section_id: string
+  id: number
   text: string
-  required: boolean
-  multiple_selection: boolean
-  is_flagged: boolean
-  field_type: "BOOLEAN" | "TEXT" | "DATE" | "PHOTO" | "NUMBER" | "SELECT" | "MULTI_SELECT"
   ordinal: number
-  response_options?: ResponseOption[]
+  page_id: number
+  required: boolean
+  created_at: string
+  field_type: string
+  is_flagged: boolean
+  section_id: number
+  response_options: ResponseOption[]
+  multiple_selection: boolean
 }
 
 export interface Section {
-  id: string
-  page_id: string
+  id: number
   title: string
   ordinal: number
+  page_id: number
   questions: Question[]
+  created_at: string
 }
 
 export interface Page {
-  id: string
-  template_id: string
+  id: number
+  photo: string
   title: string
-  description: string
-  photo?: string
   ordinal: number
   sections: Section[]
+  created_at: string
+  description: string
+  template_id: number
 }
 
 export interface AuditTemplate {
-  id: string
+  id: number
+  created_at: string
   title: string
   description: string
-  photo?: string
+  photo: string
+  created_by: string | null
   pages: Page[]
-  created_at?: Date | string
-  updated_at?: Date | string
-  created_by?: string
 }
 
 export interface Response {
@@ -118,8 +127,26 @@ export interface AuditInstance {
   prepared_by_id: string
   conducted_by_id: string
   audit_date: Date
-  status: "DRAFT" | "IN_PROGRESS" | "COMPLETED" | "APPROVED" | "REJECTED"
+  status: 'DRAFT' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED' | 'REJECTED'
   responses?: Response[]
 }
 
 export type Template = AuditTemplate
+
+export interface Pagination {
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+export interface TemplatesResponse {
+  success: string
+  data: AuditTemplate[]
+  pagination: Pagination
+}
+
+export type AuditTemplateApiResponse =
+  | AuditTemplate
+  | { data: AuditTemplate }
+  | null

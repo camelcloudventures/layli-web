@@ -18,6 +18,7 @@ import { TemplateDetailsForm } from '@/app/dashboard/templates/components/templa
 import { PagesManager } from '@/app/dashboard/templates/components/pages-manager'
 import { TemplatePreview } from '@/app/dashboard/templates/components/template-preview'
 import { toast } from '@/hooks/use-toast'
+import Link from 'next/link'
 
 export default function CreateTemplatePage() {
   const router = useRouter()
@@ -100,12 +101,10 @@ export default function CreateTemplatePage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => router.push('/dashboard/templates')}
-          >
-            <ArrowLeft className="h-4 w-4" />
+          <Button asChild variant="outline" size="icon">
+            <Link href="/dashboard/templates" aria-label="Back to templates">
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
           </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">

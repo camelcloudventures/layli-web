@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import type { AuditTemplate, Question } from '@/lib/types/audit-types'
+import type { AuditTemplate, Question } from '@/types/audit-types'
 import {
   ChevronLeft,
   ChevronRight,

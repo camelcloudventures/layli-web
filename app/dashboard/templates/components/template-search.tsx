@@ -44,7 +44,7 @@ export function TemplateSearch({
             <div className="relative h-48 w-full bg-muted">
               {template.photo ? (
                 <Image
-                  src={template.photo}
+                  src={template?.photo}
                   width={100}
                   height={100}
                   alt={template.title}
@@ -65,11 +65,11 @@ export function TemplateSearch({
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
                 <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                  {template.pages.length}{' '}
-                  {template.pages.length === 1 ? 'Page' : 'Pages'}
+                  {template?.pages?.length}{' '}
+                  {template?.pages?.length === 1 ? 'Page' : 'Pages'}
                 </span>
                 <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                  {template.pages.reduce(
+                  {template?.pages?.reduce(
                     (total, page) =>
                       total +
                       page.sections.reduce(

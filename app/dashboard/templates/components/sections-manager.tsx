@@ -8,6 +8,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Plus, Trash2, GripVertical, ChevronDown, ChevronUp, LayoutGrid } from "lucide-react"
 import type { AuditTemplate, Page, Section, NewSection } from "@/types/audit-types"
 import { QuestionsManager } from "@/app/dashboard/templates/components/questions-manager"
+import { deleteSection } from '@/app/dashboard/templates/actions/actions'
+import { toast } from 'sonner'
 
 interface SectionsManagerProps {
   template: AuditTemplate
@@ -54,22 +56,19 @@ export function SectionsManager({ template, setTemplate, page }: SectionsManager
     }
   }
 
-  const deleteSection = (sectionId: string) => {
-    const updatedTemplate = { ...template }
-    const pageIndex = updatedTemplate.pages.findIndex((p) => p.id === page.id)
-
-    if (pageIndex !== -1) {
-      updatedTemplate.pages[pageIndex].sections = updatedTemplate.pages[pageIndex].sections.filter(
-        (section) => section.id !== sectionId,
-      )
-
-      // Reorder remaining sections
-      updatedTemplate.pages[pageIndex].sections.forEach((section, index) => {
-        section.ordinal = index + 1
-      })
-
-      setTemplate(updatedTemplate)
-      setOpenSections(openSections.filter((id) => id !== sectionId))
+  const handleDeleteSection = async (sectionId: string) => {
+    if (!window.confirm('Are you sure you want to delete this section? This action cannot be undone.')) return
+    try {
+      await deleteSection(sectionId, page.id)
+      toast.success('Section deleted successfully!')
+      const updatedTemplate = { ...template }
+      const pageIndex = updatedTemplate.pages.findIndex(p => p.id === page.id)
+      if (pageIndex !== -1) {
+        updatedTemplate.pages[pageIndex].sections = updatedTemplate.pages[pageIndex].sections.filter(s => s.id !== sectionId)
+        setTemplate(updatedTemplate)
+      }
+    } catch {
+      toast.error('Failed to delete section')
     }
   }
 
@@ -183,15 +182,15 @@ export function SectionsManager({ template, setTemplate, page }: SectionsManager
                   </Button>
                   <Button
                     type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                    variant="destructive"
+                    size="sm"
                     onClick={(e) => {
                       e.stopPropagation()
-                      deleteSection(section.id)
+                      handleDeleteSection(section.id)
                     }}
+                    aria-label="Delete Section"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    Delete
                   </Button>
                 </div>
               </AccordionTrigger>

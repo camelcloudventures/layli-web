@@ -61,7 +61,37 @@ export async function updateTemplate(template: any) {
   ])
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function deleteTemplate(template: any) {
-  return await DELETE('/audit-template/delete', template, ['templates'])
+export async function deleteTemplate(templateId: string) {
+  console.log('templateId', templateId)
+  return await DELETE(`/audit-template/delete/${templateId}`, {}, ['templates'])
+}
+
+export async function deletePage(pageId: string, templateId: string) {
+  console.log('pageId', pageId)
+  console.log('templateId', templateId)
+  return await DELETE(
+    `/audit-template/delete/page/${pageId}/${templateId}`,
+    {},
+    ['templates'],
+  )
+}
+
+export async function deleteSection(sectionId: string, pageId: string) {
+  console.log('sectionId', sectionId)
+  console.log('pageId', pageId)
+  return await DELETE(
+    `/audit-template/delete/section/${sectionId}/${pageId}`,
+    {},
+    ['templates'],
+  )
+}
+
+export async function deleteQuestion(questionId: string, sectionId: string) {
+  console.log('questionId', questionId)
+  console.log('sectionId', sectionId)
+  return await DELETE(
+    `/audit-template/delete/question/${questionId}/${sectionId}`,
+    {},
+    ['templates'],
+  )
 }

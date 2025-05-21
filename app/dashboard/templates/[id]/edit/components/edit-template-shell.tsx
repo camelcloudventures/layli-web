@@ -16,7 +16,10 @@ import { PagesManager } from '@/app/dashboard/templates/components/pages-manager
 import { TemplatePreview } from '@/app/dashboard/templates/components/template-preview'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { updateTemplate } from '@/app/dashboard/templates/actions/actions'
+import {
+  updateTemplate,
+  deleteTemplate,
+} from '@/app/dashboard/templates/actions/actions'
 
 interface EditTemplateShellProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -59,6 +62,22 @@ export default function EditTemplateShell({
     }
   }
 
+  async function handleDeleteTemplate() {
+    if (
+      !window.confirm(
+        'Are you sure you want to delete this template? This action cannot be undone.',
+      )
+    )
+      return
+    try {
+      await deleteTemplate(template.id)
+      toast.success('Template deleted successfully!')
+      router.push('/dashboard/templates')
+    } catch {
+      toast.error('Failed to delete template')
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -84,6 +103,9 @@ export default function EditTemplateShell({
                 <Save className="mr-2 h-4 w-4" /> Save Template
               </>
             )}
+          </Button>
+          <Button onClick={handleDeleteTemplate} variant="destructive">
+            Delete Template
           </Button>
         </div>
       </div>

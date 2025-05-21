@@ -7,9 +7,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Trash2, GripVertical, ChevronDown, ChevronUp, Plus, HelpCircle } from "lucide-react"
+import { GripVertical, ChevronDown, ChevronUp, Plus, HelpCircle } from "lucide-react"
 import type { AuditTemplate, Page, Section, Question, NewQuestion } from "@/types/audit-types"
 import { ResponseOptionsManager } from "@/app/dashboard/templates/components/response-options-manager"
+import { deleteQuestion } from '@/app/dashboard/templates/actions/actions'
+import { toast } from 'sonner'
 
 interface QuestionsManagerProps {
   template: AuditTemplate
@@ -89,26 +91,22 @@ export function QuestionsManager({ template, setTemplate, page, section }: Quest
     }
   }
 
-  const deleteQuestion = (questionId: string) => {
-    const updatedTemplate = { ...template }
-    const pageIndex = updatedTemplate.pages.findIndex((p) => p.id === page.id)
-
-    if (pageIndex !== -1) {
-      const sectionIndex = updatedTemplate.pages[pageIndex].sections.findIndex((s) => s.id === section.id)
-
-      if (sectionIndex !== -1) {
-        updatedTemplate.pages[pageIndex].sections[sectionIndex].questions = updatedTemplate.pages[pageIndex].sections[
-          sectionIndex
-        ].questions.filter((q) => q.id !== questionId)
-
-        // Reorder remaining questions
-        updatedTemplate.pages[pageIndex].sections[sectionIndex].questions.forEach((question, index) => {
-          question.ordinal = index + 1
-        })
-
-        setTemplate(updatedTemplate)
-        setExpandedQuestions(expandedQuestions.filter((id) => id !== questionId))
+  const handleDeleteQuestion = async (questionId: string) => {
+    if (!window.confirm('Are you sure you want to delete this question? This action cannot be undone.')) return
+    try {
+      await deleteQuestion(questionId, section.id)
+      toast.success('Question deleted successfully!')
+      const updatedTemplate = { ...template }
+      const pageIndex = updatedTemplate.pages.findIndex(p => p.id === page.id)
+      if (pageIndex !== -1) {
+        const sectionIndex = updatedTemplate.pages[pageIndex].sections.findIndex(s => s.id === section.id)
+        if (sectionIndex !== -1) {
+          updatedTemplate.pages[pageIndex].sections[sectionIndex].questions = updatedTemplate.pages[pageIndex].sections[sectionIndex].questions.filter(q => q.id !== questionId)
+          setTemplate(updatedTemplate)
+        }
       }
+    } catch {
+      toast.error('Failed to delete question')
     }
   }
 
@@ -239,15 +237,16 @@ export function QuestionsManager({ template, setTemplate, page, section }: Quest
                     </Button>
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="destructive"
                       size="icon"
                       className="text-red-500 hover:text-red-600 hover:bg-red-50"
                       onClick={(e) => {
                         e.stopPropagation()
-                        deleteQuestion(question.id)
+                        handleDeleteQuestion(question.id)
                       }}
+                      aria-label="Delete Question"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      Delete
                     </Button>
                   </div>
                 </div>

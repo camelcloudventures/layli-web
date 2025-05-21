@@ -1,16 +1,22 @@
-import { Image, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import type { AuditTemplate } from '@/lib/types/audit-types'
 import Link from 'next/link'
+import NextImage from 'next/image'
+import Pagination from './pagination'
 
 interface TemplateSearchProps {
   templates: AuditTemplate[]
   searchParams: { search?: string }
+  page: number
+  totalPages: number
 }
 
 export function TemplateSearch({
   templates,
   searchParams,
+  page,
+  totalPages,
 }: TemplateSearchProps) {
   const searchQuery = searchParams.search || ''
 
@@ -43,7 +49,7 @@ export function TemplateSearch({
           >
             <div className="relative h-48 w-full bg-muted">
               {template.photo ? (
-                <Image
+                <NextImage
                   src={template?.photo}
                   width={100}
                   height={100}
@@ -99,6 +105,7 @@ export function TemplateSearch({
           </div>
         ))}
       </div>
+      <Pagination page={page} totalPages={totalPages} />
     </div>
   )
 }

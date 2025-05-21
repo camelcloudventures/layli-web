@@ -7,13 +7,14 @@ import {
 } from '@/components/ui/card'
 import { TemplateSearch } from './components/template-search'
 import CreateAuditBtn from './components/create-audit-btn'
-
 interface PageProps {
-  searchParams: { search?: string }
+  searchParams: { search?: string; page?: string }
 }
 
 export default async function AuditTemplatesPage({ searchParams }: PageProps) {
-  const response = await getTemplates()
+  const page = Number(searchParams.page) || 1
+  const response = await getTemplates(page)
+  // console.log('response', response?.pagination)
 
   if (!response) {
     return (
@@ -46,8 +47,11 @@ export default async function AuditTemplatesPage({ searchParams }: PageProps) {
 
       <TemplateSearch
         templates={response.data}
-        searchParams={await searchParams}
+        searchParams={searchParams}
+        page={page}
+        totalPages={response.pagination.totalPages}
       />
+      {/* <Pagination page={page} totalPages={response.pagination.totalPages} /> */}
     </div>
   )
 }

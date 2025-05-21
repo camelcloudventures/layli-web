@@ -1,14 +1,13 @@
 "use client"
 
 import { type Dispatch, type SetStateAction, useState } from "react"
-import { v4 as uuidv4 } from "uuid"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Plus, Trash2, GripVertical, ChevronDown, ChevronUp, FileText } from "lucide-react"
-import type { AuditTemplate, Page } from "@/types/audit-types"
+import type { AuditTemplate, Page, NewPage } from "@/types/audit-types"
 import { SectionsManager } from "@/app/dashboard/templates/components/sections-manager"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
@@ -21,19 +20,19 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
   const [activePage, setActivePage] = useState<string | null>(template.pages.length > 0 ? template.pages[0].id : null)
 
   const addNewPage = () => {
-    const newPage: Page = {
-      id: uuidv4(),
+    const tempId = `temp-${Date.now()}`
+    const newPage: NewPage = {
       template_id: template.id,
       title: `Page ${template.pages.length + 1}`,
-      description: "",
+      description: '',
       ordinal: template.pages.length + 1,
       sections: [],
     }
 
     const updatedTemplate = { ...template }
-    updatedTemplate.pages.push(newPage)
+    updatedTemplate.pages.push({ ...newPage, id: tempId } as Page)
     setTemplate(updatedTemplate)
-    setActivePage(newPage.id)
+    setActivePage(tempId)
   }
 
   const updatePage = (pageId: string, field: keyof Page, value: string) => {

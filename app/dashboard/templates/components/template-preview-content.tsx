@@ -23,6 +23,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { ImageUpload } from './image-upload'
 
 interface TemplatePreviewContentProps {
   template: AuditTemplate
@@ -32,6 +33,13 @@ export function TemplatePreviewContent({
   template,
 }: TemplatePreviewContentProps) {
   const [currentPageIndex, setCurrentPageIndex] = useState(0)
+  const [imageAnswers, setImageAnswersState] = useState<Record<string, string>>(
+    {},
+  )
+
+  function setImageAnswers(id: string, value: string) {
+    setImageAnswersState((prev) => ({ ...prev, [id]: value }))
+  }
 
   if (!template.pages || template.pages.length === 0) {
     return (
@@ -152,7 +160,11 @@ export function TemplatePreviewContent({
                           )}
                         </div>
                         <div className="pl-0">
-                          {renderQuestionInput(question)}
+                          {renderQuestionInput(
+                            question,
+                            imageAnswers,
+                            setImageAnswers,
+                          )}
                         </div>
                       </div>
                     ))}
@@ -187,7 +199,11 @@ export function TemplatePreviewContent({
   )
 }
 
-function renderQuestionInput(question: Question) {
+function renderQuestionInput(
+  question: Question,
+  imageAnswers: Record<string, string>,
+  setImageAnswers: (id: string, value: string) => void,
+) {
   switch (question.field_type) {
     case 'BOOLEAN':
       return (
@@ -220,16 +236,11 @@ function renderQuestionInput(question: Question) {
 
     case 'PHOTO':
       return (
-        <div className="flex flex-col gap-2">
-          <div className="rounded-md border-2 border-dashed p-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              Click to upload or drag and drop
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              PNG, JPG or JPEG (max. 5MB)
-            </p>
-          </div>
-        </div>
+        <ImageUpload
+          value={imageAnswers[String(question.id)] || ''}
+          onChange={(img) => setImageAnswers(String(question.id), img)}
+          label="Upload Image"
+        />
       )
 
     case 'NUMBER':

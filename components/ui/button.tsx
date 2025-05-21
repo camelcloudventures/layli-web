@@ -47,6 +47,19 @@ function Button({
   }) {
   const Comp = asChild ? Slot : "button"
 
+  // Dev warning for invalid usage
+  if (
+    process.env.NODE_ENV !== "production" &&
+    asChild &&
+    React.isValidElement(React.Children.only(props.children)) &&
+    (React.Children.only(props.children) as React.ReactElement).type === "button"
+  ) {
+    // eslint-disable-next-line no-console
+    console.error(
+      "Button: Do not use <Button asChild> with a <button> child. Use <a>, <span>, or another element instead."
+    )
+  }
+
   return (
     <Comp
       data-slot="button"

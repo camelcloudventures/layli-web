@@ -1,7 +1,6 @@
 "use client"
 
 import { type Dispatch, type SetStateAction, useState } from "react"
-import { v4 as uuidv4 } from "uuid"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -9,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Trash2, GripVertical, ChevronDown, ChevronUp, Plus, HelpCircle } from "lucide-react"
-import type { AuditTemplate, Page, Section, Question } from "@/types/audit-types"
+import type { AuditTemplate, Page, Section, Question, NewQuestion } from "@/types/audit-types"
 import { ResponseOptionsManager } from "@/app/dashboard/templates/components/response-options-manager"
 
 interface QuestionsManagerProps {
@@ -23,8 +22,8 @@ export function QuestionsManager({ template, setTemplate, page, section }: Quest
   const [expandedQuestions, setExpandedQuestions] = useState<string[]>([])
 
   const addNewQuestion = () => {
-    const newQuestion: Question = {
-      id: uuidv4(),
+    const tempId = `temp-${Date.now()}`
+    const newQuestion: NewQuestion = {
       page_id: page.id,
       section_id: section.id,
       text: "New question?",
@@ -43,16 +42,20 @@ export function QuestionsManager({ template, setTemplate, page, section }: Quest
       const sectionIndex = updatedTemplate.pages[pageIndex].sections.findIndex((s) => s.id === section.id)
 
       if (sectionIndex !== -1) {
-        updatedTemplate.pages[pageIndex].sections[sectionIndex].questions.push(newQuestion)
+        updatedTemplate.pages[pageIndex].sections[sectionIndex].questions.push({ ...newQuestion, id: tempId } as Question)
         setTemplate(updatedTemplate)
 
         // Expand the newly added question
-        setExpandedQuestions([...expandedQuestions, newQuestion.id])
+        setExpandedQuestions([...expandedQuestions, tempId])
       }
     }
   }
 
-  const updateQuestion = (questionId: string, field: keyof Question, value: any) => {
+  const updateQuestion = (
+    questionId: string,
+    field: keyof Question,
+    value: string | boolean | "BOOLEAN" | "TEXT" | "DATE" | "PHOTO" | "NUMBER" | "SELECT" | "MULTI_SELECT"
+  ) => {
     const updatedTemplate = { ...template }
     const pageIndex = updatedTemplate.pages.findIndex((p) => p.id === page.id)
 

@@ -1,7 +1,6 @@
 'use client'
 
 import type { Dispatch, SetStateAction } from 'react'
-import { v4 as uuidv4 } from 'uuid'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,6 +12,7 @@ import type {
   Section,
   Question,
   ResponseOption,
+  NewResponseOption,
 } from '@/types/audit-types'
 
 interface ResponseOptionsManagerProps {
@@ -31,8 +31,8 @@ export function ResponseOptionsManager({
   question,
 }: ResponseOptionsManagerProps) {
   const addResponseOption = () => {
-    const newOption: ResponseOption = {
-      id: uuidv4(),
+    const tempId = `temp-${Date.now()}`
+    const newOption: NewResponseOption = {
       question_id: question.id,
       label: 'New Option',
       code: '',
@@ -65,7 +65,10 @@ export function ResponseOptionsManager({
             targetQuestion.response_options = []
           }
 
-          targetQuestion.response_options.push(newOption)
+          targetQuestion.response_options.push({
+            ...newOption,
+            id: tempId,
+          } as ResponseOption)
           setTemplate(updatedTemplate)
         }
       }
@@ -180,7 +183,7 @@ export function ResponseOptionsManager({
         </div>
       ) : (
         <div className="space-y-2">
-          {question.response_options?.map((option, index) => (
+          {question.response_options?.map((option) => (
             <div
               key={option.id}
               className="flex items-center gap-2 rounded-md border p-2"

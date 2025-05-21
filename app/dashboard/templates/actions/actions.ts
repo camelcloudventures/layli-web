@@ -1,6 +1,6 @@
 'use server'
 
-import { GET, POST } from '@/app/backend/apiMethods'
+import { DELETE, GET, POST, UPDATE } from '@/app/backend/apiMethods'
 import type { AuditTemplate, TemplatesResponse } from '@/lib/types/audit-types'
 
 export type AuditTemplateApiResponse =
@@ -8,8 +8,12 @@ export type AuditTemplateApiResponse =
   | { data: AuditTemplate }
   | null
 
-export async function getTemplates(): Promise<TemplatesResponse | null> {
-  return await GET<TemplatesResponse>('/audit-template/get', ['templates'])
+export async function getTemplates(
+  page: number = 1,
+): Promise<TemplatesResponse | null> {
+  return await GET<TemplatesResponse>(`/audit-template/get?page=${page}`, [
+    'templates',
+  ])
 }
 
 export async function getTemplate(
@@ -20,20 +24,19 @@ export async function getTemplate(
   ])
 }
 
-export async function createTemplate(formData: FormData) {
+export async function createTemplate(formData: FormData, createdBy: string) {
   try {
     const title = formData.get('title') as string
     const description = formData.get('description') as string
     const photo = formData.get('photo') as string
     const pages = JSON.parse(formData.get('pages') as string)
-    const id = formData.get('id') as string
 
     const templateData = {
-      id,
       title,
       description,
       photo,
       pages,
+      createdBy,
     }
 
     console.log('templateData', templateData)
@@ -51,10 +54,14 @@ export async function createTemplate(formData: FormData) {
   }
 }
 
-// export async function updateTemplate(template: Template) {
-//   return await UPDATE('/templates', template, ['templates'])
-// }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function updateTemplate(template: any) {
+  return await UPDATE(`/audit-template/update/${template.id}`, template, [
+    'templates',
+  ])
+}
 
-// export async function deleteTemplate(template: Template) {
-//   return await DELETE('/templates', template, ['templates'])
-// }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function deleteTemplate(template: any) {
+  return await DELETE('/audit-template/delete', template, ['templates'])
+}

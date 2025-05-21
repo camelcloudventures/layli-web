@@ -1,13 +1,12 @@
 "use client"
 
 import { type Dispatch, type SetStateAction, useState } from "react"
-import { v4 as uuidv4 } from "uuid"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Plus, Trash2, GripVertical, ChevronDown, ChevronUp, LayoutGrid } from "lucide-react"
-import type { AuditTemplate, Page, Section } from "@/types/audit-types"
+import type { AuditTemplate, Page, Section, NewSection } from "@/types/audit-types"
 import { QuestionsManager } from "@/app/dashboard/templates/components/questions-manager"
 
 interface SectionsManagerProps {
@@ -20,8 +19,8 @@ export function SectionsManager({ template, setTemplate, page }: SectionsManager
   const [openSections, setOpenSections] = useState<string[]>([])
 
   const addNewSection = () => {
-    const newSection: Section = {
-      id: uuidv4(),
+    const tempId = `temp-${Date.now()}`
+    const newSection: NewSection = {
       page_id: page.id,
       title: `Section ${page.sections.length + 1}`,
       ordinal: page.sections.length + 1,
@@ -32,9 +31,9 @@ export function SectionsManager({ template, setTemplate, page }: SectionsManager
     const pageIndex = updatedTemplate.pages.findIndex((p) => p.id === page.id)
 
     if (pageIndex !== -1) {
-      updatedTemplate.pages[pageIndex].sections.push(newSection)
+      updatedTemplate.pages[pageIndex].sections.push({ ...newSection, id: tempId } as Section)
       setTemplate(updatedTemplate)
-      setOpenSections([...openSections, newSection.id])
+      setOpenSections([...openSections, tempId])
     }
   }
 

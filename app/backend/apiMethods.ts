@@ -42,7 +42,11 @@ export async function getAccessToken(): Promise<string | null> {
   return token
 }
 
-export async function UPDATE<T>(url: string, data: T): Promise<T | null> {
+export async function UPDATE<T>(
+  url: string,
+  data: T,
+  tags?: string[],
+): Promise<T | null> {
   try {
     const accessToken = await getAccessToken()
     if (!accessToken) {
@@ -58,6 +62,7 @@ export async function UPDATE<T>(url: string, data: T): Promise<T | null> {
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify(data),
+      next: tags ? { tags } : undefined,
     })
     const rawResponse = await response.text()
     if (response.headers.get('content-type')?.includes('application/json')) {
@@ -160,6 +165,46 @@ export async function GET<T>(url: string, tags?: string[]): Promise<T | null> {
     return 'Unexpected response format'
   } catch (error) {
     console.error('GET request failed:', error)
+    return null
+  }
+}
+
+export async function DELETE<T>(
+  url: string,
+  data: T,
+  tags?: string[],
+): Promise<T | null> {
+  try {
+    const accessToken = await getAccessToken()
+    if (!accessToken) {
+      //@ts-expect-error --need to fix this
+      return { error: 'You are not logged in' }
+    }
+
+    const thisUrl = `${baseUrl}/api${url}`
+    const response = await fetch(thisUrl, {
+      method: 'DELETE',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(data),
+      next: tags ? { tags } : undefined,
+    })
+    const rawResponse = await response.text()
+
+    if (response.headers.get('content-type')?.includes('application/json')) {
+      const jsonResponse = JSON.parse(rawResponse)
+      if (!response.ok) {
+        return jsonResponse
+      }
+      return jsonResponse
+    }
+
+    // @ts-expect-error --need to fix this
+    return 'Unexpected response format'
+  } catch (error) {
+    console.error('DELETE request failed:', error)
     return null
   }
 }

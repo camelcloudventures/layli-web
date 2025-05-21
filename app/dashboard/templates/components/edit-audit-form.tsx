@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { createTemplate } from '../../actions/actions'
+import { updateTemplate } from '@/app/dashboard/templates/actions/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,27 +15,25 @@ import {
   CardDescription,
 } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { PagesManager } from '../../components/pages-manager'
+import { PagesManager } from '@/app/dashboard/templates/components/pages-manager'
 import { toast } from 'sonner'
-import { TemplatePreview } from '../../components/template-preview'
+import { TemplatePreview } from '@/app/dashboard/templates/components/template-preview'
 import Image from 'next/image'
 import { Loader2 } from 'lucide-react'
-import { useAuth } from '@/lib/context/auth-provider'
-import { AuditTemplate } from '@/types/audit-types'
-import { omit } from 'lodash'
+import type { AuditTemplate } from '@/types/audit-types'
 
-export default function CreateAuditForm() {
+interface EditAuditFormProps {
+  template: AuditTemplate
+}
+
+export default function EditAuditForm({
+  template: initialTemplate,
+}: EditAuditFormProps) {
   const router = useRouter()
-  const { user } = useAuth()
+  // const { user } = useAuth() // not used
   const [activeTab, setActiveTab] = useState('details')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [template, setTemplate] = useState<AuditTemplate>({
-    id: `temp-${Date.now()}`,
-    title: '',
-    description: '',
-    photo: '',
-    pages: [],
-  })
+  const [template, setTemplate] = useState<AuditTemplate>(initialTemplate)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   function handleInputChange(
@@ -66,46 +64,38 @@ export default function CreateAuditForm() {
     fileInputRef.current?.click()
   }
 
-  function handleGeneratePlaceholder() {
-    // You can replace this with a real placeholder generator if needed
-    setTemplate((prev) => ({
-      ...prev,
-      photo: 'https://placehold.co/600x400?text=Audit+Template',
-    }))
-  }
-
   async function handleSubmit(formData: FormData) {
     setIsSubmitting(true)
-
+    // For update, keep all IDs
     const updatePages = template.pages.map((page) => ({
-      ...omit(page, ['id', 'template_id']),
+      ...page,
       sections: page.sections.map((section) => ({
-        ...omit(section, ['id']),
+        ...section,
         questions: section.questions.map((question) => ({
-          ...omit(question, ['id']),
-          response_options:
-            question.response_options?.map((option) =>
-              omit(option, ['id', 'question_id']),
-            ) ?? [],
+          ...question,
+          response_options: question.response_options ?? [],
         })),
       })),
     }))
-
     try {
+      formData.set('id', template.id)
       formData.set('title', template.title ?? '')
       formData.set('description', template.description ?? '')
       formData.set('photo', template.photo ?? '')
       formData.set('pages', JSON.stringify(updatePages))
-
-      const createdBy = user?.id ?? ''
-      const result = await createTemplate(formData, createdBy)
-      console.log('result', result)
+      const result = await updateTemplate({
+        id: template.id,
+        title: template.title,
+        description: template.description,
+        photo: template.photo,
+        pages: updatePages,
+      })
       if (result && result.error) {
         toast.error(result.error)
         return
       }
       if (result && 'success' in result) {
-        toast.success(String(result.success))
+        toast.success('Template updated successfully!')
         router.push('/dashboard/templates')
       }
     } finally {
@@ -124,9 +114,9 @@ export default function CreateAuditForm() {
       <TabsContent value="details">
         <Card>
           <CardHeader>
-            <CardTitle>Template Details</CardTitle>
+            <CardTitle>Edit Template Details</CardTitle>
             <CardDescription>
-              Define the basic information about your audit template
+              Update the basic information about your audit template
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -213,14 +203,6 @@ export default function CreateAuditForm() {
                         >
                           <span className="mr-2">&#8682;</span> Upload
                         </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleGeneratePlaceholder}
-                        >
-                          <span className="mr-2">&#128444;</span> Generate
-                          Placeholder
-                        </Button>
                       </div>
                     </div>
                   </>
@@ -253,9 +235,9 @@ export default function CreateAuditForm() {
       <TabsContent value="pages">
         <Card>
           <CardHeader>
-            <CardTitle>Pages & Questions</CardTitle>
+            <CardTitle>Edit Pages & Questions</CardTitle>
             <CardDescription>
-              Build the structure of your audit template
+              Update the structure of your audit template
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -309,7 +291,7 @@ export default function CreateAuditForm() {
                     !template.title ||
                     template.pages.length === 0
                   }
-                  aria-label="Create Template"
+                  aria-label="Update Template"
                 >
                   {isSubmitting ? (
                     <>
@@ -317,10 +299,10 @@ export default function CreateAuditForm() {
                         className="mr-2 h-4 w-4 animate-spin"
                         aria-hidden="true"
                       />
-                      Creating...
+                      Updating...
                     </>
                   ) : (
-                    'Create Template'
+                    'Update Template'
                   )}
                 </Button>
               </form>

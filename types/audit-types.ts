@@ -136,3 +136,59 @@ export interface AuditInstance {
 }
 
 export type Template = AuditTemplate
+
+// Types for creating new items (without IDs)
+export interface NewResponseOption {
+  question_id: string
+  label: string
+  code: string
+  sort_order: number
+  score: number
+  is_flagged: boolean
+  color: string
+}
+
+export interface NewQuestion {
+  page_id: string
+  section_id: string
+  text: string
+  required: boolean
+  multiple_selection: boolean
+  is_flagged: boolean
+  field_type:
+    | 'BOOLEAN'
+    | 'TEXT'
+    | 'DATE'
+    | 'PHOTO'
+    | 'NUMBER'
+    | 'SELECT'
+    | 'MULTI_SELECT'
+  ordinal: number
+  response_options?: NewResponseOption[]
+}
+
+export interface NewSection {
+  page_id: string
+  title: string
+  ordinal: number
+  questions: NewQuestion[]
+}
+
+export interface NewPage {
+  template_id: string
+  title: string
+  description: string
+  photo?: string
+  ordinal: number
+  sections: NewSection[]
+}
+
+export interface NewAuditTemplate {
+  title: string
+  description: string
+  photo?: string
+  pages: NewPage[]
+  created_at?: Date | string
+  updated_at?: Date | string
+  created_by?: string
+}

@@ -6,12 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, GripVertical, ChevronDown, ChevronUp, FileText } from "lucide-react"
+import { Plus, GripVertical, ChevronDown, ChevronUp, FileText, Trash2 } from "lucide-react"
 import type { AuditTemplate, Page, NewPage } from "@/types/audit-types"
 import { SectionsManager } from "@/app/dashboard/templates/components/sections-manager"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { deletePage } from '@/app/dashboard/templates/actions/actions'
-import { toast } from 'sonner'
 
 interface PagesManagerProps {
   template: AuditTemplate
@@ -50,17 +48,10 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
     }
   }
 
-  const handleDeletePage = async (pageId: string) => {
-    if (!window.confirm('Are you sure you want to delete this page? This action cannot be undone.')) return
-    try {
-      await deletePage(pageId, template.id)
-      toast.success('Page deleted successfully!')
-      const updatedTemplate = { ...template, pages: template.pages.filter(page => page.id !== pageId) }
-      setTemplate(updatedTemplate)
-      setActivePage(updatedTemplate.pages.length > 0 ? updatedTemplate.pages[0].id : null)
-    } catch {
-      toast.error('Failed to delete page')
-    }
+  const handleDeletePage = (pageId: string) => {
+    const updatedTemplate = { ...template, pages: template.pages.filter(page => page.id !== pageId) }
+    setTemplate(updatedTemplate)
+    setActivePage(updatedTemplate.pages.length > 0 ? updatedTemplate.pages[0].id : null)
   }
 
   const movePageUp = (pageId: string) => {
@@ -175,12 +166,15 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
                       </Button>
                       <Button
                         type="button"
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeletePage(page.id)}
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDeletePage(page.id)
+                        }}
                         aria-label="Delete Page"
                       >
-                        Delete
+                        <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
                   </div>

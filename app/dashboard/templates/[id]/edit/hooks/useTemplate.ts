@@ -37,7 +37,7 @@ export function useTemplate(initialTemplate: Template) {
         return false
       }
       router.push('/dashboard/templates')
-      toast.success(result.message)
+      toast.success(result.success)
       return true
     } catch {
       toast.error('Failed to update template')

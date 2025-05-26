@@ -7,16 +7,15 @@ import {
 } from '@/components/ui/card'
 import { TemplateSearch } from './components/template-search'
 import CreateAuditBtn from './components/create-audit-btn'
+import { EmptyTemplatesState } from './components/empty-templates-state'
+
 interface PageProps {
   searchParams: { search?: string; page?: string }
 }
 
 export default async function AuditTemplatesPage({ searchParams }: PageProps) {
   const page = Number(searchParams.page) || 1
-
-  console.log('page', page)
   const response = await getTemplates(page)
-  console.log('response', response?.pagination)
 
   if (!response) {
     return (
@@ -30,6 +29,8 @@ export default async function AuditTemplatesPage({ searchParams }: PageProps) {
       </Card>
     )
   }
+
+  const hasTemplates = response.data && response.data.length > 0
 
   return (
     <div className="space-y-6">
@@ -47,13 +48,16 @@ export default async function AuditTemplatesPage({ searchParams }: PageProps) {
         <CreateAuditBtn />
       </div>
 
-      <TemplateSearch
-        templates={response.data}
-        searchParams={searchParams}
-        page={page}
-        totalPages={response.pagination.totalPages}
-      />
-      {/* <Pagination page={page} totalPages={response.pagination.totalPages} /> */}
+      {hasTemplates ? (
+        <TemplateSearch
+          templates={response.data}
+          searchParams={searchParams}
+          page={page}
+          totalPages={response.pagination.totalPages}
+        />
+      ) : (
+        <EmptyTemplatesState />
+      )}
     </div>
   )
 }

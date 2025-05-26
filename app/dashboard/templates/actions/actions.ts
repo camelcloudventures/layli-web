@@ -72,9 +72,7 @@ export async function deleteTemplate(templateId: string) {
     'templates',
   ])
 
-  // Revalidate the templates path
-  revalidatePath('/dashboard/templates')
-
+  revalidatePath(`/dashboard/templates/${templateId}/preview`)
   return res
 }
 

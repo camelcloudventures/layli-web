@@ -62,6 +62,7 @@ export async function UPDATE<T>(
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify(data),
+      cache: 'no-store',
       next: tags ? { tags } : undefined,
     })
     const rawResponse = await response.text()
@@ -112,6 +113,7 @@ export async function POST<T>(
         ...(token && { Authorization: `Bearer ${token}` }),
       },
       body: JSON.stringify(data),
+      cache: 'no-store',
       next: tags ? { tags } : undefined,
     })
     const rawResponse = await response.text()
@@ -148,6 +150,7 @@ export async function GET<T>(url: string, tags?: string[]): Promise<T | null> {
         Accept: 'application/json',
         Authorization: `Bearer ${accessToken}`,
       },
+      cache: 'no-store',
       next: tags ? { tags } : undefined,
     })
     const rawResponse = await response.text()
@@ -188,6 +191,7 @@ export async function DELETE<T>(
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify(data),
+      cache: 'no-store',
       next: tags ? { tags } : undefined,
     })
     const rawResponse = await response.text()

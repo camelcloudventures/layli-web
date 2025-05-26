@@ -1,46 +1,31 @@
-'use client'
-
-import { useState } from 'react'
-// import Image from 'next/image'
-import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
 import type { AuditTemplate, Question } from '@/lib/types/audit-types'
-import {
-  ChevronLeft,
-  ChevronRight,
-  AlertTriangle,
-  FileText,
-} from 'lucide-react'
+import { AlertTriangle, FileText } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { ImageUpload } from './image-upload'
+import { DeletePageButton } from './delete-controls/delete-page-button'
+import { DeleteSectionButton } from './delete-controls/delete-section-button'
+import { DeleteQuestionButton } from './delete-controls/delete-question-button'
 
 interface TemplatePreviewContentProps {
   template: AuditTemplate
+  currentPageIndex?: number
 }
 
 export function TemplatePreviewContent({
   template,
+  currentPageIndex = 0,
 }: TemplatePreviewContentProps) {
-  const [currentPageIndex, setCurrentPageIndex] = useState(0)
-  const [imageAnswers, setImageAnswersState] = useState<Record<string, string>>(
-    {},
-  )
-
-  function setImageAnswers(id: string, value: string) {
-    setImageAnswersState((prev) => ({ ...prev, [id]: value }))
-  }
-
   if (!template.pages || template.pages.length === 0) {
     return (
       <div className="rounded-xl border p-8 text-center bg-white shadow">
@@ -56,63 +41,28 @@ export function TemplatePreviewContent({
   const currentPage = template.pages[currentPageIndex]
   const pageCount = template.pages.length
 
-  const goToNextPage = () => {
-    if (currentPageIndex < pageCount - 1)
-      setCurrentPageIndex(currentPageIndex + 1)
-  }
-  const goToPrevPage = () => {
-    if (currentPageIndex > 0) setCurrentPageIndex(currentPageIndex - 1)
-  }
-
   return (
     <div className="space-y-6">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-lg font-medium">
           Template Preview: {template.title}
         </h3>
-
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            Page {currentPageIndex + 1} of {pageCount}
-          </span>
-          <div className="flex">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={goToPrevPage}
-              disabled={currentPageIndex === 0}
-              className="rounded-r-none"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={goToNextPage}
-              disabled={currentPageIndex === pageCount - 1}
-              className="rounded-l-none"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <span className="text-sm text-muted-foreground">
+          Page {currentPageIndex + 1} of {pageCount}
+        </span>
       </div>
 
       <Card className="overflow-hidden rounded-xl shadow bg-white p-8">
-        {/* {currentPage.photo && (
-          <div className="relative h-48 w-full">
-            <Image
-              src={currentPage.photo || '/placeholder.svg'}
-              alt={currentPage.title || 'Page cover'}
-              fill
-              className="object-cover"
+        <CardHeader className="p-0 mb-6">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-2xl font-bold mb-1">
+              {currentPage.title}
+            </CardTitle>
+            <DeletePageButton
+              pageId={String(currentPage.id)}
+              templateId={String(template.id)}
             />
           </div>
-        )} */}
-        <CardHeader className="p-0 mb-6">
-          <CardTitle className="text-2xl font-bold mb-1">
-            {currentPage.title}
-          </CardTitle>
           {currentPage.description && (
             <CardDescription>{currentPage.description}</CardDescription>
           )}
@@ -128,10 +78,12 @@ export function TemplatePreviewContent({
           ) : (
             currentPage.sections.map((section) => (
               <div key={section.id} className="space-y-4">
-                <div>
-                  <h4 className="text-xl font-bold mb-1 flex items-center">
-                    {section.title}
-                  </h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xl font-bold mb-1">{section.title}</h4>
+                  <DeleteSectionButton
+                    sectionId={String(section.id)}
+                    pageId={String(currentPage.id)}
+                  />
                 </div>
                 {section.questions.length === 0 ? (
                   <div className="rounded-md border border-dashed p-4 text-center">
@@ -143,28 +95,30 @@ export function TemplatePreviewContent({
                   <div className="space-y-8">
                     {section.questions.map((question) => (
                       <div key={question.id} className="space-y-2">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Label className="text-base font-semibold">
-                            {question.text}
-                            {question.required && (
-                              <span className="text-red-500 font-bold ml-1">
-                                *
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <Label className="text-base font-semibold">
+                              {question.text}
+                              {question.required && (
+                                <span className="text-red-500 font-bold ml-1">
+                                  *
+                                </span>
+                              )}
+                            </Label>
+                            {question.is_flagged && (
+                              <span className="ml-2 flex items-center gap-1 rounded bg-yellow-100 px-2 py-0.5 text-xs font-semibold text-yellow-800">
+                                <AlertTriangle className="h-3 w-3" />
+                                Critical
                               </span>
                             )}
-                          </Label>
-                          {question.is_flagged && (
-                            <span className="ml-auto flex items-center gap-1 rounded bg-yellow-100 px-2 py-0.5 text-xs font-semibold text-yellow-800">
-                              <AlertTriangle className="h-3 w-3" />
-                              Critical
-                            </span>
-                          )}
+                          </div>
+                          <DeleteQuestionButton
+                            questionId={String(question.id)}
+                            sectionId={String(question.section_id)}
+                          />
                         </div>
                         <div className="pl-0">
-                          {renderQuestionInput(
-                            question,
-                            imageAnswers,
-                            setImageAnswers,
-                          )}
+                          {renderQuestionInput(question)}
                         </div>
                       </div>
                     ))}
@@ -174,36 +128,12 @@ export function TemplatePreviewContent({
             ))
           )}
         </CardContent>
-
-        <CardFooter className="flex justify-between border-t p-0 pt-6 mt-8">
-          <Button
-            variant="outline"
-            onClick={goToPrevPage}
-            disabled={currentPageIndex === 0}
-            className="min-w-[120px]"
-          >
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Previous
-          </Button>
-          <Button
-            onClick={goToNextPage}
-            disabled={currentPageIndex === pageCount - 1}
-            className="min-w-[120px] bg-muted text-muted-foreground"
-          >
-            Next
-            <ChevronRight className="ml-2 h-4 w-4" />
-          </Button>
-        </CardFooter>
       </Card>
     </div>
   )
 }
 
-function renderQuestionInput(
-  question: Question,
-  imageAnswers: Record<string, string>,
-  setImageAnswers: (id: string, value: string) => void,
-) {
+function renderQuestionInput(question: Question) {
   switch (question.field_type) {
     case 'BOOLEAN':
       return (
@@ -222,7 +152,6 @@ function renderQuestionInput(
           </div>
         </div>
       )
-
     case 'TEXT':
       return (
         <Textarea
@@ -230,22 +159,12 @@ function renderQuestionInput(
           className="min-h-[100px]"
         />
       )
-
     case 'DATE':
       return <Input type="date" />
-
     case 'PHOTO':
-      return (
-        <ImageUpload
-          value={imageAnswers[String(question.id)] || ''}
-          onChange={(img) => setImageAnswers(String(question.id), img)}
-          label="Upload Image"
-        />
-      )
-
+      return <ImageUpload value={''} onChange={() => {}} label="Upload Image" />
     case 'NUMBER':
       return <Input type="number" placeholder="Enter a number" />
-
     case 'SELECT':
       if (
         !question.response_options ||
@@ -257,7 +176,6 @@ function renderQuestionInput(
           </p>
         )
       }
-
       return (
         <RadioGroup>
           {question.response_options.map((option) => (
@@ -266,20 +184,13 @@ function renderQuestionInput(
                 value={String(option.id)}
                 id={`${question.id}-${option.id}`}
               />
-              <Label
-                htmlFor={`${question.id}-${option.id}`}
-                className="flex items-center gap-2"
-              >
+              <Label htmlFor={`${question.id}-${option.id}`}>
                 {option.label}
-                {option.is_flagged && (
-                  <AlertTriangle className="h-3 w-3 text-amber-500" />
-                )}
               </Label>
             </div>
           ))}
         </RadioGroup>
       )
-
     case 'MULTI_SELECT':
       if (
         !question.response_options ||
@@ -291,26 +202,18 @@ function renderQuestionInput(
           </p>
         )
       }
-
       return (
         <div className="space-y-2">
           {question.response_options.map((option) => (
             <div key={option.id} className="flex items-center space-x-2">
               <Checkbox id={`${question.id}-${option.id}`} />
-              <Label
-                htmlFor={`${question.id}-${option.id}`}
-                className="flex items-center gap-2"
-              >
+              <Label htmlFor={`${question.id}-${option.id}`}>
                 {option.label}
-                {option.is_flagged && (
-                  <AlertTriangle className="h-3 w-3 text-amber-500" />
-                )}
               </Label>
             </div>
           ))}
         </div>
       )
-
     default:
       return (
         <p className="text-sm text-muted-foreground">

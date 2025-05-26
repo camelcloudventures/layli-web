@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, ReactNode } from 'react'
 import { Loader2 } from 'lucide-react'
 import {
   AlertDialog,
@@ -23,6 +23,7 @@ interface DeleteDialogProps {
   onSuccess?: () => void
   className?: string
   variant?: 'default' | 'destructive'
+  trigger?: ReactNode
 }
 
 export function DeleteDialog({
@@ -33,6 +34,7 @@ export function DeleteDialog({
   onSuccess,
   className,
   variant = 'destructive',
+  trigger,
 }: DeleteDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
@@ -56,9 +58,13 @@ export function DeleteDialog({
       }}
     >
       <AlertDialogTrigger asChild>
-        <Button variant={variant} className={className}>
-          {triggerText}
-        </Button>
+        {trigger ? (
+          <span onClick={() => setIsOpen(true)}>{trigger}</span>
+        ) : (
+          <Button variant={variant} className={className}>
+            {triggerText}
+          </Button>
+        )}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

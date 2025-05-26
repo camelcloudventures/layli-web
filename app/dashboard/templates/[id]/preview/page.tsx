@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getTemplate } from '@/app/dashboard/templates/actions/actions'
-import { TemplatePreviewContent } from '@/app/dashboard/templates/components/template-preview-content'
+import { TemplatePreviewClient } from '@/app/dashboard/templates/components/template-preview-client'
 import { TemplatePreviewHeader } from '@/app/dashboard/templates/components/template-preview-header'
 import type { AuditTemplate } from '@/lib/types/audit-types'
 
@@ -36,7 +36,7 @@ export default async function TemplatePreviewPage({
           <CardTitle>Template Preview</CardTitle>
         </CardHeader>
         <CardContent>
-          <TemplatePreviewContent template={template} />
+          <TemplatePreviewClient template={template} />
         </CardContent>
       </Card>
     </div>

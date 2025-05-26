@@ -148,7 +148,6 @@ export async function GET<T>(url: string, tags?: string[]): Promise<T | null> {
         Accept: 'application/json',
         Authorization: `Bearer ${accessToken}`,
       },
-      cache: 'no-store',
       next: tags ? { tags } : undefined,
     })
     const rawResponse = await response.text()

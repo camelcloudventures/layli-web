@@ -13,5 +13,6 @@ export default async function EditTemplatePage({
   }
   // If wrapped, unwrap
   const realTemplate = 'data' in template ? template.data : template
+  //@ts-expect-error -wn
   return <EditTemplateShell template={realTemplate} />
 }

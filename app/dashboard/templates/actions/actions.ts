@@ -1,6 +1,7 @@
 'use server'
 
 import { DELETE, GET, POST, UPDATE } from '@/app/backend/apiMethods'
+import { revalidatePath } from 'next/cache'
 import type { AuditTemplate, TemplatesResponse } from '@/lib/types/audit-types'
 
 export type AuditTemplateApiResponse =
@@ -9,7 +10,7 @@ export type AuditTemplateApiResponse =
   | null
 
 export async function getTemplates(
-  page: number = 1,
+  page: number,
 ): Promise<TemplatesResponse | null> {
   return await GET<TemplatesResponse>(`/audit-template/get?page=${page}`, [
     'templates',
@@ -39,13 +40,12 @@ export async function createTemplate(formData: FormData, createdBy: string) {
       createdBy,
     }
 
-    console.log('templateData', templateData)
-
     const res = await POST('/audit-template/create', templateData, true, [
       'templates',
     ])
 
-    console.log('res', res)
+    // Revalidate the templates path
+    revalidatePath('/dashboard/templates')
 
     return res
   } catch (error) {
@@ -56,42 +56,63 @@ export async function createTemplate(formData: FormData, createdBy: string) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function updateTemplate(template: any) {
-  return await UPDATE(`/audit-template/update/${template.id}`, template, [
+  const res = await UPDATE(`/audit-template/update/${template.id}`, template, [
     'templates',
   ])
+
+  // Revalidate the template path
+  revalidatePath(`/dashboard/templates/preview/${template.id}`)
+  revalidatePath('/dashboard/templates')
+
+  return res
 }
 
 export async function deleteTemplate(templateId: string) {
-  console.log('templateId', templateId)
-  return await DELETE(`/audit-template/delete/${templateId}`, {}, ['templates'])
+  const res = await DELETE(`/audit-template/delete/${templateId}`, {}, [
+    'templates',
+  ])
+
+  // Revalidate the templates path
+  revalidatePath('/dashboard/templates')
+
+  return res
 }
 
 export async function deletePage(pageId: string, templateId: string) {
-  console.log('pageId', pageId)
-  console.log('templateId', templateId)
-  return await DELETE(
+  const res = await DELETE(
     `/audit-template/delete/page/${pageId}/${templateId}`,
     {},
     ['templates'],
   )
+
+  // Revalidate the template path
+  revalidatePath(`/dashboard/templates/preview/${templateId}`)
+
+  return res
 }
 
 export async function deleteSection(sectionId: string, pageId: string) {
-  console.log('sectionId', sectionId)
-  console.log('pageId', pageId)
-  return await DELETE(
+  const res = await DELETE(
     `/audit-template/delete/section/${sectionId}/${pageId}`,
     {},
     ['templates'],
   )
+
+  // Revalidate all template paths since we don't know the template ID here
+  revalidatePath('/dashboard/templates', 'layout')
+
+  return res
 }
 
 export async function deleteQuestion(questionId: string, sectionId: string) {
-  console.log('questionId', questionId)
-  console.log('sectionId', sectionId)
-  return await DELETE(
+  const res = await DELETE(
     `/audit-template/delete/question/${questionId}/${sectionId}`,
     {},
     ['templates'],
   )
+
+  // Revalidate all template paths since we don't know the template ID here
+  revalidatePath('/dashboard/templates', 'layout')
+
+  return res
 }

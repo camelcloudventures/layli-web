@@ -24,7 +24,6 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { ImageUpload } from './image-upload'
-import { TemplatePreviewActions } from './template-preview-actions'
 
 interface TemplatePreviewContentProps {
   template: AuditTemplate
@@ -111,21 +110,12 @@ export function TemplatePreviewContent({
           </div>
         )} */}
         <CardHeader className="p-0 mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-2xl font-bold mb-1">
-                {currentPage.title}
-              </CardTitle>
-              {currentPage.description && (
-                <CardDescription>{currentPage.description}</CardDescription>
-              )}
-            </div>
-            <TemplatePreviewActions
-              templateId={String(template.id)}
-              pageId={String(currentPage.id)}
-              type="page"
-            />
-          </div>
+          <CardTitle className="text-2xl font-bold mb-1">
+            {currentPage.title}
+          </CardTitle>
+          {currentPage.description && (
+            <CardDescription>{currentPage.description}</CardDescription>
+          )}
         </CardHeader>
 
         <CardContent className="space-y-8 p-0">
@@ -138,16 +128,10 @@ export function TemplatePreviewContent({
           ) : (
             currentPage.sections.map((section) => (
               <div key={section.id} className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div>
                   <h4 className="text-xl font-bold mb-1 flex items-center">
                     {section.title}
                   </h4>
-                  <TemplatePreviewActions
-                    templateId={String(template.id)}
-                    pageId={String(currentPage.id)}
-                    sectionId={String(section.id)}
-                    type="section"
-                  />
                 </div>
                 {section.questions.length === 0 ? (
                   <div className="rounded-md border border-dashed p-4 text-center">
@@ -168,21 +152,12 @@ export function TemplatePreviewContent({
                               </span>
                             )}
                           </Label>
-                          <div className="ml-auto flex items-center gap-2">
-                            {question.is_flagged && (
-                              <span className="flex items-center gap-1 rounded bg-yellow-100 px-2 py-0.5 text-xs font-semibold text-yellow-800">
-                                <AlertTriangle className="h-3 w-3" />
-                                Critical
-                              </span>
-                            )}
-                            <TemplatePreviewActions
-                              templateId={String(template.id)}
-                              pageId={String(currentPage.id)}
-                              sectionId={String(section.id)}
-                              questionId={String(question.id)}
-                              type="question"
-                            />
-                          </div>
+                          {question.is_flagged && (
+                            <span className="ml-auto flex items-center gap-1 rounded bg-yellow-100 px-2 py-0.5 text-xs font-semibold text-yellow-800">
+                              <AlertTriangle className="h-3 w-3" />
+                              Critical
+                            </span>
+                          )}
                         </div>
                         <div className="pl-0">
                           {renderQuestionInput(
@@ -272,6 +247,51 @@ function renderQuestionInput(
       return <Input type="number" placeholder="Enter a number" />
 
     case 'SELECT':
+      if (
+        !question.response_options ||
+        question.response_options.length === 0
+      ) {
+        return (
+          <p className="text-sm text-muted-foreground">
+            No options defined for this question
+          </p>
+        )
+      }
+
+      return (
+        <RadioGroup>
+          {question.response_options.map((option) => (
+            <div key={option.id} className="flex items-center space-x-2">
+              <RadioGroupItem
+                value={String(option.id)}
+                id={`${question.id}-${option.id}`}
+              />
+              <Label
+                htmlFor={`${question.id}-${option.id}`}
+                className="flex items-center gap-2"
+              >
+                {option.label}
+                {option.is_flagged && (
+                  <AlertTriangle className="h-3 w-3 text-amber-500" />
+                )}
+              </Label>
+            </div>
+          ))}
+        </RadioGroup>
+      )
+
+    case 'MULTI_SELECT':
+      if (
+        !question.response_options ||
+        question.response_options.length === 0
+      ) {
+        return (
+          <p className="text-sm text-muted-foreground">
+            No options defined for this question
+          </p>
+        )
+      }
+
       return (
         <div className="space-y-2">
           {question.response_options.map((option) => (

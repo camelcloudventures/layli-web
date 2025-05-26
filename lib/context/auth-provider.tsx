@@ -106,11 +106,11 @@ function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider value={value}>
-      <Suspense
+      {/* <Suspense
         fallback={<div className="w-full text-center py-8">Loading...</div>}
-      >
-        {children}
-      </Suspense>
+      > */}
+      {children}
+      {/* </Suspense> */}
     </AuthContext.Provider>
   )
 }

@@ -13,8 +13,10 @@ interface PageProps {
 
 export default async function AuditTemplatesPage({ searchParams }: PageProps) {
   const page = Number(searchParams.page) || 1
+
+  console.log('page', page)
   const response = await getTemplates(page)
-  // console.log('response', response?.pagination)
+  console.log('response', response?.pagination)
 
   if (!response) {
     return (

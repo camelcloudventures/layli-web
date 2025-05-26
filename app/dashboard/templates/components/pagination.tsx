@@ -10,6 +10,7 @@ interface PaginationProps {
 export default function Pagination({ page, totalPages }: PaginationProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  console.log('page', page)
 
   function goToPage(newPage: number) {
     const params = new URLSearchParams(searchParams.toString())

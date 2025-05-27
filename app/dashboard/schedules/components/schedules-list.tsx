@@ -11,6 +11,7 @@ import {
   FileText,
   MoreHorizontal,
   EditIcon,
+  Trash2Icon,
 } from 'lucide-react'
 import type { Schedule } from '@/lib/types/schedule-types'
 import {
@@ -33,6 +34,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ScheduleDetailsDialog } from './schedule-details-dialog'
+import { deleteSchedule } from '../actions/actions'
+import { DeleteDialog } from '@/components/ui/delete-dialog'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 export function SchedulesList({
   schedules,
@@ -55,6 +60,7 @@ export function SchedulesList({
     null,
   )
   const [detailsOpen, setDetailsOpen] = useState(false)
+  const router = useRouter()
 
   const filteredSchedules = useMemo(() => {
     if (!searchQuery.trim()) return schedules
@@ -94,6 +100,17 @@ export function SchedulesList({
         return 'text-green-600'
       default:
         return 'text-gray-600'
+    }
+  }
+
+  async function handleDelete(id: string) {
+    try {
+      await deleteSchedule(id)
+      toast.success('Schedule deleted successfully')
+      router.refresh()
+    } catch (error) {
+      console.error('Failed to delete schedule:', error)
+      toast.error('Failed to delete schedule')
     }
   }
 
@@ -141,6 +158,7 @@ export function SchedulesList({
           )}
         </DialogContent>
       </Dialog>
+
       <Input
         placeholder="Search schedules by title, site, assignee, template or frequency..."
         className="mt-2"
@@ -197,7 +215,24 @@ export function SchedulesList({
                         <EditIcon className="mr-2 h-4 w-4" />
                         Edit Schedule
                       </DropdownMenuItem>
-                      {/* Add Delete action here if needed */}
+                      <DropdownMenuItem
+                        className="text-red-500 hover:bg-red-500 hover:text-white focus:bg-red-600 focus:text-white"
+                        onSelect={(e) => {
+                          e.preventDefault()
+                          setDropdownOpenId(null)
+                          setSelectedSchedule(schedule)
+                          // Find and click the hidden delete button
+                          const deleteButton = document.querySelector(
+                            '[aria-label="Delete Schedule"]',
+                          ) as HTMLButtonElement
+                          if (deleteButton) {
+                            deleteButton.click()
+                          }
+                        }}
+                      >
+                        <Trash2Icon className="mr-2  focus:text-white h-4 w-4" />
+                        Delete Schedule
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -268,6 +303,22 @@ export function SchedulesList({
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
         schedule={selectedSchedule}
+      />
+      <DeleteDialog
+        title="Delete Schedule"
+        description="Are you sure you want to delete this schedule? This action cannot be undone."
+        onDelete={() => handleDelete(String(selectedSchedule?.id))}
+        trigger={
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="Delete Schedule"
+            className="hidden"
+          >
+            <Trash2Icon className="h-4 w-4 text-destructive" />
+          </Button>
+        }
       />
     </div>
   )

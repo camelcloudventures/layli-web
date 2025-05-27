@@ -1,6 +1,6 @@
 'use server'
 
-import { GET, POST, UPDATE } from '@/app/backend/apiMethods'
+import { DELETE, GET, POST, UPDATE } from '@/app/backend/apiMethods'
 import type { SchedulesResponse } from '@/lib/types/schedule-types'
 import { revalidateTag } from 'next/cache'
 import { createClient } from '@supabase/supabase-js'
@@ -84,4 +84,10 @@ export async function updateSchedule(formData: FormData) {
     console.error('Error updating schedule:', error)
     return { error: 'Failed to update schedule' }
   }
+}
+
+export async function deleteSchedule(id: string) {
+  const res = await DELETE(`/schedules/delete/${id}`, true, ['schedules'])
+  revalidateTag('schedules')
+  return res
 }

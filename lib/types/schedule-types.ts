@@ -1,6 +1,6 @@
-import type { AuditTemplate } from "./audit-types"
+export type Frequency = 'daily' | 'weekly' | 'monthly' | 'yearly'
 
-export type Frequency = "daily" | "weekly" | "monthly" | "yearly"
+export type Priority = 'low' | 'medium' | 'high'
 
 export interface User {
   id: string
@@ -10,21 +10,58 @@ export interface User {
 }
 
 export interface Site {
-  id: string
+  id: number | string
   name: string
-  address: string
+  address?: string
+  latitude?: number
+  longitude?: number
+}
+
+export interface Template {
+  id: number | string
+  title: string
+  photo?: string
+  created_at?: string
+  created_by?: string
+  description?: string
+}
+
+export interface Assignee {
+  id: string
+  full_name: string
+  email: string
+  image?: string
+  role?: string
+  created_at?: string
+  phone_number?: string | number
+  email_verified_at?: string | null
 }
 
 export interface Schedule {
-  id: string
+  id: number | string
   title: string
-  template_id: string
-  site_id: string
+  template_id: number | string
   assignee_id: string
   frequency: Frequency
-  template?: AuditTemplate
-  site?: Site
-  assignee?: User
-  nextAuditDate?: string
+  priority: Priority
+  site_id: number | string | null
   createdAt?: string
+  created_at?: string
+  site: Site | null
+  template: Template
+  assignee: Assignee
+  nextAuditDate?: string
+}
+
+export interface Pagination {
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+export interface SchedulesResponse {
+  success: string
+  data: Schedule[]
+  pagination: Pagination
 }

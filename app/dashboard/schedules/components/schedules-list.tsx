@@ -12,9 +12,32 @@ import {
   MoreHorizontal,
 } from 'lucide-react'
 import type { Schedule } from '@/lib/types/schedule-types'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { CreateScheduleForm } from './create-schedule-form'
+import type {
+  UserOption,
+  TemplateOption,
+  SiteOption,
+} from '../types/schedule-form-types'
 
-export function SchedulesList({ schedules }: { schedules: Schedule[] }) {
+export function SchedulesList({
+  schedules,
+  users,
+  templates,
+  sites,
+}: {
+  schedules: Schedule[]
+  users: UserOption[]
+  templates: TemplateOption[]
+  sites: SiteOption[]
+}) {
   const [searchQuery, setSearchQuery] = useState('')
+  const [open, setOpen] = useState(false)
 
   const filteredSchedules = useMemo(() => {
     if (!searchQuery.trim()) return schedules
@@ -23,7 +46,7 @@ export function SchedulesList({ schedules }: { schedules: Schedule[] }) {
       (schedule) =>
         schedule.title.toLowerCase().includes(query) ||
         schedule.site?.name?.toLowerCase().includes(query) ||
-        schedule.assignee?.name?.toLowerCase().includes(query) ||
+        schedule.assignee?.full_name?.toLowerCase().includes(query) ||
         schedule.template?.title?.toLowerCase().includes(query) ||
         schedule.frequency.toLowerCase().includes(query),
     )
@@ -66,8 +89,24 @@ export function SchedulesList({ schedules }: { schedules: Schedule[] }) {
             Manage audit schedules and timelines
           </p>
         </div>
-        <Button className="h-10">+ Create Schedule</Button>
+        <Button className="h-10" onClick={() => setOpen(true)}>
+          + Create Schedule
+        </Button>
       </div>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Schedule</DialogTitle>
+          </DialogHeader>
+          <CreateScheduleForm
+            users={users}
+            templates={templates}
+            sites={sites}
+            onCancel={() => setOpen(false)}
+            onSubmit={() => setOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
       <Input
         placeholder="Search schedules by title, site, assignee, template or frequency..."
         className="mt-2"

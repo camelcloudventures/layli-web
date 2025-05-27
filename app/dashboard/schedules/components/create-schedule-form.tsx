@@ -69,7 +69,11 @@ export function CreateScheduleForm({
             </SelectTrigger>
             <SelectContent>
               {templates.map((template) => (
-                <SelectItem key={template.id} value={String(template.id)}>
+                <SelectItem
+                  key={template.id}
+                  value={String(template.id)}
+                  className="hover:bg-gray-100 cursor-pointer"
+                >
                   {template.title}
                 </SelectItem>
               ))}
@@ -86,7 +90,11 @@ export function CreateScheduleForm({
             </SelectTrigger>
             <SelectContent>
               {sites.map((site) => (
-                <SelectItem key={site.id} value={String(site.id)}>
+                <SelectItem
+                  key={site.id}
+                  value={String(site.id)}
+                  className="hover:bg-gray-100 cursor-pointer"
+                >
                   {site.name}
                 </SelectItem>
               ))}
@@ -103,7 +111,11 @@ export function CreateScheduleForm({
             </SelectTrigger>
             <SelectContent>
               {users.map((user) => (
-                <SelectItem key={user.user.id} value={user.user.id}>
+                <SelectItem
+                  key={user.user.id}
+                  value={user.user.id}
+                  className="hover:bg-gray-100 cursor-pointer"
+                >
                   {user.user.full_name}
                 </SelectItem>
               ))}
@@ -119,10 +131,30 @@ export function CreateScheduleForm({
               <SelectValue placeholder="Select a frequency" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="daily">Daily</SelectItem>
-              <SelectItem value="weekly">Weekly</SelectItem>
-              <SelectItem value="monthly">Monthly</SelectItem>
-              <SelectItem value="yearly">Yearly</SelectItem>
+              <SelectItem
+                value="daily"
+                className="hover:bg-gray-100 cursor-pointer"
+              >
+                Daily
+              </SelectItem>
+              <SelectItem
+                value="weekly"
+                className="hover:bg-gray-100 cursor-pointer"
+              >
+                Weekly
+              </SelectItem>
+              <SelectItem
+                value="monthly"
+                className="hover:bg-gray-100 cursor-pointer"
+              >
+                Monthly
+              </SelectItem>
+              <SelectItem
+                value="yearly"
+                className="hover:bg-gray-100 cursor-pointer"
+              >
+                Yearly
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -135,9 +167,24 @@ export function CreateScheduleForm({
               <SelectValue placeholder="Select a priority" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="low">Low</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="high">High</SelectItem>
+              <SelectItem
+                value="low"
+                className="hover:bg-gray-100 cursor-pointer"
+              >
+                Low
+              </SelectItem>
+              <SelectItem
+                value="medium"
+                className="hover:bg-gray-100 cursor-pointer"
+              >
+                Medium
+              </SelectItem>
+              <SelectItem
+                value="high"
+                className="hover:bg-gray-100 cursor-pointer"
+              >
+                High
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>

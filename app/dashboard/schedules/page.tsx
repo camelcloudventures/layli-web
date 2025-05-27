@@ -16,10 +16,6 @@ export default async function SchedulesPage() {
   const templates = await getTemplates()
   const sites = await getSites()
 
-  console.log(users)
-  console.log(templates)
-  console.log(sites)
-
   return (
     <main className="w-full py-8 px-4">
       <SchedulesList

@@ -80,7 +80,7 @@ export function ScheduleDetails({ schedule }: ScheduleDetailsProps) {
             <div>
               <p className="font-medium">Created</p>
               <p className="text-muted-foreground">
-                {formatDate(schedule.createdAt)}
+                {formatDate(schedule.created_at)}
               </p>
             </div>
           </div>
@@ -92,10 +92,7 @@ export function ScheduleDetails({ schedule }: ScheduleDetailsProps) {
             <div>
               <p className="font-medium">Assignee</p>
               <p className="text-muted-foreground">
-                {schedule.assignee?.name || 'Not assigned'}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {schedule.assignee?.email || ''}
+                {schedule.assignee?.full_name || 'Not assigned'}
               </p>
             </div>
           </div>

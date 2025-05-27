@@ -32,6 +32,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { ScheduleDetailsDialog } from './schedule-details-dialog'
 
 export function SchedulesList({
   schedules,
@@ -53,6 +54,7 @@ export function SchedulesList({
   const [dropdownOpenId, setDropdownOpenId] = useState<string | number | null>(
     null,
   )
+  const [detailsOpen, setDetailsOpen] = useState(false)
 
   const filteredSchedules = useMemo(() => {
     if (!searchQuery.trim()) return schedules
@@ -247,7 +249,14 @@ export function SchedulesList({
                     Priority: {schedule.priority}
                   </span>
                 </div>
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedSchedule(schedule)
+                    setDetailsOpen(true)
+                  }}
+                >
                   View Details
                 </Button>
               </div>
@@ -255,6 +264,11 @@ export function SchedulesList({
           ))
         )}
       </div>
+      <ScheduleDetailsDialog
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        schedule={selectedSchedule}
+      />
     </div>
   )
 }

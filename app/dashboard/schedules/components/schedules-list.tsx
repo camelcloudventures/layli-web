@@ -10,6 +10,7 @@ import {
   Building,
   FileText,
   MoreHorizontal,
+  EditIcon,
 } from 'lucide-react'
 import type { Schedule } from '@/lib/types/schedule-types'
 import {
@@ -19,11 +20,18 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { CreateScheduleForm } from './create-schedule-form'
+import { EditScheduleForm } from './edit-schedule-form'
 import type {
   UserOption,
   TemplateOption,
   SiteOption,
 } from '../types/schedule-form-types'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 export function SchedulesList({
   schedules,
@@ -38,6 +46,13 @@ export function SchedulesList({
 }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [open, setOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
+    null,
+  )
+  const [dropdownOpenId, setDropdownOpenId] = useState<string | number | null>(
+    null,
+  )
 
   const filteredSchedules = useMemo(() => {
     if (!searchQuery.trim()) return schedules
@@ -107,6 +122,23 @@ export function SchedulesList({
           />
         </DialogContent>
       </Dialog>
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Schedule</DialogTitle>
+          </DialogHeader>
+          {selectedSchedule && (
+            <EditScheduleForm
+              schedule={selectedSchedule}
+              users={users}
+              templates={templates}
+              sites={sites}
+              onCancel={() => setEditOpen(false)}
+              onSubmit={() => setEditOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
       <Input
         placeholder="Search schedules by title, site, assignee, template or frequency..."
         className="mt-2"
@@ -137,9 +169,35 @@ export function SchedulesList({
                         : 'N/A'}
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" aria-label="More actions">
-                    <MoreHorizontal className="h-5 w-5" />
-                  </Button>
+                  <DropdownMenu
+                    open={dropdownOpenId === schedule.id}
+                    onOpenChange={(open) =>
+                      setDropdownOpenId(open ? schedule.id : null)
+                    }
+                  >
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="More actions"
+                      >
+                        <MoreHorizontal className="h-5 w-5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setDropdownOpenId(null)
+                          setSelectedSchedule(schedule)
+                          setEditOpen(true)
+                        }}
+                      >
+                        <EditIcon className="mr-2 h-4 w-4" />
+                        Edit Schedule
+                      </DropdownMenuItem>
+                      {/* Add Delete action here if needed */}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
                 <div className="grid gap-4 md:grid-cols-3 pt-2">
                   <div className="flex items-center gap-2">

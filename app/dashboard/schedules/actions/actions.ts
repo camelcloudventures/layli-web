@@ -1,6 +1,6 @@
 'use server'
 
-import { GET, POST } from '@/app/backend/apiMethods'
+import { GET, POST, UPDATE } from '@/app/backend/apiMethods'
 import type { SchedulesResponse } from '@/lib/types/schedule-types'
 import { revalidateTag } from 'next/cache'
 import { createClient } from '@supabase/supabase-js'
@@ -54,4 +54,34 @@ export async function getSites() {
   const { data, error } = await client.from('sites').select('*')
   if (error) throw error
   return data || []
+}
+
+export async function updateSchedule(formData: FormData) {
+  try {
+    const id = formData.get('id') as string
+    const title = formData.get('title') as string
+    const template_id = formData.get('template_id') as string
+    const site_id = formData.get('site_id') as string
+    const assignee_id = formData.get('assignee_id') as string
+    const frequency = formData.get('frequency') as string
+    const priority = formData.get('priority') as string
+
+    const scheduleData = {
+      title,
+      template_id,
+      site_id,
+      assignee_id,
+      frequency,
+      priority,
+    }
+
+    const res = await UPDATE(`/schedules/update/${id}`, scheduleData, [
+      'schedules',
+    ])
+    revalidateTag('schedules')
+    return res
+  } catch (error) {
+    console.error('Error updating schedule:', error)
+    return { error: 'Failed to update schedule' }
+  }
 }

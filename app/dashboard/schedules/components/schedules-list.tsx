@@ -1,62 +1,48 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import {
-  Calendar,
-  User,
-  Building,
-  FileText,
-  MoreHorizontal,
-  EditIcon,
-  Trash2Icon,
-} from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import { Trash2Icon } from 'lucide-react'
 import type { Schedule } from '@/lib/types/schedule-types'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { CreateScheduleForm } from './create-schedule-form'
-import { EditScheduleForm } from './edit-schedule-form'
 import type {
   UserOption,
   TemplateOption,
   SiteOption,
 } from '../types/schedule-form-types'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { CreateScheduleForm } from './create-schedule-form'
+import { EditScheduleForm } from './edit-schedule-form'
 import { ScheduleDetailsDialog } from './schedule-details-dialog'
 import { deleteSchedule } from '../actions/actions'
 import { DeleteDialog } from '@/components/ui/delete-dialog'
-import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
+import { ScheduleHeader } from './schedule-header'
+import { ScheduleSearch } from './schedule-search'
+import { ScheduleCard } from './schedule-card'
+
+interface SchedulesListProps {
+  schedules: Schedule[]
+  users: UserOption[]
+  templates: TemplateOption[]
+  sites: SiteOption[]
+}
 
 export function SchedulesList({
   schedules,
   users,
   templates,
   sites,
-}: {
-  schedules: Schedule[]
-  users: UserOption[]
-  templates: TemplateOption[]
-  sites: SiteOption[]
-}) {
+}: SchedulesListProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [open, setOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
-    null,
-  )
-  const [dropdownOpenId, setDropdownOpenId] = useState<string | number | null>(
     null,
   )
   const [detailsOpen, setDetailsOpen] = useState(false)
@@ -75,37 +61,9 @@ export function SchedulesList({
     )
   }, [searchQuery, schedules])
 
-  function getFrequencyColor(frequency: string) {
-    switch (frequency) {
-      case 'daily':
-        return 'bg-blue-100 text-blue-800'
-      case 'weekly':
-        return 'bg-green-100 text-green-800'
-      case 'monthly':
-        return 'bg-purple-100 text-purple-800'
-      case 'yearly':
-        return 'bg-amber-100 text-amber-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
-
-  function getPriorityColor(priority: string) {
-    switch (priority) {
-      case 'high':
-        return 'text-red-600'
-      case 'medium':
-        return 'text-yellow-600'
-      case 'low':
-        return 'text-green-600'
-      default:
-        return 'text-gray-600'
-    }
-  }
-
-  async function handleDelete(id: string) {
+  async function handleDelete(schedule: Schedule) {
     try {
-      await deleteSchedule(id)
+      await deleteSchedule(String(schedule.id))
       toast.success('Schedule deleted successfully')
       router.refresh()
     } catch (error) {
@@ -116,17 +74,8 @@ export function SchedulesList({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Schedules</h1>
-          <p className="text-muted-foreground">
-            Manage audit schedules and timelines
-          </p>
-        </div>
-        <Button className="h-10" onClick={() => setOpen(true)}>
-          + Create Schedule
-        </Button>
-      </div>
+      <ScheduleHeader onCreateClick={() => setOpen(true)} />
+
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
@@ -141,6 +90,7 @@ export function SchedulesList({
           />
         </DialogContent>
       </Dialog>
+
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent>
           <DialogHeader>
@@ -159,155 +109,10 @@ export function SchedulesList({
         </DialogContent>
       </Dialog>
 
-      <Input
-        placeholder="Search schedules by title, site, assignee, template or frequency..."
-        className="mt-2"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-      />
-      <div className="space-y-4">
-        {filteredSchedules.length === 0 ? (
-          <div className="text-center text-gray-500 py-8">
-            No schedules found.
-          </div>
-        ) : (
-          filteredSchedules.map((schedule) => (
-            <div
-              key={schedule.id}
-              className="border rounded-md overflow-hidden bg-white"
-            >
-              <div className="p-6 space-y-4">
-                <div className="flex justify-between">
-                  <div>
-                    <div className="font-semibold text-lg text-gray-900">
-                      {schedule.title}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      Next audit:{' '}
-                      {schedule.nextAuditDate
-                        ? new Date(schedule.nextAuditDate).toLocaleDateString()
-                        : 'N/A'}
-                    </div>
-                  </div>
-                  <DropdownMenu
-                    open={dropdownOpenId === schedule.id}
-                    onOpenChange={(open) =>
-                      setDropdownOpenId(open ? schedule.id : null)
-                    }
-                  >
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="More actions"
-                      >
-                        <MoreHorizontal className="h-5 w-5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => {
-                          setDropdownOpenId(null)
-                          setSelectedSchedule(schedule)
-                          setEditOpen(true)
-                        }}
-                      >
-                        <EditIcon className="mr-2 h-4 w-4" />
-                        Edit Schedule
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-red-500 hover:bg-red-500 hover:text-white focus:bg-red-600 focus:text-white"
-                        onSelect={(e) => {
-                          e.preventDefault()
-                          setDropdownOpenId(null)
-                          setSelectedSchedule(schedule)
-                          // Find and click the hidden delete button
-                          const deleteButton = document.querySelector(
-                            '[aria-label="Delete Schedule"]',
-                          ) as HTMLButtonElement
-                          if (deleteButton) {
-                            deleteButton.click()
-                          }
-                        }}
-                      >
-                        <Trash2Icon className="mr-2  focus:text-white h-4 w-4" />
-                        Delete Schedule
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                <div className="grid gap-4 md:grid-cols-3 pt-2">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Frequency</p>
-                      <Badge
-                        className={getFrequencyColor(schedule.frequency)}
-                        variant="secondary"
-                      >
-                        {schedule.frequency.charAt(0).toUpperCase() +
-                          schedule.frequency.slice(1)}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Assignee</p>
-                      <p className="text-sm text-muted-foreground">
-                        {schedule.assignee?.full_name || 'N/A'}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Building className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Site</p>
-                      <p className="text-sm text-muted-foreground">
-                        {schedule.site?.name || 'N/A'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="border-t bg-muted/50 p-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    Template: {schedule.template?.title || 'N/A'}
-                  </p>
-                  <span
-                    className={`ml-4 font-semibold ${getPriorityColor(
-                      schedule.priority,
-                    )}`}
-                  >
-                    Priority: {schedule.priority}
-                  </span>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedSchedule(schedule)
-                    setDetailsOpen(true)
-                  }}
-                >
-                  View Details
-                </Button>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-      <ScheduleDetailsDialog
-        open={detailsOpen}
-        onOpenChange={setDetailsOpen}
-        schedule={selectedSchedule}
-      />
       <DeleteDialog
         title="Delete Schedule"
         description="Are you sure you want to delete this schedule? This action cannot be undone."
-        onDelete={() => handleDelete(String(selectedSchedule?.id))}
+        onDelete={() => handleDelete(selectedSchedule!)}
         trigger={
           <Button
             type="button"
@@ -319,6 +124,46 @@ export function SchedulesList({
             <Trash2Icon className="h-4 w-4 text-destructive" />
           </Button>
         }
+      />
+
+      <ScheduleSearch value={searchQuery} onChange={setSearchQuery} />
+
+      <div className="space-y-4">
+        {filteredSchedules.length === 0 ? (
+          <div className="text-center text-gray-500 py-8">
+            No schedules found.
+          </div>
+        ) : (
+          filteredSchedules.map((schedule) => (
+            <ScheduleCard
+              key={schedule.id}
+              schedule={schedule}
+              onEdit={(schedule) => {
+                setSelectedSchedule(schedule)
+                setEditOpen(true)
+              }}
+              onDelete={(schedule) => {
+                setSelectedSchedule(schedule)
+                const deleteButton = document.querySelector(
+                  '[aria-label="Delete Schedule"]',
+                ) as HTMLButtonElement
+                if (deleteButton) {
+                  deleteButton.click()
+                }
+              }}
+              onViewDetails={(schedule) => {
+                setSelectedSchedule(schedule)
+                setDetailsOpen(true)
+              }}
+            />
+          ))
+        )}
+      </div>
+
+      <ScheduleDetailsDialog
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        schedule={selectedSchedule}
       />
     </div>
   )

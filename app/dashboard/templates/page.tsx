@@ -14,8 +14,8 @@ interface PageProps {
 }
 
 export default async function AuditTemplatesPage({ searchParams }: PageProps) {
-  const page = Number(searchParams.page) || 1
-  const response = await getTemplates(page)
+  const pageNumber = Number(searchParams.page) || 1
+  const response = await getTemplates(pageNumber)
 
   if (!response) {
     return (
@@ -52,7 +52,7 @@ export default async function AuditTemplatesPage({ searchParams }: PageProps) {
         <TemplateSearch
           templates={response.data}
           searchParams={searchParams}
-          page={page}
+          page={pageNumber}
           totalPages={response.pagination.totalPages}
         />
       ) : (

@@ -5,7 +5,6 @@ import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DeleteDialog } from '@/components/ui/delete-dialog'
 import { deletePage } from '@/app/dashboard/templates/actions/actions'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
 interface DeletePageButtonProps {
@@ -18,7 +17,6 @@ export function DeletePageButton({
   templateId,
 }: DeletePageButtonProps) {
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
 
   async function handleDelete() {
     setLoading(true)
@@ -35,7 +33,6 @@ export function DeletePageButton({
     }
 
     setLoading(false)
-    router.refresh()
   }
 
   return (

@@ -1,7 +1,7 @@
 'use server'
 
 import { DELETE, GET, POST, UPDATE } from '@/app/backend/apiMethods'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import type { AuditTemplate, TemplatesResponse } from '@/lib/types/audit-types'
 
 export type AuditTemplateApiResponse =
@@ -60,9 +60,8 @@ export async function updateTemplate(template: any) {
     'templates',
   ])
 
-  // Revalidate the template path
-  revalidatePath(`/dashboard/templates/preview/${template.id}`)
-  revalidatePath('/dashboard/templates')
+  revalidatePath(`/dashboard/templates/${template.id}/edit`)
+  revalidateTag('templates')
 
   return res
 }
@@ -77,6 +76,7 @@ export async function deleteTemplate(templateId: string) {
 }
 
 export async function deletePage(pageId: string, templateId: string) {
+  console.log('deleting page', pageId, templateId)
   const res = await DELETE(
     `/audit-template/delete/page/${pageId}/${templateId}`,
     {},
@@ -84,7 +84,7 @@ export async function deletePage(pageId: string, templateId: string) {
   )
 
   // Revalidate the template path
-  revalidatePath(`/dashboard/templates/preview/${templateId}`)
+  revalidatePath(`/dashboard/templates/${templateId}/preview`)
 
   return res
 }

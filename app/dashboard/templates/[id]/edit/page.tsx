@@ -5,9 +5,10 @@ import EditTemplateShell from './components/edit-template-shell'
 export default async function EditTemplatePage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
-  const template = await getTemplate(params.id)
+  const { id } = await params
+  const template = await getTemplate(id)
   if (!template || (template && 'error' in template)) {
     redirect('/dashboard/templates')
   }

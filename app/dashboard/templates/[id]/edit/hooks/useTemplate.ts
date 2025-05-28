@@ -36,7 +36,7 @@ export function useTemplate(initialTemplate: Template) {
         toast.error(result.error)
         return false
       }
-      router.push('/dashboard/templates')
+      router.push(`/dashboard/templates/${template.id}/preview`)
       toast.success(result.success)
       return true
     } catch {

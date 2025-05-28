@@ -5,7 +5,7 @@ import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DeleteDialog } from '@/components/ui/delete-dialog'
 import { deleteSection } from '@/app/dashboard/templates/actions/actions'
-import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 interface DeleteSectionButtonProps {
   sectionId: string
@@ -17,13 +17,20 @@ export function DeleteSectionButton({
   pageId,
 }: DeleteSectionButtonProps) {
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
 
   async function handleDelete() {
     setLoading(true)
-    await deleteSection(sectionId, pageId)
+    const result = await deleteSection(sectionId, pageId)
+    // @ts-expect-error --need to fix this
+    if (result && result.success) {
+      // @ts-expect-error --need to fix this
+      toast.success(result.success)
+      // @ts-expect-error --need to fix this
+    } else if (result && result.error) {
+      // @ts-expect-error --need to fix this
+      toast.error(result.error)
+    }
     setLoading(false)
-    router.refresh()
   }
 
   return (
@@ -38,7 +45,6 @@ export function DeleteSectionButton({
           size="icon"
           aria-label="Delete Section"
           disabled={loading}
-          onClick={(e) => e.stopPropagation()}
         >
           <Trash2 className="h-4 w-4 text-destructive" />
         </Button>

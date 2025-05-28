@@ -25,8 +25,6 @@ export default async function TemplatePreviewPage({
     redirect('/dashboard/templates')
   }
 
-  console.log(template)
-
   return (
     <div className="space-y-6">
       <TemplatePreviewHeader template={template} />

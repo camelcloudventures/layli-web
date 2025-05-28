@@ -52,6 +52,7 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
     const updatedTemplate = { ...template, pages: template.pages.filter(page => page.id !== pageId) }
     setTemplate(updatedTemplate)
     setActivePage(updatedTemplate.pages.length > 0 ? updatedTemplate.pages[0].id : null)
+    
   }
 
   const movePageUp = (pageId: string) => {

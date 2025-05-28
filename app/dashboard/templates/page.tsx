@@ -5,16 +5,17 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { TemplateSearch } from './components/template-search'
 import CreateAuditBtn from './components/create-audit-btn'
 import { EmptyTemplatesState } from './components/empty-templates-state'
+import { TemplateSearch } from './components/template-search'
 
 interface PageProps {
-  searchParams: { search?: string; page?: string }
+  searchParams: Promise<{ search?: string; page?: string }>
 }
 
 export default async function AuditTemplatesPage({ searchParams }: PageProps) {
-  const pageNumber = Number(searchParams.page) || 1
+  const resolvedParams = await searchParams
+  const pageNumber = Number(resolvedParams.page) || 1
   const response = await getTemplates(pageNumber)
 
   if (!response) {
@@ -51,7 +52,7 @@ export default async function AuditTemplatesPage({ searchParams }: PageProps) {
       {hasTemplates ? (
         <TemplateSearch
           templates={response.data}
-          searchParams={searchParams}
+          searchParams={resolvedParams}
           page={pageNumber}
           totalPages={response.pagination.totalPages}
         />

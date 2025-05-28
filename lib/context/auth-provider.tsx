@@ -7,7 +7,6 @@ import {
   useEffect,
   useCallback,
   ReactNode,
-  Suspense,
 } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { signIn, signUp } from '@/app/auth/actions/actions'

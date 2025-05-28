@@ -2,9 +2,9 @@
 
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Edit } from 'lucide-react'
-import { toast } from '@/hooks/use-toast'
 import type { AuditTemplate } from '@/lib/types/audit-types'
 import Link from 'next/link'
+import { toast } from 'sonner'
 
 interface TemplatePreviewHeaderProps {
   template: AuditTemplate
@@ -42,11 +42,7 @@ export function TemplatePreviewHeader({
         <Button
           onClick={() => {
             // In a real app, this would start a new audit based on this template
-            toast({
-              title: 'Starting new audit',
-              description:
-                'This would create a new audit based on this template',
-            })
+            toast.success('Starting new audit')
           }}
         >
           Start New Audit

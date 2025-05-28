@@ -1,3 +1,5 @@
+'use client'
+
 import { Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import type { AuditTemplate } from '@/lib/types/audit-types'

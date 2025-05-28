@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import type { AuditTemplate } from "@/types/audit-types"
+import type { AuditTemplate } from "@/lib/types/audit-types"
 import { ImageUpload } from "@/app/dashboard/templates/components/image-upload"
 
 interface TemplateDetailsFormProps {
@@ -80,9 +80,8 @@ export function TemplateDetailsForm({ template, setTemplate, onContinue }: Templ
         <div className="space-y-2">
           <Label>Cover Image</Label>
           <ImageUpload
-            currentImageUrl={photoUrl}
-            onImageSelected={(url) => setPhotoUrl(url)}
-            placeholderText="Select a cover image for the template"
+            value={photoUrl}
+            onChange={(url: string) => setPhotoUrl(url)}
           />
         </div>
       </div>

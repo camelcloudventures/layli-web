@@ -223,10 +223,10 @@ export function EditScheduleForm({
                 Active
               </SelectItem>
               <SelectItem
-                value="inactive"
+                value="completed"
                 className="hover:bg-gray-100 cursor-pointer"
               >
-                Inactive
+                Completed
               </SelectItem>
               <SelectItem
                 value="paused"
@@ -235,16 +235,16 @@ export function EditScheduleForm({
                 Paused
               </SelectItem>
               <SelectItem
-                value="completed"
-                className="hover:bg-gray-100 cursor-pointer"
-              >
-                Completed
-              </SelectItem>
-              <SelectItem
                 value="cancelled"
                 className="hover:bg-gray-100 cursor-pointer"
               >
                 Cancelled
+              </SelectItem>
+              <SelectItem
+                value="inactive"
+                className="hover:bg-gray-100 cursor-pointer"
+              >
+                Inactive
               </SelectItem>
             </SelectContent>
           </Select>

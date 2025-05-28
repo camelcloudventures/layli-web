@@ -16,6 +16,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { Schedule } from '@/lib/types/schedule-types'
 import { getFrequencyColor, getStatusColor } from '@/utils/utils'
+import HasPermission from '../../components/has-permission'
+import { Permission } from '@/lib/auth/auth'
 
 interface ScheduleDetailsProps {
   schedule: Schedule
@@ -163,65 +165,67 @@ export function ScheduleDetails({
             </Badge>
           </div>
 
-          {onStatusUpdate && (
-            <div className="flex gap-2">
-              {schedule.status === 'active' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={loading}
-                  onClick={async () => {
-                    setLoading(true)
-                    await onStatusUpdate('paused')
-                    setLoading(false)
-                  }}
-                  className="h-8 px-3"
-                  aria-label="Pause Schedule"
-                >
-                  {loading ? (
-                    <>
-                      <div className="w-3 h-3 mr-2 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      Pausing...
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-3 h-3 mr-2 flex">
-                        <div className="w-1 h-3 bg-current mr-0.5"></div>
-                        <div className="w-1 h-3 bg-current"></div>
-                      </div>
-                      Pause
-                    </>
-                  )}
-                </Button>
-              )}
-              {schedule.status === 'paused' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={loading}
-                  onClick={async () => {
-                    setLoading(true)
-                    await onStatusUpdate('active')
-                    setLoading(false)
-                  }}
-                  className="h-8 px-3"
-                  aria-label="Resume Schedule"
-                >
-                  {loading ? (
-                    <>
-                      <div className="w-3 h-3 mr-2 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      Resuming...
-                    </>
-                  ) : (
-                    <>
-                      <Play className="mr-2 h-3 w-3" />
-                      Resume
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
-          )}
+          <HasPermission permission={Permission.MANAGE_SCHEDULES}>
+            {onStatusUpdate && (
+              <div className="flex gap-2">
+                {schedule.status === 'active' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={loading}
+                    onClick={async () => {
+                      setLoading(true)
+                      await onStatusUpdate('paused')
+                      setLoading(false)
+                    }}
+                    className="h-8 px-3"
+                    aria-label="Pause Schedule"
+                  >
+                    {loading ? (
+                      <>
+                        <div className="w-3 h-3 mr-2 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        Pausing...
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-3 h-3 mr-2 flex">
+                          <div className="w-1 h-3 bg-current mr-0.5"></div>
+                          <div className="w-1 h-3 bg-current"></div>
+                        </div>
+                        Pause
+                      </>
+                    )}
+                  </Button>
+                )}
+                {schedule.status === 'paused' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={loading}
+                    onClick={async () => {
+                      setLoading(true)
+                      await onStatusUpdate('active')
+                      setLoading(false)
+                    }}
+                    className="h-8 px-3"
+                    aria-label="Resume Schedule"
+                  >
+                    {loading ? (
+                      <>
+                        <div className="w-3 h-3 mr-2 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        Resuming...
+                      </>
+                    ) : (
+                      <>
+                        <Play className="mr-2 h-3 w-3" />
+                        Resume
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            )}
+          </HasPermission>
         </div>
       </div>
     </div>

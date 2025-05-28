@@ -8,6 +8,8 @@ import {
 import CreateAuditBtn from './components/create-audit-btn'
 import { EmptyTemplatesState } from './components/empty-templates-state'
 import { TemplateSearch } from './components/template-search'
+import HasPermission from '../components/has-permission'
+import { Permission } from '@/lib/auth/auth'
 
 interface PageProps {
   searchParams: Promise<{ search?: string; page?: string }>
@@ -46,7 +48,9 @@ export default async function AuditTemplatesPage({ searchParams }: PageProps) {
             </p>
           </div>
         </div>
-        <CreateAuditBtn />
+        <HasPermission permission={Permission.EDIT_TEMPLATES}>
+          <CreateAuditBtn />
+        </HasPermission>
       </div>
 
       {hasTemplates ? (

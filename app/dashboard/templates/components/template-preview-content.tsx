@@ -16,6 +16,8 @@ import { ImageUpload } from './image-upload'
 import { DeletePageButton } from './delete-controls/delete-page-button'
 import { DeleteSectionButton } from './delete-controls/delete-section-button'
 import { DeleteQuestionButton } from './delete-controls/delete-question-button'
+import HasPermission from '../../components/has-permission'
+import { Permission } from '@/lib/auth/auth'
 
 interface TemplatePreviewContentProps {
   template: AuditTemplate
@@ -58,10 +60,12 @@ export function TemplatePreviewContent({
             <CardTitle className="text-2xl font-bold mb-1">
               {currentPage.title}
             </CardTitle>
-            <DeletePageButton
-              pageId={String(currentPage.id)}
-              templateId={String(template.id)}
-            />
+            <HasPermission permission={Permission.EDIT_TEMPLATES}>
+              <DeletePageButton
+                pageId={String(currentPage.id)}
+                templateId={String(template.id)}
+              />
+            </HasPermission>
           </div>
           {currentPage.description && (
             <CardDescription>{currentPage.description}</CardDescription>
@@ -80,10 +84,12 @@ export function TemplatePreviewContent({
               <div key={section.id} className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xl font-bold mb-1">{section.title}</h4>
-                  <DeleteSectionButton
-                    sectionId={String(section.id)}
-                    pageId={String(currentPage.id)}
-                  />
+                  <HasPermission permission={Permission.EDIT_TEMPLATES}>
+                    <DeleteSectionButton
+                      sectionId={String(section.id)}
+                      pageId={String(currentPage.id)}
+                    />
+                  </HasPermission>
                 </div>
                 {section.questions.length === 0 ? (
                   <div className="rounded-md border border-dashed p-4 text-center">
@@ -112,10 +118,12 @@ export function TemplatePreviewContent({
                               </span>
                             )}
                           </div>
-                          <DeleteQuestionButton
-                            questionId={String(question.id)}
-                            sectionId={String(question.section_id)}
-                          />
+                          <HasPermission permission={Permission.EDIT_TEMPLATES}>
+                            <DeleteQuestionButton
+                              questionId={String(question.id)}
+                              sectionId={String(question.section_id)}
+                            />
+                          </HasPermission>
                         </div>
                         <div className="pl-0">
                           {renderQuestionInput(question)}

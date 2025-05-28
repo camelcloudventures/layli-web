@@ -5,6 +5,8 @@ import { ArrowLeft, Edit } from 'lucide-react'
 import type { AuditTemplate } from '@/lib/types/audit-types'
 import Link from 'next/link'
 import { toast } from 'sonner'
+import HasPermission from '../../components/has-permission'
+import { Permission } from '@/lib/auth/auth'
 
 interface TemplatePreviewHeaderProps {
   template: AuditTemplate
@@ -30,15 +32,17 @@ export function TemplatePreviewHeader({
       </div>
 
       <div className="flex gap-2">
-        <Button asChild variant="outline">
-          <Link
-            href={`/dashboard/templates/${template.id}/edit`}
-            aria-label="Edit Template"
-          >
-            <Edit className="mr-2 h-4 w-4" />
-            Edit Template
-          </Link>
-        </Button>
+        <HasPermission permission={Permission.EDIT_TEMPLATES}>
+          <Button asChild variant="outline">
+            <Link
+              href={`/dashboard/templates/${template.id}/edit`}
+              aria-label="Edit Template"
+            >
+              <Edit className="mr-2 h-4 w-4" />
+              Edit Template
+            </Link>
+          </Button>
+        </HasPermission>
         <Button
           onClick={() => {
             // In a real app, this would start a new audit based on this template

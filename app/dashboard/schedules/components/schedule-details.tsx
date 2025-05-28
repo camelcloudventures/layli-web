@@ -15,6 +15,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { Schedule } from '@/lib/types/schedule-types'
+import { getFrequencyColor, getStatusColor } from '@/utils/utils'
 
 interface ScheduleDetailsProps {
   schedule: Schedule
@@ -26,36 +27,6 @@ export function ScheduleDetails({
   onStatusUpdate,
 }: ScheduleDetailsProps) {
   const [loading, setLoading] = useState(false)
-
-  const getFrequencyColor = (frequency: string) => {
-    switch (frequency) {
-      case 'daily':
-        return 'bg-blue-100 text-blue-800 hover:bg-blue-100'
-      case 'weekly':
-        return 'bg-green-100 text-green-800 hover:bg-green-100'
-      case 'monthly':
-        return 'bg-purple-100 text-purple-800 hover:bg-purple-100'
-      case 'yearly':
-        return 'bg-amber-100 text-amber-800 hover:bg-amber-100'
-      default:
-        return 'bg-gray-100 text-gray-800 hover:bg-gray-100'
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800 hover:bg-green-100'
-      case 'paused':
-        return 'bg-red-100 text-red-800 hover:bg-red-100'
-      case 'cancelled':
-        return 'bg-red-100 text-red-800 hover:bg-red-100'
-      case 'inactive':
-        return 'bg-gray-100 text-gray-800 hover:bg-gray-100'
-      default:
-        return 'bg-gray-100 text-gray-800 hover:bg-gray-100'
-    }
-  }
 
   const formatDate = (dateString: string | undefined) => {
     if (!dateString) return 'Not set'
@@ -71,9 +42,9 @@ export function ScheduleDetails({
       {/* Header Section */}
       <div className="space-y-1">
         <h3 className="text-lg font-semibold">{schedule.title}</h3>
-        {/* <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Created on {formatDate(schedule.created_at)}
-        </p> */}
+        </p>
       </div>
 
       {/* Main Content Grid */}

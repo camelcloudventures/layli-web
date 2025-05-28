@@ -3,40 +3,13 @@
 import { Badge } from '@/components/ui/badge'
 import { Calendar, User } from 'lucide-react'
 import type { Schedule } from '@/lib/types/schedule-types'
+import { getFrequencyColor, getStatusColor } from '@/utils/utils'
 
 interface ScheduleInfoProps {
   schedule: Schedule
 }
 
 export function ScheduleInfo({ schedule }: ScheduleInfoProps) {
-  function getFrequencyColor(frequency: string) {
-    switch (frequency) {
-      case 'daily':
-        return 'bg-blue-100 text-blue-800'
-      case 'weekly':
-        return 'bg-green-100 text-green-800'
-      case 'monthly':
-        return 'bg-purple-100 text-purple-800'
-      case 'yearly':
-        return 'bg-amber-100 text-amber-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
-
-  function getPriorityColor(priority: string) {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-100 text-red-800'
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'low':
-        return 'bg-green-100 text-green-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
-
   return (
     <div className="grid gap-4 md:grid-cols-3 pt-2">
       <div className="flex items-center gap-2">
@@ -63,13 +36,12 @@ export function ScheduleInfo({ schedule }: ScheduleInfoProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        <p className="text-sm font-medium">Priority</p>
+        <p className="text-sm font-medium">Status</p>
         <Badge
-          className={getPriorityColor(schedule.priority)}
+          className={getStatusColor(schedule.status || '')}
           variant="secondary"
         >
-          {schedule.priority.charAt(0).toUpperCase() +
-            schedule.priority.slice(1)}
+          {schedule.status ? schedule.status : 'Not started'}
         </Badge>
       </div>
     </div>

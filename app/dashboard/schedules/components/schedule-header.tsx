@@ -1,6 +1,8 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import HasPermission from '../../components/has-permission'
+import { Permission } from '@/lib/auth/auth'
 
 interface ScheduleHeaderProps {
   onCreateClick: () => void
@@ -15,9 +17,11 @@ export function ScheduleHeader({ onCreateClick }: ScheduleHeaderProps) {
           Manage audit schedules and timelines
         </p>
       </div>
-      <Button className="h-10" onClick={onCreateClick}>
-        + Schedule Inspections
-      </Button>
+      <HasPermission permission={Permission.MANAGE_SCHEDULES}>
+        <Button className="h-10" onClick={onCreateClick}>
+          + Schedule Inspections
+        </Button>
+      </HasPermission>
     </div>
   )
 }

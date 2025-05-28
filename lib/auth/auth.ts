@@ -25,6 +25,7 @@ export enum Permission {
   EDIT_TEMPLATES = 'edit_templates',
   MANAGE_USERS = 'manage_users',
   VIEW_REPORTS = 'view_reports',
+  MANAGE_SCHEDULES = 'manage_schedules',
 }
 
 export const rolePermissions: Record<Role, Permission[]> = {
@@ -49,6 +50,7 @@ export const rolePermissions: Record<Role, Permission[]> = {
     Permission.EDIT_TEMPLATES,
     Permission.MANAGE_USERS,
     Permission.VIEW_REPORTS,
+    Permission.MANAGE_SCHEDULES,
   ],
   [Role.SUPERVISOR]: [
     Permission.VIEW_ALL_AUDITS,
@@ -67,6 +69,7 @@ export const rolePermissions: Record<Role, Permission[]> = {
     Permission.UPLOAD_EVIDENCE,
     Permission.COMMENT,
     Permission.VIEW_REPORTS,
+    Permission.MANAGE_SCHEDULES,
   ],
   [Role.AUDITOR]: [
     Permission.VIEW_ASSIGNED_AUDITS,

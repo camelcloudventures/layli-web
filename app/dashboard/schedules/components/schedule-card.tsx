@@ -4,6 +4,8 @@ import type { Schedule } from '@/lib/types/schedule-types'
 import { ScheduleActions } from './schedule-actions'
 import { ScheduleInfo } from './schedule-info'
 import { ScheduleFooter } from './schedule-footer'
+import HasPermission from '../../components/has-permission'
+import { Permission } from '@/lib/auth/auth'
 
 interface ScheduleCardProps {
   schedule: Schedule
@@ -33,11 +35,13 @@ export function ScheduleCard({
                 : 'N/A'}
             </div>
           </div>
-          <ScheduleActions
-            schedule={schedule}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
+          <HasPermission permission={Permission.MANAGE_SCHEDULES}>
+            <ScheduleActions
+              schedule={schedule}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
+          </HasPermission>
         </div>
         <ScheduleInfo schedule={schedule} />
       </div>

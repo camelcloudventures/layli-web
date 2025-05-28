@@ -46,9 +46,9 @@ export function CreateScheduleForm({
   }
 
   return (
-    <form action={handleCreate} className="space-y-6">
-      <div className="space -y-4">
-        <div className="space-y-2">
+    <form action={handleCreate} className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4">
+        <div className="">
           <Label htmlFor="title">
             Schedule Title <span className="text-red-500">*</span>
           </Label>
@@ -59,7 +59,7 @@ export function CreateScheduleForm({
             required
           />
         </div>
-        <div className="space-y-2">
+        <div className="">
           <Label htmlFor="template_id">
             Audit Template <span className="text-red-500">*</span>
           </Label>
@@ -80,7 +80,7 @@ export function CreateScheduleForm({
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
+        <div className="  ">
           <Label htmlFor="site_id">
             Site <span className="text-red-500">*</span>
           </Label>
@@ -101,7 +101,7 @@ export function CreateScheduleForm({
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
+        <div className="">
           <Label htmlFor="assignee_id">
             Assignee <span className="text-red-500">*</span>
           </Label>
@@ -122,7 +122,7 @@ export function CreateScheduleForm({
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
+        <div className="">
           <Label htmlFor="frequency">
             Frequency <span className="text-red-500">*</span>
           </Label>
@@ -158,7 +158,7 @@ export function CreateScheduleForm({
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
+        <div className="">
           <Label htmlFor="priority">
             Priority <span className="text-red-500">*</span>
           </Label>

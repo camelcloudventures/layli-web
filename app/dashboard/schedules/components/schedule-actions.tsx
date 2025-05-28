@@ -10,7 +10,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { DeleteDialog } from '@/components/ui/delete-dialog'
 
 interface ScheduleActionsProps {
   schedule: Schedule

@@ -16,7 +16,7 @@ export function ScheduleHeader({ onCreateClick }: ScheduleHeaderProps) {
         </p>
       </div>
       <Button className="h-10" onClick={onCreateClick}>
-        + Create Schedule
+        + Schedule Inspections
       </Button>
     </div>
   )

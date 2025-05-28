@@ -1,7 +1,7 @@
 'use server'
 
 import { DELETE, GET, POST, UPDATE } from '@/app/backend/apiMethods'
-import type { SchedulesResponse } from '@/lib/types/schedule-types'
+import type { SchedulesResponse, Schedule } from '@/lib/types/schedule-types'
 import { revalidateTag } from 'next/cache'
 import { createClient } from '@supabase/supabase-js'
 
@@ -90,4 +90,22 @@ export async function deleteSchedule(id: string) {
   const res = await DELETE(`/schedules/delete/${id}`, true, ['schedules'])
   revalidateTag('schedules')
   return res
+}
+
+export type UpdateScheduleStatusResponse = {
+  success?: string
+  error?: string
+  data?: Schedule
+}
+
+export async function updateScheduleStatus(
+  id: string,
+  status: string,
+): Promise<UpdateScheduleStatusResponse> {
+  const res = await UPDATE(`/schedules/update-status/${id}`, { status })
+  revalidateTag('schedules')
+  if (!res) return { error: 'No response from server' }
+  if ('success' in res || 'error' in res || 'data' in res)
+    return res as UpdateScheduleStatusResponse
+  return { error: 'Unexpected response format' }
 }

@@ -1,9 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Calendar, User, Building, FileText } from 'lucide-react'
 import type { Schedule } from '@/lib/types/schedule-types'
 import { ScheduleActions } from './schedule-actions'
 import { ScheduleInfo } from './schedule-info'
@@ -31,9 +27,9 @@ export function ScheduleCard({
               {schedule.title}
             </div>
             <div className="text-sm text-muted-foreground">
-              Next audit:{' '}
-              {schedule.nextAuditDate
-                ? new Date(schedule.nextAuditDate).toLocaleDateString()
+              Next due date:{' '}
+              {schedule.next_date
+                ? new Date(schedule.next_date).toLocaleDateString()
                 : 'N/A'}
             </div>
           </div>

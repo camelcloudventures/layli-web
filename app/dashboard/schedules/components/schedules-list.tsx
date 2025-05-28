@@ -20,7 +20,11 @@ import { Button } from '@/components/ui/button'
 import { CreateScheduleForm } from './create-schedule-form'
 import { EditScheduleForm } from './edit-schedule-form'
 import { ScheduleDetailsDialog } from './schedule-details-dialog'
-import { deleteSchedule } from '../actions/actions'
+import {
+  deleteSchedule,
+  updateScheduleStatus,
+  UpdateScheduleStatusResponse,
+} from '../actions/actions'
 import { DeleteDialog } from '@/components/ui/delete-dialog'
 import { ScheduleHeader } from './schedule-header'
 import { ScheduleSearch } from './schedule-search'
@@ -69,6 +73,21 @@ export function SchedulesList({
     } catch (error) {
       console.error('Failed to delete schedule:', error)
       toast.error('Failed to delete schedule')
+    }
+  }
+
+  async function handleStatusUpdate(status: string) {
+    if (!selectedSchedule) return
+
+    const res: UpdateScheduleStatusResponse = await updateScheduleStatus(
+      String(selectedSchedule.id),
+      status,
+    )
+    if (res?.success) {
+      toast.success(res.success)
+      if (res.data) setSelectedSchedule(res.data)
+    } else if (res?.error) {
+      toast.error(res.error)
     }
   }
 
@@ -164,6 +183,7 @@ export function SchedulesList({
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
         schedule={selectedSchedule}
+        onStatusUpdate={handleStatusUpdate}
       />
     </div>
   )

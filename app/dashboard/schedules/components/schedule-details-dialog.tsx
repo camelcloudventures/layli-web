@@ -12,10 +12,12 @@ export function ScheduleDetailsDialog({
   open,
   onOpenChange,
   schedule,
+  onStatusUpdate,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   schedule: Schedule | null
+  onStatusUpdate?: (status: string) => Promise<void>
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -23,7 +25,12 @@ export function ScheduleDetailsDialog({
         <DialogHeader>
           <DialogTitle>Schedule Details</DialogTitle>
         </DialogHeader>
-        {schedule && <ScheduleDetails schedule={schedule} />}
+        {schedule && (
+          <ScheduleDetails
+            schedule={schedule}
+            onStatusUpdate={onStatusUpdate}
+          />
+        )}
         <div className="flex justify-end mt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close

@@ -207,6 +207,48 @@ export function EditScheduleForm({
             </SelectContent>
           </Select>
         </div>
+        <div className="space-y-2">
+          <Label htmlFor="status">
+            Status <span className="text-red-500">*</span>
+          </Label>
+          <Select name="status" required defaultValue={schedule.status}>
+            <SelectTrigger id="status" className="w-full">
+              <SelectValue placeholder="Select a status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                value="active"
+                className="hover:bg-gray-100 cursor-pointer"
+              >
+                Active
+              </SelectItem>
+              <SelectItem
+                value="inactive"
+                className="hover:bg-gray-100 cursor-pointer"
+              >
+                Inactive
+              </SelectItem>
+              <SelectItem
+                value="paused"
+                className="hover:bg-gray-100 cursor-pointer"
+              >
+                Paused
+              </SelectItem>
+              <SelectItem
+                value="completed"
+                className="hover:bg-gray-100 cursor-pointer"
+              >
+                Completed
+              </SelectItem>
+              <SelectItem
+                value="cancelled"
+                className="hover:bg-gray-100 cursor-pointer"
+              >
+                Cancelled
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" onClick={onCancel}>

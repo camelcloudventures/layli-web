@@ -1,7 +1,7 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
-import { Calendar, User, Building } from 'lucide-react'
+import { Calendar, User } from 'lucide-react'
 import type { Schedule } from '@/lib/types/schedule-types'
 
 interface ScheduleInfoProps {
@@ -19,6 +19,19 @@ export function ScheduleInfo({ schedule }: ScheduleInfoProps) {
         return 'bg-purple-100 text-purple-800'
       case 'yearly':
         return 'bg-amber-100 text-amber-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  function getPriorityColor(priority: string) {
+    switch (priority) {
+      case 'high':
+        return 'bg-red-100 text-red-800'
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'low':
+        return 'bg-green-100 text-green-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
@@ -48,14 +61,16 @@ export function ScheduleInfo({ schedule }: ScheduleInfoProps) {
           </p>
         </div>
       </div>
+
       <div className="flex items-center gap-2">
-        <Building className="h-4 w-4 text-muted-foreground" />
-        <div>
-          <p className="text-sm font-medium">Site</p>
-          <p className="text-sm text-muted-foreground">
-            {schedule.site?.name || 'N/A'}
-          </p>
-        </div>
+        <p className="text-sm font-medium">Priority</p>
+        <Badge
+          className={getPriorityColor(schedule.priority)}
+          variant="secondary"
+        >
+          {schedule.priority.charAt(0).toUpperCase() +
+            schedule.priority.slice(1)}
+        </Badge>
       </div>
     </div>
   )

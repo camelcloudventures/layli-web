@@ -50,7 +50,8 @@ export interface Schedule {
   site: Site | null
   template: Template
   assignee: Assignee
-  nextAuditDate?: string
+  next_date?: string
+  status?: string
 }
 
 export interface Pagination {

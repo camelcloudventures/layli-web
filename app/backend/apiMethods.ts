@@ -11,6 +11,11 @@ function getSupabaseCookieName() {
   return `sb-${projectRef}-auth-token`
 }
 
+async function getActiveOrgId(): Promise<string | null> {
+  const cookieStore = await cookies()
+  return cookieStore.get('active_org')?.value || null
+}
+
 export async function getAccessToken(): Promise<string | null> {
   const cookieStore = await cookies()
   const raw = cookieStore.get(getSupabaseCookieName())?.value
@@ -31,7 +36,6 @@ export async function getAccessToken(): Promise<string | null> {
     return null
   }
 
-  // <-- take the top‐level access_token
   const token = sessionObj?.access_token
 
   if (!token) {
@@ -54,12 +58,19 @@ export async function UPDATE<T>(
       return { error: 'You are not logged in' }
     }
 
+    const activeOrgId = await getActiveOrgId()
+    if (!activeOrgId) {
+      //@ts-expect-error --need to fix this
+      return { error: 'No active organization selected' }
+    }
+
     const response = await fetch(`${baseUrl}/api${url}`, {
       method: 'PATCH',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
         Authorization: `Bearer ${accessToken}`,
+        'X-Organization-Id': activeOrgId,
       },
       body: JSON.stringify(data),
       cache: 'no-store',
@@ -89,10 +100,9 @@ export async function POST<T>(
   tags?: string[],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
-  console.log('data', data)
-  console.log('here')
   try {
     let token: string | undefined
+    let activeOrgId: string | undefined
 
     if (needsAuth) {
       const accessToken = await getAccessToken()
@@ -102,6 +112,10 @@ export async function POST<T>(
         return
       }
       token = accessToken
+      const orgId = await getActiveOrgId()
+      if (orgId) {
+        activeOrgId = orgId
+      }
     }
 
     const thisUrl = `${baseUrl}/api${url}`
@@ -111,6 +125,7 @@ export async function POST<T>(
         Accept: 'application/json',
         'Content-Type': 'application/json',
         ...(token && { Authorization: `Bearer ${token}` }),
+        ...(activeOrgId && { 'X-Organization-Id': activeOrgId }),
       },
       body: JSON.stringify(data),
       cache: 'no-store',
@@ -142,13 +157,19 @@ export async function GET<T>(url: string, tags?: string[]): Promise<T | null> {
       return { error: 'You are not logged in' }
     }
 
+    const activeOrgId = await getActiveOrgId()
+    if (!activeOrgId) {
+      //@ts-expect-error --need to fix this
+      return { error: 'No active organization selected' }
+    }
+
     const thisUrl = `${baseUrl}/api${url}`
-    console.log('thisUrl', thisUrl)
     const response = await fetch(thisUrl, {
       method: 'GET',
       headers: {
         Accept: 'application/json',
         Authorization: `Bearer ${accessToken}`,
+        'X-Organization-Id': activeOrgId,
       },
       cache: 'no-store',
       next: tags ? { tags } : undefined,
@@ -183,12 +204,19 @@ export async function DELETE<T>(
       return { error: 'You are not logged in' }
     }
 
+    const activeOrgId = await getActiveOrgId()
+    if (!activeOrgId) {
+      //@ts-expect-error --need to fix this
+      return { error: 'No active organization selected' }
+    }
+
     const thisUrl = `${baseUrl}/api${url}`
     const response = await fetch(thisUrl, {
       method: 'DELETE',
       headers: {
         Accept: 'application/json',
         Authorization: `Bearer ${accessToken}`,
+        'X-Organization-Id': activeOrgId,
       },
       body: JSON.stringify(data),
       cache: 'no-store',

@@ -3,6 +3,7 @@
 import { extractTokens } from '@/utils/utils'
 import { createClient } from '@/utils/supabase/server'
 import { GET } from '@/app/backend/apiMethods'
+import { cookies } from 'next/headers'
 
 export async function signUp(formData: FormData) {
   const supabase = await createClient()
@@ -200,7 +201,7 @@ export async function acceptInvite(
         organization_id: inviteData.organization_id,
         user_id: sessionData.user?.id,
         role: inviteData.role,
-        is_default: false,
+        is_default: true,
       })
 
     if (orgMemberError) {
@@ -216,4 +217,53 @@ export async function acceptInvite(
     //@ts-expect-error - error is not typed
     return { error: error.message }
   }
+}
+
+interface OrgResponse {
+  success: boolean
+  data: {
+    user: {
+      id: string
+      email: string
+      full_name?: string
+      role?: string
+      phone_number?: string
+      image?: string
+    }
+    organizations: Array<{
+      id: string
+      name: string
+      type?: string
+      created_at: string
+      updated_at: string
+      created_by: string
+    }>
+    orgMemberships: Array<{
+      organization_id: string
+      role: string
+      is_default: boolean
+    }>
+    activeOrganization: {
+      id: string
+      name: string
+      type?: string
+      created_at: string
+      updated_at: string
+      created_by: string
+    }
+  }
+}
+
+export async function getUserOrganizations() {
+  const response = await GET<OrgResponse>('/auth/context')
+
+  if (response?.success && response?.data?.activeOrganization) {
+    const cookieStore = await cookies()
+    cookieStore.set('active_org', response.data.activeOrganization.id, {
+      path: '/',
+      sameSite: 'lax',
+    })
+  }
+
+  return response
 }

@@ -9,7 +9,12 @@ import {
   ReactNode,
 } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { signIn, signUp } from '@/app/auth/actions/actions'
+import {
+  getUserOrganizations,
+  signIn,
+  signUp,
+} from '@/app/auth/actions/actions'
+import { Org } from '@/types/types'
 
 interface AuthUser {
   id: string
@@ -21,6 +26,20 @@ interface AuthUser {
   [key: string]: string | undefined
 }
 
+interface OrgResponse {
+  success: boolean
+  data: {
+    user: AuthUser
+    organizations: Org[]
+    orgMemberships: {
+      organization_id: string
+      role: string
+      is_default: boolean
+    }[]
+    activeOrganization: Org
+  }
+}
+
 interface AuthContextProps {
   user: AuthUser | null
   loading: boolean
@@ -28,6 +47,8 @@ interface AuthContextProps {
   signUp: typeof signUp
   signOut: () => Promise<void>
   refreshUser: () => Promise<void>
+  orgs: Org[]
+  activeOrg: Org | null
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined)
@@ -35,20 +56,19 @@ const AuthContext = createContext<AuthContextProps | undefined>(undefined)
 function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
+  const [orgs, setOrgs] = useState<Org[]>([])
+  const [activeOrg, setActiveOrg] = useState<Org | null>(null)
 
   const fetchUser = useCallback(async () => {
     setLoading(true)
     const supabase = createClient()
     const { data } = await supabase.auth.getUser()
 
-    console.log('data', data?.user?.id)
-
     if (
       data?.user &&
       typeof data.user.id === 'string' &&
       typeof data.user.email === 'string'
     ) {
-      console.log('Supabase user id:', data.user.id)
       // Fetch profile data
       const { data: profileData, error: profileError } = await supabase
         .from('profile')
@@ -56,10 +76,14 @@ function AuthProvider({ children }: { children: ReactNode }) {
         .eq('id', data.user.id)
         .single()
 
-      console.log('Profile data:', profileData)
-
       if (profileError) {
         console.error('Error fetching profile:', profileError)
+      }
+
+      const orgContext = (await getUserOrganizations()) as OrgResponse
+      if (orgContext.success && orgContext.data) {
+        setOrgs(orgContext.data.organizations)
+        setActiveOrg(orgContext.data.activeOrganization)
       }
 
       setUser({
@@ -91,6 +115,8 @@ function AuthProvider({ children }: { children: ReactNode }) {
     const supabase = createClient()
     await supabase.auth.signOut()
     setUser(null)
+    setOrgs([])
+    setActiveOrg(null)
     setLoading(false)
   }
 
@@ -101,6 +127,8 @@ function AuthProvider({ children }: { children: ReactNode }) {
     signUp,
     signOut: handleSignOut,
     refreshUser: fetchUser,
+    orgs,
+    activeOrg,
   }
 
   return (

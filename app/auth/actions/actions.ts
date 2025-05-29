@@ -182,12 +182,34 @@ export async function acceptInvite(
       return { error: inviteError.message }
     }
 
-    console.log('inviteError', inviteError)
+    // Fetch the invite to get org and role
+    const { data: inviteData, error: fetchInviteError } = await supabase
+      .from('invites')
+      .select('organization_id, role')
+      .eq('token', token)
+      .single()
+
+    if (fetchInviteError || !inviteData) {
+      return { error: fetchInviteError?.message || 'Invite not found.' }
+    }
+
+    // Add the user to organization_members
+    const { error: orgMemberError } = await supabase
+      .from('organization_members')
+      .insert({
+        organization_id: inviteData.organization_id,
+        user_id: sessionData.user?.id,
+        role: inviteData.role,
+        is_default: false,
+      })
+
+    if (orgMemberError) {
+      return { error: orgMemberError.message }
+    }
+
     if (profileError) {
       return { error: profileError.message }
     }
-
-    console.log('profileError', profileError)
 
     return { success: 'Account setup complete! Redirecting...' }
   } catch (error) {

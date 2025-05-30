@@ -48,7 +48,7 @@ interface InvitesResponse {
 }
 
 export function UserManagement({ invites }: { invites: InvitesResponse }) {
-  const { user } = useAuth()
+  const { user, activeOrg } = useAuth()
 
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -63,7 +63,12 @@ export function UserManagement({ invites }: { invites: InvitesResponse }) {
 
   const handleInviteSubmit = async (formData: FormData) => {
     setIsLoading(true)
-    const res = await inviteUser(formData, inviteForm.role, user?.id || '')
+    const res = await inviteUser(
+      formData,
+      inviteForm.role,
+      user?.id || '',
+      activeOrg?.id || '',
+    )
     setIsLoading(false)
     if (res.error) {
       toast.error(res.error || 'Invitation failed, please try again.')

@@ -6,6 +6,7 @@ export async function inviteUser(
   formData: FormData,
   userId: string,
   role: string,
+  orgId: string,
 ) {
   const email = formData.get('email')
 
@@ -14,8 +15,10 @@ export async function inviteUser(
     user: userId,
     role,
   }
+  console.log('orgId', orgId)
 
-  const res = await POST('/invites/create', data)
+  console.log('data', data)
+  const res = await POST(`/organizations/invite-member/${orgId}`, data)
   revalidateTag('invites')
   return res
 }

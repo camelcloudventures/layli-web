@@ -8,22 +8,27 @@ import Link from 'next/link'
 import { signIn } from '../../actions/actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/lib/context/auth-provider'
 
 export default function LoginForm() {
   const router = useRouter()
+  const { refreshUser } = useAuth()
+
   async function handleSubmit(formData: FormData) {
     const res = await signIn(formData)
 
     if (res.error) {
       toast.error(res.error)
+      return
     }
 
-    //Se
     if (res.success) {
       toast.success(res.success)
+      await refreshUser()
       router.push('/dashboard/settings')
     }
   }
+
   return (
     <form action={handleSubmit} className="space-y-4">
       <div className="space-y-2">

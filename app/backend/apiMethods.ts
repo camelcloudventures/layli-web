@@ -1,7 +1,5 @@
 'use server'
 import { baseUrl } from './base'
-import { redirect } from 'next/navigation'
-import { toast } from 'sonner'
 import { cookies } from 'next/headers'
 
 function getSupabaseCookieName() {
@@ -107,9 +105,7 @@ export async function POST<T>(
     if (needsAuth) {
       const accessToken = await getAccessToken()
       if (!accessToken) {
-        toast.error('You are not logged in')
-        redirect('/')
-        return
+        return { error: 'You are not logged in' }
       }
       token = accessToken
       const orgId = await getActiveOrgId()
@@ -119,6 +115,8 @@ export async function POST<T>(
     }
 
     const thisUrl = `${baseUrl}/api${url}`
+    console.log('thisUrl', thisUrl)
+    console.log('activeOrgId', activeOrgId)
     const response = await fetch(thisUrl, {
       method: 'POST',
       headers: {
@@ -142,14 +140,19 @@ export async function POST<T>(
       return jsonResponse
     }
 
-    return 'Unexpected response format'
+    return { error: 'Unexpected response format' }
   } catch (error) {
-    //@ts-expect-error --new
-    return error.message
+    return {
+      error: error instanceof Error ? error.message : 'An error occurred',
+    }
   }
 }
 
-export async function GET<T>(url: string, tags?: string[]): Promise<T | null> {
+export async function GET<T>(
+  url: string,
+  tags?: string[],
+  skipOrgCheck: boolean = false,
+): Promise<T | null> {
   try {
     const accessToken = await getAccessToken()
     if (!accessToken) {
@@ -158,7 +161,11 @@ export async function GET<T>(url: string, tags?: string[]): Promise<T | null> {
     }
 
     const activeOrgId = await getActiveOrgId()
-    if (!activeOrgId) {
+    console.log('activeOrgId', activeOrgId)
+    console.log('accessToken', accessToken)
+
+    // Only check for active org if skipOrgCheck is false
+    if (!skipOrgCheck && !activeOrgId) {
       //@ts-expect-error --need to fix this
       return { error: 'No active organization selected' }
     }
@@ -169,7 +176,8 @@ export async function GET<T>(url: string, tags?: string[]): Promise<T | null> {
       headers: {
         Accept: 'application/json',
         Authorization: `Bearer ${accessToken}`,
-        'X-Organization-Id': activeOrgId,
+        ...(activeOrgId &&
+          !skipOrgCheck && { 'X-Organization-Id': activeOrgId }),
       },
       cache: 'no-store',
       next: tags ? { tags } : undefined,

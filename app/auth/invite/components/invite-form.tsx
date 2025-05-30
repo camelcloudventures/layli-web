@@ -24,7 +24,6 @@ export default function InviteForm() {
   }
 
   async function handleSubmit(formData: FormData) {
-    console.log('fullUrl', fullUrl)
     setIsLoading(true)
     const res = await acceptInvite(formData, fullUrl, role!, token!)
     setIsLoading(false)

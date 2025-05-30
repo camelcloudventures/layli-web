@@ -2,7 +2,7 @@
 
 import { extractTokens } from '@/utils/utils'
 import { createClient } from '@/utils/supabase/server'
-import { GET } from '@/app/backend/apiMethods'
+import { GET, POST } from '@/app/backend/apiMethods'
 import { cookies } from 'next/headers'
 
 export async function signUp(formData: FormData) {
@@ -43,6 +43,7 @@ export async function signUp(formData: FormData) {
     return {
       success:
         'Account created successfully! Check your email for verification.',
+      user: authUser!.user?.id,
     }
   } catch (err) {
     //@ts-expect-error - error is not typed
@@ -78,7 +79,19 @@ export async function signIn(formData: FormData) {
       return { error: setSessionError.message }
     }
 
-    return { success: 'Signed in successfully! Redirecting...' }
+    // Fetch organization context immediately after successful sign in
+    const orgContext = await getUserOrganizations()
+
+    if (!orgContext?.success) {
+      return { error: 'Failed to load organization data' }
+    }
+
+    return {
+      success: 'Signed in successfully! Redirecting...',
+      user: signInData.user,
+      organizations: orgContext.data.organizations,
+      activeOrganization: orgContext.data.activeOrganization,
+    }
   } catch (err) {
     //@ts-expect-error - error is not typed
     return { error: err.message }
@@ -254,8 +267,29 @@ interface OrgResponse {
   }
 }
 
+export async function createOrganization(formData: FormData, user: string) {
+  try {
+    const name = formData.get('name') as string
+    const type = formData.get('type') as string
+
+    console.log('user', user)
+    const data = {
+      name,
+      type,
+      user,
+    }
+    const res = await POST('/organizations/invite-member/create', data, false)
+    console.log('res', res)
+    return res
+  } catch (error) {
+    //@ts-expect-error - error is not typed
+    return { error: error.message }
+  }
+}
+
 export async function getUserOrganizations() {
-  const response = await GET<OrgResponse>('/auth/context')
+  const response = await GET<OrgResponse>('/auth/context', undefined, true)
+  console.log('response from getUserOrganizations', response)
 
   if (response?.success && response?.data?.activeOrganization) {
     const cookieStore = await cookies()
@@ -266,4 +300,11 @@ export async function getUserOrganizations() {
   }
 
   return response
+}
+
+export async function logout() {
+  const supabase = await createClient()
+  await supabase.auth.signOut()
+  const cookieStore = await cookies()
+  cookieStore.delete('active_org')
 }

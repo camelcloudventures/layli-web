@@ -12,9 +12,11 @@ import { useMobile } from '@/hooks/use-mobile'
 import { useAuth } from '@/lib/context/auth-provider'
 
 export function DashboardHeader() {
-  const { user } = useAuth()
+  const { activeOrg } = useAuth()
   const [open, setOpen] = useState(false)
   const isMobile = useMobile()
+
+  console.log('activeOrg', activeOrg)
 
   // Close mobile nav when screen size changes
   useEffect(() => {
@@ -22,8 +24,6 @@ export function DashboardHeader() {
       setOpen(false)
     }
   }, [isMobile])
-
-  console.log('user', user)
 
   return (
     <header className="sticky top-0  z-40 border-b bg-background">
@@ -48,13 +48,7 @@ export function DashboardHeader() {
             </Sheet>
           )}
           <Link href="/dashboard" className="flex items-center gap-2">
-            <h1 className="text-xl font-bold">
-              {user?.role === 'admin'
-                ? 'Admin Dashboard'
-                : user?.role === 'auditor'
-                ? 'Auditor Dashboard'
-                : 'Supervisor Dashboard'}
-            </h1>
+            <h1 className="text-xl font-bold">{activeOrg?.name}</h1>
           </Link>
         </div>
         <div className="flex items-center gap-2">

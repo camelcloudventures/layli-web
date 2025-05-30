@@ -27,21 +27,23 @@ export interface Template {
 }
 
 export interface Assignee {
-  id: string
-  full_name: string
-  email: string
-  image?: string
-  role?: string
-  created_at?: string
-  phone_number?: string | number
-  email_verified_at?: string | null
+  assignee: {
+    id: string
+    full_name: string
+    email: string
+    image?: string
+    role?: string
+    created_at?: string
+    phone_number?: string | number
+    email_verified_at?: string | null
+  }
 }
 
 export interface Schedule {
   id: number | string
   title: string
   template_id: number | string
-  assignee_id: string
+  assignee_ids: string[]
   frequency: Frequency
   priority: Priority
   site_id: number | string | null
@@ -49,7 +51,7 @@ export interface Schedule {
   created_at?: string
   site: Site | null
   template: Template
-  assignee: Assignee
+  assignees: Assignee[]
   next_date?: string
   status?: string
 }

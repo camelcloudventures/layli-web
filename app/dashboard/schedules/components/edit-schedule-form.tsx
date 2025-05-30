@@ -1,7 +1,7 @@
 'use client'
 
 import type React from 'react'
-
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -21,6 +21,7 @@ import type {
   SiteOption,
 } from '../types/schedule-form-types'
 import type { Schedule } from '@/lib/types/schedule-types'
+import { MultiSelect } from '@/components/ui/multi-select'
 
 interface EditScheduleFormProps {
   schedule: Schedule
@@ -39,7 +40,17 @@ export function EditScheduleForm({
   onSubmit,
   onCancel,
 }: EditScheduleFormProps) {
+  const [selectedAssignees, setSelectedAssignees] = useState<string[]>(
+    schedule.assignee_ids || [],
+  )
+
   async function handleEdit(formData: FormData) {
+    // Add selected assignees to form data
+    formData.delete('assignee_ids')
+    selectedAssignees.forEach((id) => {
+      formData.append('assignee_ids', id)
+    })
+
     const res = (await updateSchedule(formData)) as {
       error?: string
       success?: string
@@ -117,29 +128,20 @@ export function EditScheduleForm({
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="assignee_id">
-            Assignee <span className="text-red-500">*</span>
+          <Label htmlFor="assignee_ids">
+            Assignees <span className="text-red-500">*</span>
           </Label>
-          <Select
-            name="assignee_id"
+          <MultiSelect
+            name="assignee_ids"
             required
-            defaultValue={schedule.assignee_id}
-          >
-            <SelectTrigger id="assignee_id" className="w-full">
-              <SelectValue placeholder="Select an assignee" />
-            </SelectTrigger>
-            <SelectContent>
-              {users.map((user) => (
-                <SelectItem
-                  key={user.user.id}
-                  value={user.user.id}
-                  className="hover:bg-gray-100 cursor-pointer"
-                >
-                  {user.user.full_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            value={selectedAssignees}
+            onValueChange={setSelectedAssignees}
+            placeholder="Select assignees"
+            options={users.map((user) => ({
+              value: user.user.id,
+              label: user.user.full_name,
+            }))}
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="frequency">

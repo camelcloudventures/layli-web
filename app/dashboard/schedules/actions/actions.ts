@@ -17,7 +17,7 @@ export async function createSchedule(formData: FormData) {
   const title = formData.get('title') as string
   const template_id = formData.get('template_id') as string
   const site_id = formData.get('site_id') as string
-  const assignee_id = formData.get('assignee_id') as string
+  const assignee_ids = formData.getAll('assignee_ids') as string[]
   const frequency = formData.get('frequency') as string
   const priority = formData.get('priority') as string
 
@@ -25,7 +25,7 @@ export async function createSchedule(formData: FormData) {
     title,
     template_id,
     site_id,
-    assignee_id,
+    assignee_ids,
     frequency,
     priority,
   }
@@ -37,8 +37,8 @@ export async function createSchedule(formData: FormData) {
   return res
 }
 
-export async function getActiveUsers(adminId: string) {
-  return await GET(`/invites/active-users/${adminId}`, ['users'])
+export async function getActiveUsers() {
+  return await GET(`/invites/organization/active-users`, ['users'])
 }
 
 export async function getTemplates() {
@@ -57,35 +57,31 @@ export async function getSites() {
 }
 
 export async function updateSchedule(formData: FormData) {
-  try {
-    const id = formData.get('id') as string
-    const title = formData.get('title') as string
-    const template_id = formData.get('template_id') as string
-    const site_id = formData.get('site_id') as string
-    const assignee_id = formData.get('assignee_id') as string
-    const frequency = formData.get('frequency') as string
-    const priority = formData.get('priority') as string
-    const status = formData.get('status') as string
+  const id = formData.get('id') as string
+  const title = formData.get('title') as string
+  const template_id = formData.get('template_id') as string
+  const site_id = formData.get('site_id') as string
+  const assignee_ids = formData.getAll('assignee_ids') as string[]
+  const frequency = formData.get('frequency') as string
+  const priority = formData.get('priority') as string
+  const status = formData.get('status') as string
 
-    const scheduleData = {
-      title,
-      template_id,
-      site_id,
-      assignee_id,
-      frequency,
-      priority,
-      status,
-    }
-
-    const res = await UPDATE(`/schedules/update/${id}`, scheduleData, [
-      'schedules',
-    ])
-    revalidateTag('schedules')
-    return res
-  } catch (error) {
-    console.error('Error updating schedule:', error)
-    return { error: 'Failed to update schedule' }
+  const scheduleData = {
+    id,
+    title,
+    template_id,
+    site_id,
+    assignee_ids,
+    frequency,
+    priority,
+    status,
   }
+
+  const res = await POST('/schedules/update', scheduleData, true, ['schedules'])
+
+  revalidateTag('schedules')
+
+  return res
 }
 
 export async function deleteSchedule(id: string) {

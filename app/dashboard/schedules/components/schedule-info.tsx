@@ -28,10 +28,22 @@ export function ScheduleInfo({ schedule }: ScheduleInfoProps) {
       <div className="flex items-center gap-2">
         <User className="h-4 w-4 text-muted-foreground" />
         <div>
-          <p className="text-sm font-medium">Assignee</p>
-          <p className="text-sm text-muted-foreground">
-            {schedule.assignee?.full_name || 'N/A'}
-          </p>
+          <p className="text-sm font-medium">Assignees</p>
+          <div className="text-sm text-muted-foreground flex flex-wrap gap-2">
+            {schedule.assignees?.length > 0 ? (
+              schedule.assignees.map((assignee, index) => (
+                <Badge
+                  key={index}
+                  variant="outline"
+                  className="bg-blue-50  text-blue-700 border-blue-200 hover:bg-blue-100"
+                >
+                  {assignee.assignee.full_name}
+                </Badge>
+              ))
+            ) : (
+              <span className="text-sm text-muted-foreground">N/A</span>
+            )}
+          </div>
         </div>
       </div>
 

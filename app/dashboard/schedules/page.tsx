@@ -1,4 +1,3 @@
-import { getUser } from '@/utils/common'
 import {
   getSchedules,
   getActiveUsers,
@@ -10,11 +9,12 @@ import { SchedulesList } from './components/schedules-list'
 export default async function SchedulesPage() {
   const schedulesResponse = await getSchedules(1)
   const schedules = schedulesResponse?.data || []
-  const user = await getUser()
 
-  const users = await getActiveUsers(user?.id || '')
+  // console.log('schedules', schedules)
+  const users = await getActiveUsers()
   const templates = await getTemplates()
   const sites = await getSites()
+  // console.log('users', users)
 
   return (
     <main className="w-full py-8 px-4">

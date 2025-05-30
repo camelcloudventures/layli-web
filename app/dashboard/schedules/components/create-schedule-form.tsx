@@ -20,6 +20,8 @@ import type {
   TemplateOption,
   SiteOption,
 } from '../types/schedule-form-types'
+import { useState } from 'react'
+import { MultiSelect } from '@/components/ui/multi-select'
 
 interface CreateScheduleFormProps {
   users: UserOption[]
@@ -36,7 +38,15 @@ export function CreateScheduleForm({
   onSubmit,
   onCancel,
 }: CreateScheduleFormProps) {
+  const [selectedAssignees, setSelectedAssignees] = useState<string[]>([])
+
   async function handleCreate(formData: FormData) {
+    // Add selected assignees to form data
+    formData.delete('assignee_ids')
+    selectedAssignees.forEach((id) => {
+      formData.append('assignee_ids', id)
+    })
+
     const res = await createSchedule(formData)
     if (res?.error) toast.error(res.error)
     else {
@@ -80,7 +90,7 @@ export function CreateScheduleForm({
             </SelectContent>
           </Select>
         </div>
-        <div className="  ">
+        <div className="">
           <Label htmlFor="site_id">
             Site <span className="text-red-500">*</span>
           </Label>
@@ -102,25 +112,20 @@ export function CreateScheduleForm({
           </Select>
         </div>
         <div className="">
-          <Label htmlFor="assignee_id">
-            Assignee <span className="text-red-500">*</span>
+          <Label htmlFor="assignee_ids">
+            Assignees <span className="text-red-500">*</span>
           </Label>
-          <Select name="assignee_id" required>
-            <SelectTrigger id="assignee_id" className="w-full">
-              <SelectValue placeholder="Select an assignee" />
-            </SelectTrigger>
-            <SelectContent>
-              {users.map((user) => (
-                <SelectItem
-                  key={user.user.id}
-                  value={user.user.id}
-                  className="hover:bg-gray-100 cursor-pointer"
-                >
-                  {user.user.full_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <MultiSelect
+            name="assignee_ids"
+            required
+            value={selectedAssignees}
+            onValueChange={setSelectedAssignees}
+            placeholder="Select assignees"
+            options={users.map((user) => ({
+              value: user.user.id,
+              label: user.user.full_name,
+            }))}
+          />
         </div>
         <div className="">
           <Label htmlFor="frequency">

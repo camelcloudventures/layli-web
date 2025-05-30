@@ -39,6 +39,8 @@ export function ScheduleDetails({
     }
   }
 
+  console.log('schedule details', schedule)
+
   return (
     <div className="space-y-5">
       {/* Header Section */}
@@ -108,11 +110,24 @@ export function ScheduleDetails({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-muted-foreground">
-                Assignee
+                Assignees
               </p>
-              <p className="text-sm font-medium text-foreground mt-0.5 truncate">
-                {schedule.assignee?.full_name || 'Not assigned'}
-              </p>
+              <div className="space-y-1 mt-0.5">
+                {schedule.assignees?.length > 0 ? (
+                  schedule.assignees.map((assigneeWrapper) => (
+                    <p
+                      key={assigneeWrapper.assignee.id}
+                      className="text-sm font-medium text-foreground truncate"
+                    >
+                      {assigneeWrapper.assignee.full_name}
+                    </p>
+                  ))
+                ) : (
+                  <p className="text-sm font-medium text-foreground">
+                    Not assigned
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 

@@ -61,7 +61,9 @@ export function SchedulesList({
       (schedule) =>
         schedule.title.toLowerCase().includes(query) ||
         schedule.site?.name?.toLowerCase().includes(query) ||
-        schedule.assignee?.full_name?.toLowerCase().includes(query) ||
+        schedule.assignees?.some((assignee) =>
+          assignee.assignee.full_name?.toLowerCase().includes(query),
+        ) ||
         schedule.template?.title?.toLowerCase().includes(query) ||
         schedule.frequency.toLowerCase().includes(query),
     )

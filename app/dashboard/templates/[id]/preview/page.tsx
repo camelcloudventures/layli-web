@@ -9,6 +9,10 @@ function isWrappedTemplate(obj: unknown): obj is { data: AuditTemplate } {
   return !!obj && typeof obj === 'object' && 'data' in obj
 }
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function TemplatePreviewPage({
   params,
 }: {

@@ -65,16 +65,16 @@ export function UserManagement({ invites }: { invites: InvitesResponse }) {
     setIsLoading(true)
     const res = await inviteUser(
       formData,
-      inviteForm.role,
       user?.id || '',
+      inviteForm.role,
       activeOrg?.id || '',
     )
     setIsLoading(false)
-    if (res.error) {
-      toast.error(res.error || 'Invitation failed, please try again.')
+    if (res?.error) {
+      toast.error(res?.error || 'Invitation failed, please try again.')
       return
     }
-    toast.success(res.success)
+    toast.success(res?.success)
     setInviteForm({ role: inviteForm.role })
     setIsInviteDialogOpen(false)
   }

@@ -136,9 +136,15 @@ export async function acceptInvite(
   router: string,
   role: string,
   token: string,
+  orgId: string,
 ) {
   const supabase = await createClient()
 
+  const cookieStore = await cookies()
+  cookieStore.set('active_org', orgId, {
+    path: '/',
+    sameSite: 'lax',
+  })
   try {
     const { accessToken, refreshToken } = extractTokens(router)
     if (!accessToken || !refreshToken) {
@@ -167,6 +173,8 @@ export async function acceptInvite(
     }
 
     const validateRes = await GET(`/invites/validate/${token}`)
+
+    console.log('Token value', token)
     //@ts-expect-error - error is not typed
     if (!validateRes?.success) {
       //@ts-expect-error - error is not typed
@@ -196,24 +204,13 @@ export async function acceptInvite(
       return { error: inviteError.message }
     }
 
-    // Fetch the invite to get org and role
-    const { data: inviteData, error: fetchInviteError } = await supabase
-      .from('invites')
-      .select('organization_id, role')
-      .eq('token', token)
-      .single()
-
-    if (fetchInviteError || !inviteData) {
-      return { error: fetchInviteError?.message || 'Invite not found.' }
-    }
-
     // Add the user to organization_members
     const { error: orgMemberError } = await supabase
       .from('organization_members')
       .insert({
-        organization_id: inviteData.organization_id,
+        organization_id: orgId,
         user_id: sessionData.user?.id,
-        role: inviteData.role,
+        role: role,
         is_default: true,
       })
 
@@ -224,6 +221,8 @@ export async function acceptInvite(
     if (profileError) {
       return { error: profileError.message }
     }
+
+    // Set the active organization in cookies
 
     return { success: 'Account setup complete! Redirecting...' }
   } catch (error) {

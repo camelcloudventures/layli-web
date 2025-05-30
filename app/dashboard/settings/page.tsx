@@ -9,16 +9,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { UserProfileForm } from './components/user-profile-form'
 import { UserPreferences } from './components/user-preferences'
 import { UserManagement } from './components/user-management'
-import { getUser } from '@/utils/common'
 import { getInvites } from './actions/actions'
 import { Permission } from '@/lib/auth/auth'
 import HasPermission from '../components/has-permission'
 
 export default async function page() {
-  const user = await getUser()
+  const invites = await getInvites()
 
-  const invites = await getInvites(user?.id || '')
-
+  console.log('invites', invites)
   return (
     <div className="space-y-6">
       <div>

@@ -18,6 +18,7 @@ export default function InviteForm() {
   const params = useSearchParams()
   const role = params.get('role')
   const token = params.get('token')
+  const orgId = params.get('org_id')
 
   if (!token || !role) {
     return <div>Missing invite token or role</div>
@@ -25,7 +26,7 @@ export default function InviteForm() {
 
   async function handleSubmit(formData: FormData) {
     setIsLoading(true)
-    const res = await acceptInvite(formData, fullUrl, role!, token!)
+    const res = await acceptInvite(formData, fullUrl, role!, token!, orgId!)
     setIsLoading(false)
 
     if (res?.error) toast.error(res.error)

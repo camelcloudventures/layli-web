@@ -41,7 +41,7 @@ export function EditScheduleForm({
   onCancel,
 }: EditScheduleFormProps) {
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>(
-    schedule.assignee_ids || [],
+    schedule.assignees?.map((a) => a.assignee.id) || [],
   )
 
   async function handleEdit(formData: FormData) {
@@ -142,6 +142,19 @@ export function EditScheduleForm({
               label: user.user.full_name,
             }))}
           />
+          <div className="flex flex-wrap gap-2 mt-2">
+            {selectedAssignees.map((id) => {
+              const user = users.find((u) => u.user.id === id)
+              return user ? (
+                <span
+                  key={id}
+                  className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs"
+                >
+                  {user.user.full_name}
+                </span>
+              ) : null
+            })}
+          </div>
         </div>
         <div className="space-y-2">
           <Label htmlFor="frequency">

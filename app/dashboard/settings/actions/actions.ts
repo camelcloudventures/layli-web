@@ -10,21 +10,24 @@ export async function inviteUser(
 ) {
   const email = formData.get('email')
 
+  console.log('role', role)
+  console.log('userId', userId)
   const data = {
     email,
+    role: role,
     user: userId,
-    role,
   }
   console.log('orgId', orgId)
 
   console.log('data', data)
   const res = await POST(`/organizations/invite-member/${orgId}`, data)
+  console.log('res', res)
   revalidateTag('invites')
   return res
 }
 
-export async function getInvites(userId: string) {
-  return await GET(`/invites/${userId}`, ['invites'])
+export async function getInvites() {
+  return await GET(`/invites/organization/users`, ['invites'])
 }
 
 export async function updateUserRole(userId: string, role: string) {

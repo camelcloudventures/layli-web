@@ -77,7 +77,8 @@ export async function updateSchedule(formData: FormData) {
     status,
   }
 
-  const res = await POST('/schedules/update', scheduleData, true, ['schedules'])
+  const res = await UPDATE(`/schedules/update/${id}`, scheduleData)
+  console.log('res', res)
 
   revalidateTag('schedules')
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+// import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { signUp, createOrganization } from '../../actions/actions'
 import { Progress } from '@/components/ui/progress'
@@ -14,7 +14,7 @@ const steps = [
 ]
 
 export default function MultiStepForm() {
-  const router = useRouter()
+  // const router = useRouter()
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState<FormData>(new FormData())
   const [isSubmitting, setIsSubmitting] = useState(false)

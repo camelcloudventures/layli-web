@@ -19,16 +19,15 @@ import { PagesManager } from '../../components/pages-manager'
 import { toast } from 'sonner'
 import { TemplatePreview } from '../../components/template-preview'
 import Image from 'next/image'
-import { Loader2 } from 'lucide-react'
 import { useAuth } from '@/lib/context/auth-provider'
 import { AuditTemplate } from '@/types/audit-types'
 import { omit } from 'lodash'
+import SubmitBtn from '@/components/custom/submit-btn'
 
 export default function CreateAuditForm() {
   const router = useRouter()
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('details')
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [template, setTemplate] = useState<AuditTemplate>({
     id: `temp-${Date.now()}`,
     title: '',
@@ -75,8 +74,6 @@ export default function CreateAuditForm() {
   }
 
   async function handleSubmit(formData: FormData) {
-    setIsSubmitting(true)
-
     const updatePages = template.pages.map((page) => ({
       ...omit(page, ['id', 'template_id']),
       sections: page.sections.map((section) => ({
@@ -108,8 +105,9 @@ export default function CreateAuditForm() {
         toast.success(String(result.success))
         router.push('/dashboard/templates')
       }
-    } finally {
-      setIsSubmitting(false)
+    } catch (error) {
+      console.error('Error creating template:', error)
+      toast.error('Failed to create template')
     }
   }
 
@@ -302,27 +300,11 @@ export default function CreateAuditForm() {
                 Back
               </Button>
               <form action={handleSubmit}>
-                <Button
-                  type="submit"
-                  disabled={
-                    isSubmitting ||
-                    !template.title ||
-                    template.pages.length === 0
-                  }
-                  aria-label="Create Template"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2
-                        className="mr-2 h-4 w-4 animate-spin"
-                        aria-hidden="true"
-                      />
-                      Creating...
-                    </>
-                  ) : (
-                    'Create Template'
-                  )}
-                </Button>
+                <SubmitBtn
+                  label="Create Template"
+                  variant="default"
+                  className="w-full"
+                />
               </form>
             </div>
           </CardContent>

@@ -20,9 +20,7 @@ export async function getTemplates(
 export async function getTemplate(
   id: string,
 ): Promise<AuditTemplateApiResponse> {
-  return await GET<AuditTemplateApiResponse>(`/audit-template/get/${id}`, [
-    'templates',
-  ])
+  return await GET<AuditTemplateApiResponse>(`/audit-template/get/${id}`)
 }
 
 export async function createTemplate(formData: FormData, createdBy: string) {

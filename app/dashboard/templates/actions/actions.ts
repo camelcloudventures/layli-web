@@ -3,6 +3,7 @@
 import { DELETE, GET, POST, UPDATE } from '@/app/backend/apiMethods'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import type { AuditTemplate, TemplatesResponse } from '@/lib/types/audit-types'
+import { uploadImage } from '@/utils/common'
 
 export type AuditTemplateApiResponse =
   | AuditTemplate
@@ -30,10 +31,26 @@ export async function createTemplate(formData: FormData, createdBy: string) {
     const photo = formData.get('photo') as string
     const pages = JSON.parse(formData.get('pages') as string)
 
+    console.log('photo', photo)
+
+    // If there's a photo, upload it to the template-images bucket
+    let photoUrl = photo
+    if (photo && photo.startsWith('data:')) {
+      const file = dataURLtoFile(photo, 'template-cover.jpg')
+      const { fileUrl, error } = await uploadImage({ file }, 'template-images')
+      if (error || !fileUrl) {
+        console.error('Error uploading image:', error)
+        return { error: 'Failed to upload template image' }
+      }
+      photoUrl = fileUrl
+    }
+
+    console.log('photoUrl', photoUrl)
+
     const templateData = {
       title,
       description,
-      photo,
+      photo: photoUrl,
       pages,
       createdBy,
     }
@@ -52,16 +69,56 @@ export async function createTemplate(formData: FormData, createdBy: string) {
   }
 }
 
+// Helper function to convert data URL to File object
+function dataURLtoFile(dataurl: string, filename: string): File {
+  const arr = dataurl.split(',')
+  const mime = arr[0].match(/:(.*?);/)?.[1]
+  const bstr = atob(arr[1])
+  let n = bstr.length
+  const u8arr = new Uint8Array(n)
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n)
+  }
+  return new File([u8arr], filename, { type: mime })
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function updateTemplate(template: any) {
-  const res = await UPDATE(`/audit-template/update/${template.id}`, template, [
-    'templates',
-  ])
+  try {
+    // If there's a photo and it's a data URL, upload it to the template-images bucket
+    let photoUrl = template.photo
+    console.log('template.photo', template.photo)
+    if (template.photo && template.photo.startsWith('data:')) {
+      const file = dataURLtoFile(template.photo, 'template-cover.jpg')
+      const { fileUrl, error } = await uploadImage({ file }, 'template-images')
+      if (error || !fileUrl) {
+        console.error('Error uploading image:', error)
+        return { error: 'Failed to upload template image' }
+      }
+      photoUrl = fileUrl
+    }
 
-  revalidatePath(`/dashboard/templates/${template.id}/edit`)
-  revalidateTag('templates')
+    console.log('photoUrl', photoUrl)
 
-  return res
+    const templateData = {
+      ...template,
+      photo: photoUrl,
+    }
+
+    const res = await UPDATE(
+      `/audit-template/update/${template.id}`,
+      templateData,
+      ['templates'],
+    )
+
+    revalidatePath(`/dashboard/templates/${template.id}/edit`)
+    revalidateTag('templates')
+
+    return res
+  } catch (error) {
+    console.error('Error updating template:', error)
+    return { error: 'Failed to update template' }
+  }
 }
 
 export async function deleteTemplate(templateId: string) {

@@ -42,11 +42,11 @@ export function ImageUpload({ value, onChange, label }: ImageUploadProps) {
           <Image
             src={value}
             alt="Uploaded preview"
-            width={200}
-            height={200}
-            className="rounded border w-full max-w-xs object-contain mb-2"
+            width={1200}
+            height={400}
+            className="rounded border w-full h-72 object-cover mb-4"
           />
-          <div className="flex gap-2">
+          <div className="flex gap-2 justify-center">
             <Button
               type="button"
               variant="outline"

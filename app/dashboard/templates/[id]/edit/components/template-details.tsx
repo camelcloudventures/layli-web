@@ -7,16 +7,24 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card'
+import { ImageUpload } from '@/app/dashboard/templates/components/image-upload'
+import { Label } from '@/components/ui/label'
 
 interface TemplateDetailsProps {
   template: {
     title: string
     description: string
+    photo?: string
   }
-  onUpdate: (updates: { title?: string; description?: string }) => void
+  onUpdate: (updates: {
+    title?: string
+    description?: string
+    photo?: string
+  }) => void
 }
 
 export function TemplateDetails({ template, onUpdate }: TemplateDetailsProps) {
+  console.log('template', template)
   return (
     <Card>
       <CardHeader>
@@ -38,6 +46,14 @@ export function TemplateDetails({ template, onUpdate }: TemplateDetailsProps) {
           onChange={(e) => onUpdate({ description: e.target.value })}
           placeholder="Description"
         />
+        <div className="space-y-2">
+          <Label>Cover Image</Label>
+          <ImageUpload
+            value={template.photo || ''}
+            onChange={(url) => onUpdate({ photo: url })}
+            label="Cover Image"
+          />
+        </div>
       </CardContent>
     </Card>
   )

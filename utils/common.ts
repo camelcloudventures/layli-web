@@ -23,7 +23,8 @@ export async function uploadImage(fileData: FileData, bucketName: string) {
   }
 
   const fileExt = fileData.file.name.split('.').pop()
-  const fileName = `avatar-${user.id}.${fileExt}`
+  const timestamp = Date.now()
+  const fileName = `template-${timestamp}.${fileExt}`
   const originalFileName = fileData.file.name
 
   const { error: extensionError } = await supabase.storage

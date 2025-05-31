@@ -4,8 +4,8 @@ import { Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import type { AuditTemplate } from '@/lib/types/audit-types'
 import Link from 'next/link'
-import NextImage from 'next/image'
 import Pagination from './pagination'
+import Image from 'next/image'
 
 interface TemplateSearchProps {
   templates: AuditTemplate[]
@@ -28,6 +28,10 @@ export function TemplateSearch({
       template.description.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
+  console.log(
+    'template images',
+    templates.map((template) => template?.photo),
+  )
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row gap-4">
@@ -51,10 +55,14 @@ export function TemplateSearch({
           >
             <div className="relative h-48 w-full bg-muted">
               {template.photo ? (
-                <NextImage
+                <Image
                   src={template?.photo}
-                  width={100}
-                  height={100}
+                  width={600}
+                  height={192}
+                  style={{
+                    objectFit: 'cover',
+                    objectPosition: 'center',
+                  }}
                   alt={template.title}
                   className="h-full w-full object-cover"
                 />

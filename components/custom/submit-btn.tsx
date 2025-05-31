@@ -28,8 +28,8 @@ export default function SubmitBtn({
       variant={variant}
       className={clsx(
         className,
-        pending ? 'bg-opacity-50' : '',
-        isDisabled ? 'bg-opacity-50 cursor-not-allowed' : '',
+        // pending ? 'bg-opacity-50' : '',
+        // isDisabled ? '' : '',
       )}
     >
       {pending ? <BtnLoader /> : label}

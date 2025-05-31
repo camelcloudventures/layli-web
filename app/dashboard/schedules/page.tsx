@@ -1,31 +1,14 @@
-import {
-  getSchedules,
-  getActiveUsers,
-  getTemplates,
-  getSites,
-} from './actions/actions'
-import { SchedulesList } from './components/schedules-list'
+import { getSchedules } from './actions/actions'
+import { SchedulesProvider } from './components/schedules-provider'
+import type { SchedulesResponse } from '@/lib/types/schedule-types'
 
 export default async function SchedulesPage() {
   const schedulesResponse = await getSchedules(1)
-  const schedules = schedulesResponse?.data || []
-
-  // console.log('schedules', schedules)
-  const users = await getActiveUsers()
-  const templates = await getTemplates()
-  const sites = await getSites()
-  // console.log('users', users)
+  const schedules = (schedulesResponse as SchedulesResponse)?.data || []
 
   return (
     <main className="w-full py-8 px-4">
-      <SchedulesList
-        schedules={schedules}
-        // @ts-expect-error - users is an array of objects
-        users={users?.data || []}
-        // @ts-expect-error - templates is an array of objects
-        templates={templates?.data || []}
-        sites={sites || []}
-      />
+      <SchedulesProvider initialSchedules={schedules} />
     </main>
   )
 }

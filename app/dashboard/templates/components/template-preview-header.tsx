@@ -44,12 +44,14 @@ export function TemplatePreviewHeader({
           </Button>
         </HasPermission>
         <Button
+          disabled={true}
+          className="cursor-not-allowed"
           onClick={() => {
             // In a real app, this would start a new audit based on this template
             toast.success('Starting new audit')
           }}
         >
-          Start New Audit
+          Start Audit
         </Button>
       </div>
     </div>

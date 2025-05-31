@@ -11,6 +11,7 @@ export default function SignUpForm() {
   const router = useRouter()
   async function handleSubmit(formData: FormData) {
     const res = await signUp(formData)
+    console.log('res', res)
 
     if (res.error) {
       toast.error(res.error)

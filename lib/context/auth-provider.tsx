@@ -135,8 +135,8 @@ function AuthProvider({ children }: { children: ReactNode }) {
   const handleSignOut = async () => {
     setLoading(true)
     await logout()
+    // State updates will happen after redirect
     setUser(null)
-    // router.push('/auth/login')
     setOrgs([])
     setActiveOrg(null)
     setLoading(false)

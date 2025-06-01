@@ -305,8 +305,8 @@ export async function getUserOrganizations() {
 
 export async function logout() {
   const supabase = await createClient()
-  await supabase.auth.signOut()
   const cookieStore = await cookies()
+  await supabase.auth.signOut()
   cookieStore.delete('active_org')
-  redirect('/auth/login')
+  return redirect('/auth/login')
 }

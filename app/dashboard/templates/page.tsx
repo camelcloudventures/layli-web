@@ -67,7 +67,9 @@ export default async function AuditTemplatesPage({ searchParams }: PageProps) {
           totalPages={response.pagination.totalPages}
         />
       ) : (
-        <EmptyTemplatesState />
+        <HasPermission permission={Permission.EDIT_TEMPLATES}>
+          <EmptyTemplatesState />
+        </HasPermission>
       )}
     </div>
   )

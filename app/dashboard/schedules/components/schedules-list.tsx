@@ -45,6 +45,7 @@ export function SchedulesList({
   templates,
   sites,
 }: SchedulesListProps) {
+  console.log('schedules', schedules)
   const [searchQuery, setSearchQuery] = useState('')
   const [open, setOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
@@ -63,6 +64,9 @@ export function SchedulesList({
         schedule.site?.name?.toLowerCase().includes(query) ||
         schedule.assignees?.some((assignee) =>
           assignee.assignee.full_name?.toLowerCase().includes(query),
+        ) ||
+        schedule.assignees?.some((assignee) =>
+          assignee.assignee.email?.toLowerCase().includes(query),
         ) ||
         schedule.template?.title?.toLowerCase().includes(query) ||
         schedule.frequency.toLowerCase().includes(query),
@@ -152,12 +156,12 @@ export function SchedulesList({
       <ScheduleSearch value={searchQuery} onChange={setSearchQuery} />
 
       <div className="space-y-4">
-        {filteredSchedules.length === 0 ? (
+        {filteredSchedules?.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
             No schedules found.
           </div>
         ) : (
-          filteredSchedules.map((schedule) => (
+          filteredSchedules?.map((schedule) => (
             <ScheduleCard
               key={schedule.id}
               schedule={schedule}

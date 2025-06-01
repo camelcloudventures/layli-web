@@ -17,7 +17,6 @@ import {
   signUp,
 } from '@/app/auth/actions/actions'
 import { Org } from '@/types/types'
-import { useRouter } from 'next/navigation'
 
 interface AuthUser {
   id: string
@@ -62,7 +61,6 @@ function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [orgs, setOrgs] = useState<Org[]>([])
   const [activeOrg, setActiveOrg] = useState<Org | null>(null)
-  const router = useRouter()
   const fetchUser = useCallback(async () => {
     try {
       setLoading(true)
@@ -135,7 +133,6 @@ function AuthProvider({ children }: { children: ReactNode }) {
   const handleSignOut = async () => {
     setLoading(true)
     await logout()
-    // State updates will happen after redirect
     setUser(null)
     setOrgs([])
     setActiveOrg(null)

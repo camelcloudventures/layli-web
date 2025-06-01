@@ -12,17 +12,15 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { LogOut, UserCircle } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+// import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/context/auth-provider'
 // Mock user data
 
 export function UserAccountNav() {
   const { user, signOut } = useAuth()
-  const router = useRouter()
 
   const handleLogout = () => {
     signOut()
-    router.push('/auth/login')
   }
 
   return (

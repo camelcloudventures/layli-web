@@ -136,7 +136,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true)
     await logout()
     setUser(null)
-    router.push('/auth/login')
+    // router.push('/auth/login')
     setOrgs([])
     setActiveOrg(null)
     setLoading(false)

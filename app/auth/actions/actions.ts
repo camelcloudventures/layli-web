@@ -4,6 +4,7 @@ import { extractTokens } from '@/utils/utils'
 import { createClient } from '@/utils/supabase/server'
 import { GET, POST } from '@/app/backend/apiMethods'
 import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 
 export async function signUp(formData: FormData) {
   const supabase = await createClient()
@@ -307,4 +308,5 @@ export async function logout() {
   await supabase.auth.signOut()
   const cookieStore = await cookies()
   cookieStore.delete('active_org')
+  redirect('/auth/login')
 }

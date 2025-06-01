@@ -279,6 +279,7 @@ export async function createOrganization(formData: FormData, user: string) {
     // Skip organization check since this is creating a new organization
     // and there won't be an active organization yet
     const res = await POST('/organizations/create', data, false)
+    console.log('res from createOrganization', res)
     return res
   } catch (error) {
     //@ts-expect-error - error is not typed

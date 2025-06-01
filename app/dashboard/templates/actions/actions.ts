@@ -64,7 +64,7 @@ export async function createTemplate(formData: FormData, createdBy: string) {
 
     return res
   } catch (error) {
-    console.error('Error creating template:', error)
+    console.log('error from createTemplate', error)
     return { error: 'Failed to create template' }
   }
 }

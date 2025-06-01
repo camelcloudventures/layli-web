@@ -33,7 +33,7 @@ export async function signUp(formData: FormData) {
       id: authUser!.user?.id,
       full_name: name,
       email,
-      role: 'auditor',
+      role: 'admin',
       phone_number: phoneNumber,
     })
     if (profileError) {

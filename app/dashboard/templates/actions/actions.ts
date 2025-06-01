@@ -59,6 +59,7 @@ export async function createTemplate(formData: FormData, createdBy: string) {
       'templates',
     ])
 
+    console.log('res from createTemplate', res)
     // Revalidate the templates path
     revalidatePath('/dashboard/templates')
 

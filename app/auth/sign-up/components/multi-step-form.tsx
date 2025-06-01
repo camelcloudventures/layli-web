@@ -40,6 +40,7 @@ export default function MultiStepForm() {
       // Handle organization creation
       setIsSubmitting(true)
       const res = await createOrganization(formData, user!)
+      console.log('response', res)
       if (res.error) {
         toast.error(res.error)
         return

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-// import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { signUp, createOrganization } from '../../actions/actions'
 import { Progress } from '@/components/ui/progress'
@@ -14,7 +14,7 @@ const steps = [
 ]
 
 export default function MultiStepForm() {
-  // const router = useRouter()
+  const router = useRouter()
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState<FormData>(new FormData())
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -25,15 +25,12 @@ export default function MultiStepForm() {
       formData.set(key, value)
     }
     setFormData(formData)
-    console.log('formData', formData)
 
     if (currentStep === 0) {
       // Handle sign up
       const res = await signUp(formData)
-      console.log('res', res)
       //@ts-expect-error - error is not typed
-      setUser(res.user)
-      console.log('user', user)
+      setUser(res?.user)
       if (res.error) {
         toast.error(res.error)
         return
@@ -43,13 +40,12 @@ export default function MultiStepForm() {
       // Handle organization creation
       setIsSubmitting(true)
       const res = await createOrganization(formData, user!)
-      console.log('res', res)
       if (res.error) {
         toast.error(res.error)
         return
       }
       toast.success(res.success)
-      //   router.push('/')
+      router.push('/auth/login')
       setIsSubmitting(false)
     }
   }

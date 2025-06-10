@@ -36,6 +36,7 @@ export default function CreateAuditForm() {
     pages: [],
   })
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [imageError, setImageError] = useState<string | null>(null)
 
   function handleInputChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -46,6 +47,12 @@ export default function CreateAuditForm() {
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+    if (file.size > 2 * 1024 * 1024) {
+      setImageError('Image must be 2MB or less.')
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      return
+    }
+    setImageError(null)
     const reader = new FileReader()
     reader.onload = (event) => {
       setTemplate((prev) => ({
@@ -115,8 +122,15 @@ export default function CreateAuditForm() {
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
       <TabsList className="grid w-full grid-cols-3">
         <TabsTrigger value="details">Template Details</TabsTrigger>
-        <TabsTrigger value="pages">Pages & Questions</TabsTrigger>
-        <TabsTrigger value="preview">Preview</TabsTrigger>
+        <TabsTrigger
+          value="pages"
+          disabled={!template.title || !template.description}
+        >
+          Pages & Questions
+        </TabsTrigger>
+        <TabsTrigger value="preview" disabled={template.pages.length === 0}>
+          Preview
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="details">
@@ -156,6 +170,11 @@ export default function CreateAuditForm() {
             <div className="space-y-2">
               <Label htmlFor="photo">Cover Image</Label>
               <div className="border rounded-xl p-6 flex flex-col items-center justify-center min-h-[200px] w-full">
+                {imageError && (
+                  <span className="text-red-600 text-sm font-semibold mb-2">
+                    {imageError}
+                  </span>
+                )}
                 {template.photo ? (
                   <>
                     <Image

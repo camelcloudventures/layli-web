@@ -2,7 +2,7 @@
 
 import type React from 'react'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 
@@ -14,10 +14,19 @@ interface ImageUploadProps {
 
 export function ImageUpload({ value, onChange, label }: ImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [error, setError] = useState<string | null>(null)
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
+    console.log('file sizes', file?.size)
     if (!file) return
+    if (file.size > 2 * 1024 * 1024) {
+      setError('Image must be 2MB or less.')
+      onChange('')
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      return
+    }
+    setError(null)
     const reader = new FileReader()
     reader.onload = (event) => {
       onChange((event.target?.result ?? '') as string)
@@ -37,6 +46,9 @@ export function ImageUpload({ value, onChange, label }: ImageUploadProps) {
   return (
     <div className="flex flex-col items-center gap-2 w-full">
       {label && <span className="font-medium mb-2">{label}</span>}
+      {error && (
+        <span className="text-red-600 text-sm font-semibold mb-2">{error}</span>
+      )}
       {value ? (
         <>
           <Image

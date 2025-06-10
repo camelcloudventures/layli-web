@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Slider } from "@/components/ui/slider"
 import { GripVertical, ChevronDown, ChevronUp, Plus, HelpCircle, Trash2 } from "lucide-react"
-import type { AuditTemplate, Page, Section, Question, NewQuestion } from "@/types/audit-types"
+import type { AuditTemplate, Page, Section, Question, NewQuestion } from "../../../../types/audit-types"
 import { ResponseOptionsManager } from "@/app/dashboard/templates/components/response-options-manager"
 
 interface QuestionsManagerProps {
@@ -54,7 +55,7 @@ export function QuestionsManager({ template, setTemplate, page, section }: Quest
   const updateQuestion = (
     questionId: string,
     field: keyof Question,
-    value: string | boolean | "BOOLEAN" | "TEXT" | "DATE" | "PHOTO" | "NUMBER" | "SELECT" | "MULTI_SELECT"
+    value: string | boolean | number | "BOOLEAN" | "TEXT" | "DATE" | "PHOTO" | "NUMBER" | "SELECT" | "MULTI_SELECT"
   ) => {
     const updatedTemplate = { ...template }
     const pageIndex = updatedTemplate.pages.findIndex((p) => p.id === page.id)
@@ -262,7 +263,7 @@ export function QuestionsManager({ template, setTemplate, page, section }: Quest
                           updateQuestion(
                             question.id,
                             "field_type",
-                            value as "BOOLEAN" | "TEXT" | "DATE" | "PHOTO" | "NUMBER" | "SELECT" | "MULTI_SELECT",
+                            value as "BOOLEAN" | "TEXT" | "DATE" | "PHOTO" | "NUMBER" | "SELECT" | "MULTI_SELECT" | "SIGNATURE" | "LOCATION" | "SLIDER",
                           )
                         }
                       >
@@ -277,6 +278,9 @@ export function QuestionsManager({ template, setTemplate, page, section }: Quest
                           <SelectItem value="NUMBER">Number</SelectItem>
                           <SelectItem value="SELECT">Single Select</SelectItem>
                           <SelectItem value="MULTI_SELECT">Multi Select</SelectItem>
+                          <SelectItem value="SIGNATURE">Signature</SelectItem>
+                          <SelectItem value="LOCATION">Location</SelectItem>
+                          <SelectItem value="SLIDER">Slider</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -307,10 +311,55 @@ export function QuestionsManager({ template, setTemplate, page, section }: Quest
                             checked={question.multiple_selection}
                             onCheckedChange={(checked) => updateQuestion(question.id, "multiple_selection", checked)}
                           />
-                          <Label htmlFor={`question-multiple-${question.id}`}>Allow Multiple Selections</Label>
+                          <Label htmlFor={`question-multiple-${question.id}`}>Multiple Selection</Label>
                         </div>
                       )}
                     </div>
+
+                    {/* Add new field type specific UI components */}
+                    {question.field_type === "SIGNATURE" && (
+                      <div className="space-y-2">
+                        <Label htmlFor={`signature-${question.id}`}>Signature</Label>
+                        <div className="border border-dashed rounded-md flex flex-col items-center justify-center min-h-[80px] py-4 bg-gray-50">
+                          <svg width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400 mb-2" viewBox="0 0 24 24"><path d="M16 19c-2.5-2.5-7.5-2.5-10 0M8 13c.5-1.5 2.5-1.5 3 0m2-4c.5-2 3.5-2 4 0"/></svg>
+                          <span className="text-xs text-muted-foreground">Sign here</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {question.field_type === "LOCATION" && (
+                      <div className="space-y-2">
+                        <Label htmlFor={`location-${question.id}`}>Location</Label>
+                        <div className="flex items-center gap-2 mb-2">
+                          <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/></svg>
+                          <Input className="w-full" value="123 Main St, City" disabled aria-label="Address" />
+                        </div>
+                        <div className="flex gap-2">
+                          <Input className="w-1/2" value="Lat: 0.0000" disabled aria-label="Latitude" />
+                          <Input className="w-1/2" value="Lng: 0.0000" disabled aria-label="Longitude" />
+                        </div>
+                      </div>
+                    )}
+
+                    {question.field_type === "SLIDER" && (
+                      <div className="space-y-2">
+                        <Label htmlFor={`slider-${question.id}`}>Slider (1-5)</Label>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">1</span>
+                          <Slider
+                            id={`slider-${question.id}`}
+                            value={[question.slider_value || 1]}
+                            max={5}
+                            min={1}
+                            step={1}
+                            className="w-full"
+                            onValueChange={val => updateQuestion(question.id, 'slider_value', val[0])}
+                          />
+                          <span className="text-sm">5</span>
+                          <span className="ml-2 text-muted-foreground text-xs">Value: {question.slider_value || 1}</span>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Response Options Manager (for SELECT & MULTI_SELECT) */}
                     {(question.field_type === "SELECT" || question.field_type === "MULTI_SELECT") && (

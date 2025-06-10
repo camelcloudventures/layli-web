@@ -18,6 +18,7 @@ import { DeleteSectionButton } from './delete-controls/delete-section-button'
 import { DeleteQuestionButton } from './delete-controls/delete-question-button'
 import HasPermission from '../../components/has-permission'
 import { Permission } from '@/lib/auth/auth'
+import { Slider } from '@/components/ui/slider'
 
 interface TemplatePreviewContentProps {
   template: AuditTemplate
@@ -220,6 +221,85 @@ function renderQuestionInput(question: Question) {
               </Label>
             </div>
           ))}
+        </div>
+      )
+    case 'SLIDER':
+      return (
+        <div className="space-y-2">
+          <Label htmlFor={`slider-${question.id}`}>Slider (1-5)</Label>
+          <div className="flex items-center gap-2">
+            <span className="text-sm">1</span>
+            <Slider
+              id={`slider-${question.id}`}
+              defaultValue={[1]}
+              max={5}
+              min={1}
+              step={1}
+              className="w-full"
+              disabled
+            />
+            <span className="text-sm">5</span>
+            <span className="ml-2 text-muted-foreground text-xs">Value: 1</span>
+          </div>
+        </div>
+      )
+    case 'SIGNATURE':
+      return (
+        <div className="space-y-2">
+          <Label htmlFor={`signature-${question.id}`}>Signature</Label>
+          <div className="border border-dashed rounded-md flex flex-col items-center justify-center min-h-[80px] py-4 bg-gray-50">
+            <svg
+              width="32"
+              height="32"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="text-gray-400 mb-2"
+              viewBox="0 0 24 24"
+            >
+              <path d="M16 19c-2.5-2.5-7.5-2.5-10 0M8 13c.5-1.5 2.5-1.5 3 0m2-4c.5-2 3.5-2 4 0" />
+            </svg>
+            <span className="text-xs text-muted-foreground">Sign here</span>
+          </div>
+        </div>
+      )
+    case 'LOCATION':
+      return (
+        <div className="space-y-2">
+          <Label htmlFor={`location-${question.id}`}>Location</Label>
+          <div className="flex items-center gap-2 mb-2">
+            <svg
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="text-gray-400"
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" />
+            </svg>
+            <Input
+              className="w-full"
+              value="123 Main St, City"
+              disabled
+              aria-label="Address"
+            />
+          </div>
+          <div className="flex gap-2">
+            <Input
+              className="w-1/2"
+              value="Lat: 0.0000"
+              disabled
+              aria-label="Latitude"
+            />
+            <Input
+              className="w-1/2"
+              value="Lng: 0.0000"
+              disabled
+              aria-label="Longitude"
+            />
+          </div>
         </div>
       )
     default:

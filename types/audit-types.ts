@@ -61,6 +61,18 @@ export interface ResponseOption {
   color: string
 }
 
+export interface LocationData {
+  latitude: number
+  longitude: number
+  address: string
+  place_id?: string
+}
+
+export interface SignatureData {
+  image_url: string
+  timestamp: string
+}
+
 export interface Question {
   id: string
   page_id: string
@@ -77,8 +89,14 @@ export interface Question {
     | 'NUMBER'
     | 'SELECT'
     | 'MULTI_SELECT'
+    | 'SIGNATURE'
+    | 'LOCATION'
+    | 'SLIDER'
   ordinal: number
   response_options?: ResponseOption[]
+  location_data?: LocationData
+  signature_data?: SignatureData
+  slider_value?: number
 }
 
 export interface Section {
@@ -122,6 +140,9 @@ export interface Response {
   document?: string
   date_time?: Date
   response_option_id?: string
+  location_data?: LocationData
+  signature_data?: SignatureData
+  slider_value?: number
 }
 
 export interface AuditInstance {
@@ -163,8 +184,14 @@ export interface NewQuestion {
     | 'NUMBER'
     | 'SELECT'
     | 'MULTI_SELECT'
+    | 'SIGNATURE'
+    | 'LOCATION'
+    | 'SLIDER'
   ordinal: number
   response_options?: NewResponseOption[]
+  location_data?: LocationData
+  signature_data?: SignatureData
+  slider_value?: number
 }
 
 export interface NewSection {

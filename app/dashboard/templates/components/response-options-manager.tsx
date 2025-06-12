@@ -14,6 +14,10 @@ import type {
   ResponseOption,
   NewResponseOption,
 } from '@/types/audit-types'
+import {
+  PreloadedResponsePicker,
+  ResponseOption as PreloadedOption,
+} from '@/components/preloaded-response-picker/preloaded-response-picker'
 
 interface ResponseOptionsManagerProps {
   template: AuditTemplate
@@ -162,6 +166,48 @@ export function ResponseOptionsManager({
     }
   }
 
+  function handleAddPreloadedOptions(options: PreloadedOption[]) {
+    const updatedTemplate = { ...template }
+    const pageIndex = updatedTemplate.pages.findIndex((p) => p.id === page.id)
+    if (pageIndex !== -1) {
+      const sectionIndex = updatedTemplate.pages[pageIndex].sections.findIndex(
+        (s) => s.id === section.id,
+      )
+      if (sectionIndex !== -1) {
+        const questionIndex = updatedTemplate.pages[pageIndex].sections[
+          sectionIndex
+        ].questions.findIndex((q) => q.id === question.id)
+        if (questionIndex !== -1) {
+          const targetQuestion =
+            updatedTemplate.pages[pageIndex].sections[sectionIndex].questions[
+              questionIndex
+            ]
+          if (!targetQuestion.response_options)
+            targetQuestion.response_options = []
+          // Avoid duplicates by value
+          const existingValues = new Set(
+            targetQuestion.response_options.map((o) => o.label.toLowerCase()),
+          )
+          options.forEach((opt) => {
+            if (!existingValues.has(opt.label.toLowerCase())) {
+              targetQuestion.response_options!.push({
+                id: `temp-${Date.now()}-${Math.random()}`,
+                question_id: question.id,
+                label: opt.label,
+                code: '',
+                sort_order: targetQuestion.response_options!.length,
+                score: 0,
+                is_flagged: false,
+                color: '#e2e8f0',
+              })
+            }
+          })
+          setTemplate(updatedTemplate)
+        }
+      }
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -171,6 +217,8 @@ export function ResponseOptionsManager({
           Add Option
         </Button>
       </div>
+
+      <PreloadedResponsePicker onSelect={handleAddPreloadedOptions} />
 
       {!question.response_options || question.response_options.length === 0 ? (
         <div className="rounded-md border border-dashed p-4 text-center">

@@ -65,6 +65,8 @@ export async function updateSchedule(formData: FormData) {
   const assignee_ids = formData.getAll('assignee_ids') as string[]
   const frequency = formData.get('frequency') as string
   const status = formData.get('status') as string
+  const start_time = formData.get('start_time') as string
+  const end_time = formData.get('end_time') as string
 
   const scheduleData = {
     id,
@@ -74,6 +76,8 @@ export async function updateSchedule(formData: FormData) {
     assignee_ids,
     frequency,
     status,
+    start_time,
+    end_time,
   }
 
   const res = await UPDATE(`/schedules/update/${id}`, scheduleData)

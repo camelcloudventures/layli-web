@@ -100,6 +100,11 @@ export interface Question {
   signature_data?: SignatureData
   slider_value?: number
   asset_file?: string
+  flag_rule?: {
+    operator?: string
+    value?: string | number
+    value2?: string | number
+  }
 }
 
 export interface Section {

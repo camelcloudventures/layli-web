@@ -212,6 +212,13 @@ export function EditScheduleForm({
               >
                 Yearly
               </SelectItem>
+
+              <SelectItem
+                value="every-weekday"
+                className="hover:bg-gray-100 cursor-pointer"
+              >
+                Every Weekday
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>

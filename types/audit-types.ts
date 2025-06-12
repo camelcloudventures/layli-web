@@ -92,11 +92,14 @@ export interface Question {
     | 'SIGNATURE'
     | 'LOCATION'
     | 'SLIDER'
+    | 'PERSON'
+    | 'ASSET'
   ordinal: number
   response_options?: ResponseOption[]
   location_data?: LocationData
   signature_data?: SignatureData
   slider_value?: number
+  asset_file?: string
 }
 
 export interface Section {
@@ -187,11 +190,14 @@ export interface NewQuestion {
     | 'SIGNATURE'
     | 'LOCATION'
     | 'SLIDER'
+    | 'PERSON'
+    | 'ASSET'
   ordinal: number
   response_options?: NewResponseOption[]
   location_data?: LocationData
   signature_data?: SignatureData
   slider_value?: number
+  asset_file?: string
 }
 
 export interface NewSection {

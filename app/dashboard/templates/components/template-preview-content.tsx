@@ -19,6 +19,7 @@ import { DeleteQuestionButton } from './delete-controls/delete-question-button'
 import HasPermission from '../../components/has-permission'
 import { Permission } from '@/lib/auth/auth'
 import { Slider } from '@/components/ui/slider'
+import PersonPerviewField from './person-perview-field'
 
 interface TemplatePreviewContentProps {
   template: AuditTemplate
@@ -300,6 +301,22 @@ function renderQuestionInput(question: Question) {
               aria-label="Longitude"
             />
           </div>
+        </div>
+      )
+
+    case 'PERSON':
+      return <PersonPerviewField question={question} />
+
+    case 'ASSET':
+      return (
+        <div className="space-y-2">
+          <Label htmlFor={`asset-${question.id}`}>Asset</Label>
+          <ImageUpload
+            value={''}
+            onChange={() => {}}
+            label="Upload Asset"
+            accept="*/*"
+          />
         </div>
       )
     default:

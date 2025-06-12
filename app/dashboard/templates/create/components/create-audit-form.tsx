@@ -23,17 +23,42 @@ import { useAuth } from '@/lib/context/auth-provider'
 import { AuditTemplate } from '@/types/audit-types'
 import { omit } from 'lodash'
 import SubmitBtn from '@/components/custom/submit-btn'
+import { getPreloadedQuestions } from '@/components/template-cover-page/template-cover-page'
 
 export default function CreateAuditForm() {
   const router = useRouter()
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('details')
+
+  // Generate unique IDs for the cover page and section
+  const coverPageId = `cover-page-${Date.now()}`
+  const coverSectionId = `cover-section-${Date.now()}`
+
+  // Create the cover section
+  const coverSection = {
+    id: coverSectionId,
+    page_id: coverPageId,
+    title: 'Title section',
+    ordinal: 1,
+    questions: getPreloadedQuestions(coverPageId, coverSectionId),
+  }
+
+  // Create the first page with the cover section
+  const firstPage = {
+    id: coverPageId,
+    template_id: `temp-${Date.now()}`,
+    title: 'Title page',
+    description: 'Add a description here',
+    ordinal: 1,
+    sections: [coverSection],
+  }
+
   const [template, setTemplate] = useState<AuditTemplate>({
     id: `temp-${Date.now()}`,
     title: '',
     description: '',
     photo: '',
-    pages: [],
+    pages: [firstPage],
   })
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [imageError, setImageError] = useState<string | null>(null)

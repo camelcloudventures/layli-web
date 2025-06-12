@@ -11,6 +11,7 @@ import { Slider } from "@/components/ui/slider"
 import { GripVertical, ChevronDown, ChevronUp, Plus, HelpCircle, Trash2 } from "lucide-react"
 import type { AuditTemplate, Page, Section, Question, NewQuestion } from "../../../../types/audit-types"
 import { ResponseOptionsManager } from "@/app/dashboard/templates/components/response-options-manager"
+import { ImageUpload } from "@/app/dashboard/templates/components/image-upload"
 
 interface QuestionsManagerProps {
   template: AuditTemplate
@@ -263,7 +264,7 @@ export function QuestionsManager({ template, setTemplate, page, section }: Quest
                           updateQuestion(
                             question.id,
                             "field_type",
-                            value as "BOOLEAN" | "TEXT" | "DATE" | "PHOTO" | "NUMBER" | "SELECT" | "MULTI_SELECT" | "SIGNATURE" | "LOCATION" | "SLIDER",
+                            value as "BOOLEAN" | "TEXT" | "DATE" | "PHOTO" | "NUMBER" | "SELECT" | "MULTI_SELECT" | "SIGNATURE" | "LOCATION" | "SLIDER" | "PERSON" | "ASSET"
                           )
                         }
                       >
@@ -281,6 +282,8 @@ export function QuestionsManager({ template, setTemplate, page, section }: Quest
                           <SelectItem value="SIGNATURE">Signature</SelectItem>
                           <SelectItem value="LOCATION">Location</SelectItem>
                           <SelectItem value="SLIDER">Slider</SelectItem>
+                          <SelectItem value="PERSON">Person</SelectItem>
+                          <SelectItem value="ASSET">Asset</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -358,6 +361,36 @@ export function QuestionsManager({ template, setTemplate, page, section }: Quest
                           <span className="text-sm">5</span>
                           <span className="ml-2 text-muted-foreground text-xs">Value: {question.slider_value || 1}</span>
                         </div>
+                      </div>
+                    )}
+
+                    {question.field_type === "PERSON" && (
+                      <div className="space-y-2">
+                        <Label htmlFor={`person-${question.id}`}>Person</Label>
+                        <Select
+                          defaultValue={question.response_options?.[0]?.id}
+                          onValueChange={(value) => updateQuestion(question.id, "response_options", value)}
+                        >
+                          <SelectTrigger>
+                             <SelectValue placeholder="Select a person" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">John Doe</SelectItem>
+                            <SelectItem value="2">Jane Smith</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    {question.field_type === "ASSET" && (
+                      <div className="space-y-2">
+                        <Label htmlFor={`asset-${question.id}`}>Asset</Label>
+                        <ImageUpload
+                          value={''}
+                          onChange={(file: string) => updateQuestion(question.id, 'asset_file', file)}
+                          label="Upload Asset"
+                          accept="*/*"
+                        />
                       </div>
                     )}
 

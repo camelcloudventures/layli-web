@@ -44,6 +44,7 @@ export function CreateScheduleForm({
   >(undefined)
   const [startTime, setStartTime] = useState('09:00')
   const [endTime, setEndTime] = useState('17:00')
+  const [completionPolicy, setCompletionPolicy] = useState<'any' | 'all'>('any')
 
   // Helper to generate time options in 30-minute intervals
   const timeOptions = Array.from({ length: 48 }, (_, i) => {
@@ -76,6 +77,9 @@ export function CreateScheduleForm({
     formData.set('start_time', startTime)
     formData.set('end_time', endTime)
 
+    // Set completion policy
+    formData.set('completion_policy', completionPolicy)
+
     const res = await createSchedule(formData)
     if (res?.error) toast.error(res.error)
     else {
@@ -85,8 +89,8 @@ export function CreateScheduleForm({
   }
 
   return (
-    <form action={handleCreate} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-4">
+    <form action={handleCreate} className="flex flex-col gap-6">
+      <div className="flex flex-col gap-5">
         <div className="">
           <Label htmlFor="template_id">
             Audit Template <span className="text-red-500">*</span>
@@ -136,7 +140,7 @@ export function CreateScheduleForm({
         <div
           className={clsx(
             selectedAssignees.length > 0 ? 'mb-10' : 'mb-0',
-            'transition-all duration-300',
+            'transition-all duration-300 ',
           )}
         >
           <Label htmlFor="assignee_ids">
@@ -154,6 +158,34 @@ export function CreateScheduleForm({
               label: user.user.full_name,
             }))}
           />
+        </div>
+        <div className="flex flex-row gap-8 mt- items-center">
+          <label className="flex items-center cursor-pointer">
+            <input
+              type="radio"
+              name="completion_policy"
+              value="any"
+              checked={completionPolicy === 'any'}
+              onChange={() => setCompletionPolicy('any')}
+              className="accent-primary h-5 w-5 mr-2"
+            />
+            <span className="text-sm select-none">
+              Only one assignee needs to complete
+            </span>
+          </label>
+          <label className="flex items-center cursor-pointer">
+            <input
+              type="radio"
+              name="completion_policy"
+              value="all"
+              checked={completionPolicy === 'all'}
+              onChange={() => setCompletionPolicy('all')}
+              className="accent-primary h-5 w-5 mr-2"
+            />
+            <span className="text-sm select-none">
+              All assignees need to complete
+            </span>
+          </label>
         </div>
         <div className="">
           <Label htmlFor="frequency">

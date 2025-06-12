@@ -21,6 +21,7 @@ export async function createSchedule(formData: FormData) {
   const frequency = formData.get('frequency') as string
   const start_time = formData.get('start_time') as string
   const end_time = formData.get('end_time') as string
+  const completion_policy = formData.get('completion_policy') as string
   const scheduleData = {
     title,
     template_id,
@@ -29,6 +30,7 @@ export async function createSchedule(formData: FormData) {
     frequency,
     start_time,
     end_time,
+    completion_policy,
   }
 
   const res = await POST('/schedules/create', scheduleData, true, ['schedules'])
@@ -67,7 +69,7 @@ export async function updateSchedule(formData: FormData) {
   const status = formData.get('status') as string
   const start_time = formData.get('start_time') as string
   const end_time = formData.get('end_time') as string
-
+  const completion_policy = formData.get('completion_policy') as string
   const scheduleData = {
     id,
     title,
@@ -78,6 +80,7 @@ export async function updateSchedule(formData: FormData) {
     status,
     start_time,
     end_time,
+    completion_policy,
   }
 
   const res = await UPDATE(`/schedules/update/${id}`, scheduleData)

@@ -43,6 +43,9 @@ export function EditScheduleForm({
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>(
     schedule.assignees?.map((a) => a.assignee.id) || [],
   )
+  const [completionPolicy, setCompletionPolicy] = useState<'any' | 'all'>(
+    schedule.completion_policy || 'any',
+  )
 
   const normalizeTime = (t?: string) => (t ? t.slice(0, 5) : undefined)
   const [startTime, setStartTime] = useState(
@@ -73,6 +76,8 @@ export function EditScheduleForm({
     // Set start and end time
     formData.set('start_time', startTime)
     formData.set('end_time', endTime)
+    // Set completion policy
+    formData.set('completion_policy', completionPolicy)
 
     const res = (await updateSchedule(formData)) as {
       error?: string
@@ -165,6 +170,7 @@ export function EditScheduleForm({
               label: user.user.full_name,
             }))}
           />
+
           <div className="flex flex-wrap gap-2 mt-2">
             {selectedAssignees.map((id) => {
               const user = users.find((u) => u.user.id === id)
@@ -178,6 +184,34 @@ export function EditScheduleForm({
               ) : null
             })}
           </div>
+        </div>
+        <div className="flex flex-row gap-8 mt-8 items-center">
+          <label className="flex items-center cursor-pointer">
+            <input
+              type="radio"
+              name="completion_policy"
+              value="any"
+              checked={completionPolicy === 'any'}
+              onChange={() => setCompletionPolicy('any')}
+              className="accent-primary h-5 w-5 mr-2"
+            />
+            <span className="text-base select-none">
+              Only one assignee needs to complete
+            </span>
+          </label>
+          <label className="flex items-center cursor-pointer">
+            <input
+              type="radio"
+              name="completion_policy"
+              value="all"
+              checked={completionPolicy === 'all'}
+              onChange={() => setCompletionPolicy('all')}
+              className="accent-primary h-5 w-5 mr-2"
+            />
+            <span className="text-base select-none">
+              All assignees need to complete
+            </span>
+          </label>
         </div>
         <div className="space-y-2">
           <Label htmlFor="frequency">

@@ -310,3 +310,22 @@ export async function logout() {
   cookieStore.delete('active_org')
   return redirect('/auth/login')
 }
+
+export async function resetPasswordAction(formData: FormData) {
+  const email = formData.get('email')
+  const supabase = await createClient()
+
+  try {
+    await supabase.auth.resetPasswordForEmail(email as string, {
+      redirectTo: `${process.env.SITE_URL}/api/auth/callback`,
+    })
+
+    return {
+      success: true,
+      message: `Reset email sent to ${email}. Click the link to reset your password`,
+    }
+  } catch (error) {
+    //@ts-expect-error - error is not typed
+    return { error: error.message || 'Failed to send reset email' }
+  }
+}

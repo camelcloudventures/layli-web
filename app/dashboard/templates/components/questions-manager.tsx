@@ -11,6 +11,7 @@ import { Slider } from "@/components/ui/slider"
 import { GripVertical, ChevronDown, ChevronUp, Plus, HelpCircle, Trash2 } from "lucide-react"
 import type { AuditTemplate, Page, Section, Question, NewQuestion } from "../../../../types/audit-types"
 import { ResponseOptionsManager } from "@/app/dashboard/templates/components/response-options-manager"
+import { ImageUpload } from "@/app/dashboard/templates/components/image-upload"
 
 interface QuestionsManagerProps {
   template: AuditTemplate
@@ -55,7 +56,7 @@ export function QuestionsManager({ template, setTemplate, page, section }: Quest
   const updateQuestion = (
     questionId: string,
     field: keyof Question,
-    value: string | boolean | number | "BOOLEAN" | "TEXT" | "DATE" | "PHOTO" | "NUMBER" | "SELECT" | "MULTI_SELECT"
+    value: unknown
   ) => {
     const updatedTemplate = { ...template }
     const pageIndex = updatedTemplate.pages.findIndex((p) => p.id === page.id)
@@ -170,6 +171,13 @@ export function QuestionsManager({ template, setTemplate, page, section }: Quest
     })
   }
 
+  // Helper to ensure string for input value
+  function safeString(val: string | number | undefined | null): string {
+    if (typeof val === 'string') return val
+    if (typeof val === 'number') return String(val)
+    return ''
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -263,7 +271,7 @@ export function QuestionsManager({ template, setTemplate, page, section }: Quest
                           updateQuestion(
                             question.id,
                             "field_type",
-                            value as "BOOLEAN" | "TEXT" | "DATE" | "PHOTO" | "NUMBER" | "SELECT" | "MULTI_SELECT" | "SIGNATURE" | "LOCATION" | "SLIDER",
+                            value as "BOOLEAN" | "TEXT" | "DATE" | "PHOTO" | "NUMBER" | "SELECT" | "MULTI_SELECT" | "SIGNATURE" | "LOCATION" | "SLIDER" | "PERSON" | "ASSET"
                           )
                         }
                       >
@@ -281,6 +289,8 @@ export function QuestionsManager({ template, setTemplate, page, section }: Quest
                           <SelectItem value="SIGNATURE">Signature</SelectItem>
                           <SelectItem value="LOCATION">Location</SelectItem>
                           <SelectItem value="SLIDER">Slider</SelectItem>
+                          <SelectItem value="PERSON">Person</SelectItem>
+                          <SelectItem value="ASSET">Asset</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -361,6 +371,36 @@ export function QuestionsManager({ template, setTemplate, page, section }: Quest
                       </div>
                     )}
 
+                    {question.field_type === "PERSON" && (
+                      <div className="space-y-2">
+                        <Label htmlFor={`person-${question.id}`}>Person</Label>
+                        <Select
+                          defaultValue={question.response_options?.[0]?.id}
+                          onValueChange={(value) => updateQuestion(question.id, "response_options", value)}
+                        >
+                          <SelectTrigger>
+                             <SelectValue placeholder="Select a person" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">John Doe</SelectItem>
+                            <SelectItem value="2">Jane Smith</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    {question.field_type === "ASSET" && (
+                      <div className="space-y-2">
+                        <Label htmlFor={`asset-${question.id}`}>Asset</Label>
+                        <ImageUpload
+                          value={''}
+                          onChange={(file: string) => updateQuestion(question.id, 'asset_file', file)}
+                          label="Upload Asset"
+                          accept="*/*"
+                        />
+                      </div>
+                    )}
+
                     {/* Response Options Manager (for SELECT & MULTI_SELECT) */}
                     {(question.field_type === "SELECT" || question.field_type === "MULTI_SELECT") && (
                       <ResponseOptionsManager
@@ -370,6 +410,173 @@ export function QuestionsManager({ template, setTemplate, page, section }: Quest
                         section={section}
                         question={question}
                       />
+                    )}
+
+                    {/* Flagging UI for all logical field types, only if 'Flag Critical Issue' is toggled on */}
+                    {question.is_flagged && (question.field_type === 'TEXT' || question.field_type === 'NUMBER' || question.field_type === 'SLIDER' || question.field_type === 'DATE' || question.field_type === 'BOOLEAN' || question.field_type === 'PHOTO' || question.field_type === 'SIGNATURE' || question.field_type === 'LOCATION' || question.field_type === 'PERSON' || question.field_type === 'ASSET') && (
+                      <div className="space-y-2">
+                        <Label className="font-medium">Flag when…</Label>
+                        {/* TEXT */}
+                        {question.field_type === 'TEXT' && (
+                          <div className="flex gap-2 items-center">
+                            <select
+                              className="border rounded px-2 py-1 text-sm"
+                              aria-label="Flag operator for text"
+                              value={safeString(question.flag_rule?.operator)}
+                              onChange={e => updateQuestion(question.id, 'flag_rule', { ...question.flag_rule, operator: e.target.value })}
+                            >
+                              <option value="">Select condition</option>
+                              <option value="contains">Contains</option>
+                              <option value="equals">Equals</option>
+                              <option value="regex">Matches regex</option>
+                            </select>
+                            <input
+                              type="text"
+                              className="border rounded px-2 py-1 text-sm"
+                              aria-label="Flag value for text"
+                              placeholder="Enter value"
+                              value={safeString(question.flag_rule?.value)}
+                              onChange={e => updateQuestion(question.id, 'flag_rule', { ...question.flag_rule, value: e.target.value })}
+                              disabled={!question.flag_rule?.operator}
+                            />
+                          </div>
+                        )}
+                        {/* NUMBER/SLIDER */}
+                        {(question.field_type === 'NUMBER' || question.field_type === 'SLIDER') && (
+                          <div className="flex gap-2 items-center">
+                            <select
+                              className="border rounded px-2 py-1 text-sm"
+                              aria-label="Flag operator for number"
+                              value={safeString(question.flag_rule?.operator)}
+                              onChange={e => updateQuestion(question.id, 'flag_rule', { ...question.flag_rule, operator: e.target.value, value: undefined, value2: undefined })}
+                            >
+                              <option value="">Select condition</option>
+                              <option value="<">Less than</option>
+                              <option value=">">Greater than</option>
+                              <option value="=">Equal to</option>
+                              <option value="between">Between</option>
+                              <option value="not_between">Not between</option>
+                            </select>
+                            {/* Single value input */}
+                            {['<', '>', '='].includes(question.flag_rule?.operator || '') && (
+                              <input
+                                type="number"
+                                className="border rounded px-2 py-1 text-sm"
+                                aria-label="Flag value for number"
+                                placeholder="Enter value"
+                                value={safeString(question.flag_rule?.value)}
+                                onChange={e => updateQuestion(question.id, 'flag_rule', { ...question.flag_rule, value: e.target.value })}
+                                disabled={!question.flag_rule?.operator}
+                              />
+                            )}
+                            {/* Two value inputs for between/not_between */}
+                            {['between', 'not_between'].includes(question.flag_rule?.operator || '') && (
+                              <>
+                                <input
+                                  type="number"
+                                  className="border rounded px-2 py-1 text-sm"
+                                  aria-label="Flag value 1 for number"
+                                  placeholder="Min"
+                                  value={safeString(question.flag_rule?.value)}
+                                  onChange={e => updateQuestion(question.id, 'flag_rule', { ...question.flag_rule, value: e.target.value })}
+                                  disabled={!question.flag_rule?.operator}
+                                />
+                                <span className="text-xs">and</span>
+                                <input
+                                  type="number"
+                                  className="border rounded px-2 py-1 text-sm"
+                                  aria-label="Flag value 2 for number"
+                                  placeholder="Max"
+                                  value={safeString(question.flag_rule?.value2)}
+                                  onChange={e => updateQuestion(question.id, 'flag_rule', { ...question.flag_rule, value2: e.target.value })}
+                                  disabled={!question.flag_rule?.operator}
+                                />
+                              </>
+                            )}
+                          </div>
+                        )}
+                        {/* DATE */}
+                        {question.field_type === 'DATE' && (
+                          <div className="flex gap-2 items-center">
+                            <select
+                              className="border rounded px-2 py-1 text-sm"
+                              aria-label="Flag operator for date"
+                              value={safeString(question.flag_rule?.operator)}
+                              onChange={e => updateQuestion(question.id, 'flag_rule', { ...question.flag_rule, operator: e.target.value, value: undefined, value2: undefined })}
+                            >
+                              <option value="">Select condition</option>
+                              <option value="before">Before</option>
+                              <option value="after">After</option>
+                              <option value="on">On</option>
+                              <option value="between">Between</option>
+                              <option value="not_between">Not between</option>
+                            </select>
+                            {/* Single date input */}
+                            {['before', 'after', 'on'].includes(question.flag_rule?.operator || '') && (
+                              <input
+                                type="date"
+                                className="border rounded px-2 py-1 text-sm"
+                                aria-label="Flag value for date"
+                                value={safeString(question.flag_rule?.value)}
+                                onChange={e => updateQuestion(question.id, 'flag_rule', { ...question.flag_rule, value: e.target.value })}
+                                disabled={!question.flag_rule?.operator}
+                              />
+                            )}
+                            {/* Two date inputs for between/not_between */}
+                            {['between', 'not_between'].includes(question.flag_rule?.operator || '') && (
+                              <>
+                                <input
+                                  type="date"
+                                  className="border rounded px-2 py-1 text-sm"
+                                  aria-label="Flag value 1 for date"
+                                  value={safeString(question.flag_rule?.value)}
+                                  onChange={e => updateQuestion(question.id, 'flag_rule', { ...question.flag_rule, value: e.target.value })}
+                                  disabled={!question.flag_rule?.operator}
+                                />
+                                <span className="text-xs">and</span>
+                                <input
+                                  type="date"
+                                  className="border rounded px-2 py-1 text-sm"
+                                  aria-label="Flag value 2 for date"
+                                  value={safeString(question.flag_rule?.value2)}
+                                  onChange={e => updateQuestion(question.id, 'flag_rule', { ...question.flag_rule, value2: e.target.value })}
+                                  disabled={!question.flag_rule?.operator}
+                                />
+                              </>
+                            )}
+                          </div>
+                        )}
+                        {/* BOOLEAN */}
+                        {question.field_type === 'BOOLEAN' && (
+                          <div className="flex gap-2 items-center">
+                            <select
+                              className="border rounded px-2 py-1 text-sm"
+                              aria-label="Flag operator for boolean"
+                              value={safeString(question.flag_rule?.value)}
+                              onChange={e => updateQuestion(question.id, 'flag_rule', { operator: 'equals', value: e.target.value })}
+                            >
+                              <option value="">Select condition</option>
+                              <option value="true">Flag if Yes</option>
+                              <option value="false">Flag if No</option>
+                            </select>
+                          </div>
+                        )}
+                        {/* PHOTO, SIGNATURE, LOCATION, PERSON, ASSET */}
+                        {(question.field_type === 'PHOTO' || question.field_type === 'SIGNATURE' || question.field_type === 'LOCATION' || question.field_type === 'PERSON' || question.field_type === 'ASSET') && (
+                          <div className="flex gap-2 items-center">
+                            <select
+                              className="border rounded px-2 py-1 text-sm"
+                              aria-label="Flag operator for presence"
+                              value={safeString(question.flag_rule?.operator)}
+                              onChange={e => updateQuestion(question.id, 'flag_rule', { operator: e.target.value })}
+                            >
+                              <option value="">Select condition</option>
+                              <option value="present">Flag if present</option>
+                              <option value="absent">Flag if absent</option>
+                            </select>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 </CardContent>

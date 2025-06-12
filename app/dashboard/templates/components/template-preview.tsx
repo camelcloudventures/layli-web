@@ -26,6 +26,13 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { ImageUpload } from './image-upload'
 import { Slider } from '@/components/ui/slider'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface TemplatePreviewProps {
   template: AuditTemplate
@@ -394,6 +401,12 @@ function renderQuestionInput(
         </div>
       )
 
+    case 'PERSON':
+      return <PersonPreviewField questionId={question.id} />
+
+    case 'ASSET':
+      return <AssetPreviewField questionId={question.id} />
+
     default:
       return (
         <p className="text-sm text-muted-foreground">
@@ -401,4 +414,37 @@ function renderQuestionInput(
         </p>
       )
   }
+}
+
+function PersonPreviewField({ questionId }: { questionId: string }) {
+  const [selectedPerson, setSelectedPerson] = useState('')
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={`person-${questionId}`}>Person</Label>
+      <Select defaultValue={selectedPerson} onValueChange={setSelectedPerson}>
+        <SelectTrigger>
+          <SelectValue placeholder="Select a person" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="1">John Doe</SelectItem>
+          <SelectItem value="2">Jane Smith</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
+
+function AssetPreviewField({ questionId }: { questionId: string }) {
+  const [assetFile, setAssetFile] = useState('')
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={`asset-${questionId}`}>Asset</Label>
+      <ImageUpload
+        value={assetFile}
+        onChange={setAssetFile}
+        label="Upload Asset"
+        accept="*/*"
+      />
+    </div>
+  )
 }

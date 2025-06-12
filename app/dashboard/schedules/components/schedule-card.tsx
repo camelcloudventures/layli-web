@@ -6,6 +6,7 @@ import { ScheduleInfo } from './schedule-info'
 import { ScheduleFooter } from './schedule-footer'
 import HasPermission from '../../components/has-permission'
 import { Permission } from '@/lib/auth/auth'
+import { formatDate, formatTime12hr } from '@/utils/data-utils'
 
 interface ScheduleCardProps {
   schedule: Schedule
@@ -28,11 +29,18 @@ export function ScheduleCard({
             <div className="font-semibold text-lg text-gray-900">
               {schedule.title}
             </div>
+
             <div className="text-sm text-muted-foreground">
-              Next due date:{' '}
-              {schedule.next_date
-                ? new Date(schedule.next_date).toLocaleDateString()
-                : 'N/A'}
+              Starts on {formatDate(schedule.next_date)}{' '}
+              {formatTime12hr(schedule?.start_time || '')}
+              <span
+                aria-hidden="true"
+                className="mx-1 text-black text-xl font-bold"
+              >
+                ·
+              </span>
+              Due {formatDate(schedule.next_date)}{' '}
+              {formatTime12hr(schedule?.end_time || '')}
             </div>
           </div>
           <HasPermission permission={Permission.MANAGE_SCHEDULES}>

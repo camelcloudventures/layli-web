@@ -43,6 +43,29 @@ export function EditScheduleForm({
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>(
     schedule.assignees?.map((a) => a.assignee.id) || [],
   )
+  const [completionPolicy, setCompletionPolicy] = useState<'any' | 'all'>(
+    schedule.completion_policy || 'any',
+  )
+
+  const normalizeTime = (t?: string) => (t ? t.slice(0, 5) : undefined)
+  const [startTime, setStartTime] = useState(
+    normalizeTime(schedule.start_time) || '09:00',
+  )
+  const [endTime, setEndTime] = useState(
+    normalizeTime(schedule.end_time) || '17:00',
+  )
+
+  // Helper to generate time options in 30-minute intervals
+  const timeOptions = Array.from({ length: 48 }, (_, i) => {
+    const hour = Math.floor(i / 2)
+    const minute = i % 2 === 0 ? '00' : '30'
+    const ampm = hour < 12 ? 'AM' : 'PM'
+    const displayHour = hour % 12 === 0 ? 12 : hour % 12
+    return {
+      value: `${hour.toString().padStart(2, '0')}:${minute}`,
+      label: `${displayHour}:${minute} ${ampm}`,
+    }
+  })
 
   async function handleEdit(formData: FormData) {
     // Add selected assignees to form data
@@ -50,6 +73,11 @@ export function EditScheduleForm({
     selectedAssignees.forEach((id) => {
       formData.append('assignee_ids', id)
     })
+    // Set start and end time
+    formData.set('start_time', startTime)
+    formData.set('end_time', endTime)
+    // Set completion policy
+    formData.set('completion_policy', completionPolicy)
 
     const res = (await updateSchedule(formData)) as {
       error?: string
@@ -142,6 +170,7 @@ export function EditScheduleForm({
               label: user.user.full_name,
             }))}
           />
+
           <div className="flex flex-wrap gap-2 mt-2">
             {selectedAssignees.map((id) => {
               const user = users.find((u) => u.user.id === id)
@@ -155,6 +184,34 @@ export function EditScheduleForm({
               ) : null
             })}
           </div>
+        </div>
+        <div className="flex flex-row gap-8 mt-8 items-center">
+          <label className="flex items-center cursor-pointer">
+            <input
+              type="radio"
+              name="completion_policy"
+              value="any"
+              checked={completionPolicy === 'any'}
+              onChange={() => setCompletionPolicy('any')}
+              className="accent-primary h-5 w-5 mr-2"
+            />
+            <span className="text-base select-none">
+              Only one assignee needs to complete
+            </span>
+          </label>
+          <label className="flex items-center cursor-pointer">
+            <input
+              type="radio"
+              name="completion_policy"
+              value="all"
+              checked={completionPolicy === 'all'}
+              onChange={() => setCompletionPolicy('all')}
+              className="accent-primary h-5 w-5 mr-2"
+            />
+            <span className="text-base select-none">
+              All assignees need to complete
+            </span>
+          </label>
         </div>
         <div className="space-y-2">
           <Label htmlFor="frequency">
@@ -189,39 +246,17 @@ export function EditScheduleForm({
               >
                 Yearly
               </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="priority">
-            Priority <span className="text-red-500">*</span>
-          </Label>
-          <Select name="priority" required defaultValue={schedule.priority}>
-            <SelectTrigger id="priority" className="w-full">
-              <SelectValue placeholder="Select a priority" />
-            </SelectTrigger>
-            <SelectContent>
+
               <SelectItem
-                value="low"
+                value="every-weekday"
                 className="hover:bg-gray-100 cursor-pointer"
               >
-                Low
-              </SelectItem>
-              <SelectItem
-                value="medium"
-                className="hover:bg-gray-100 cursor-pointer"
-              >
-                Medium
-              </SelectItem>
-              <SelectItem
-                value="high"
-                className="hover:bg-gray-100 cursor-pointer"
-              >
-                High
+                Every Weekday
               </SelectItem>
             </SelectContent>
           </Select>
         </div>
+
         <div className="space-y-2">
           <Label htmlFor="status">
             Status <span className="text-red-500">*</span>
@@ -263,6 +298,47 @@ export function EditScheduleForm({
               </SelectItem>
             </SelectContent>
           </Select>
+        </div>
+        <div className="flex flex-row gap-4 items-center">
+          <div className="flex-1 flex flex-col">
+            <Label htmlFor="start_time">
+              Start Time <span className="text-red-500">*</span>
+            </Label>
+            <select
+              id="start_time"
+              name="start_time"
+              required
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              {timeOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <span className="mx-2 text-lg font-medium">~</span>
+          <div className="flex-1 flex flex-col">
+            <Label htmlFor="end_time">
+              End Time <span className="text-red-500">*</span>
+            </Label>
+            <select
+              id="end_time"
+              name="end_time"
+              required
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              {timeOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
       <div className="flex justify-end gap-2">

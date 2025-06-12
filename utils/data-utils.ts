@@ -24,3 +24,20 @@ export const calculateNextAuditDate = (
 
   return date.toISOString()
 }
+//eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const formatDate = (date: string | number | any) => {
+  return new Date(date).toLocaleString('en-US', {
+    month: 'short',
+    day: '2-digit',
+    year: 'numeric',
+  })
+}
+export function formatTime12hr(time: string) {
+  if (!time) return ''
+  const [hourStr, minuteStr] = time.split(':')
+  let hour = parseInt(hourStr, 10)
+  const minute = minuteStr
+  const ampm = hour >= 12 ? 'PM' : 'AM'
+  hour = hour % 12 || 12
+  return `${hour}:${minute} ${ampm}`
+}

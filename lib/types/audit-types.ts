@@ -62,6 +62,11 @@ export interface ResponseOption {
   question_id: number
 }
 
+export interface PersonOption {
+  id: number
+  name: string
+}
+
 export interface Question {
   id: number
   text: string
@@ -74,6 +79,8 @@ export interface Question {
   section_id: number
   response_options: ResponseOption[]
   multiple_selection: boolean
+  person_options: PersonOption[]
+  asset_file: string
 }
 
 export interface Section {

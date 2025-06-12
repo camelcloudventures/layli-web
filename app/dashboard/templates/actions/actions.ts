@@ -31,8 +31,6 @@ export async function createTemplate(formData: FormData, createdBy: string) {
     const photo = formData.get('photo') as string
     const pages = JSON.parse(formData.get('pages') as string)
 
-    console.log('photo', photo)
-
     // If there's a photo, upload it to the template-images bucket
     let photoUrl = photo
     if (photo && photo.startsWith('data:')) {
@@ -44,8 +42,6 @@ export async function createTemplate(formData: FormData, createdBy: string) {
       }
       photoUrl = fileUrl
     }
-
-    console.log('photoUrl', photoUrl)
 
     const templateData = {
       title,
@@ -59,7 +55,6 @@ export async function createTemplate(formData: FormData, createdBy: string) {
       'templates',
     ])
 
-    console.log('res from createTemplate', res)
     // Revalidate the templates path
     revalidatePath('/dashboard/templates')
 

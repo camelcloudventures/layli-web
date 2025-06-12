@@ -19,15 +19,18 @@ export async function createSchedule(formData: FormData) {
   const site_id = formData.get('site_id') as string
   const assignee_ids = formData.getAll('assignee_ids') as string[]
   const frequency = formData.get('frequency') as string
-  const priority = formData.get('priority') as string
-
+  const start_time = formData.get('start_time') as string
+  const end_time = formData.get('end_time') as string
+  const completion_policy = formData.get('completion_policy') as string
   const scheduleData = {
     title,
     template_id,
     site_id,
     assignee_ids,
     frequency,
-    priority,
+    start_time,
+    end_time,
+    completion_policy,
   }
 
   const res = await POST('/schedules/create', scheduleData, true, ['schedules'])
@@ -63,9 +66,10 @@ export async function updateSchedule(formData: FormData) {
   const site_id = formData.get('site_id') as string
   const assignee_ids = formData.getAll('assignee_ids') as string[]
   const frequency = formData.get('frequency') as string
-  const priority = formData.get('priority') as string
   const status = formData.get('status') as string
-
+  const start_time = formData.get('start_time') as string
+  const end_time = formData.get('end_time') as string
+  const completion_policy = formData.get('completion_policy') as string
   const scheduleData = {
     id,
     title,
@@ -73,12 +77,13 @@ export async function updateSchedule(formData: FormData) {
     site_id,
     assignee_ids,
     frequency,
-    priority,
     status,
+    start_time,
+    end_time,
+    completion_policy,
   }
 
   const res = await UPDATE(`/schedules/update/${id}`, scheduleData)
-  console.log('res', res)
 
   revalidateTag('schedules')
 

@@ -24,8 +24,6 @@ export default async function AuditTemplatesPage({ searchParams }: PageProps) {
   const pageNumber = Number(resolvedParams.page) || 1
   const response = await getTemplates(pageNumber)
 
-  console.log('response', response)
-
   if (!response) {
     return (
       <Card>

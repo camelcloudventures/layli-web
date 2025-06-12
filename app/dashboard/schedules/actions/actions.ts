@@ -19,13 +19,16 @@ export async function createSchedule(formData: FormData) {
   const site_id = formData.get('site_id') as string
   const assignee_ids = formData.getAll('assignee_ids') as string[]
   const frequency = formData.get('frequency') as string
-
+  const start_time = formData.get('start_time') as string
+  const end_time = formData.get('end_time') as string
   const scheduleData = {
     title,
     template_id,
     site_id,
     assignee_ids,
     frequency,
+    start_time,
+    end_time,
   }
 
   const res = await POST('/schedules/create', scheduleData, true, ['schedules'])

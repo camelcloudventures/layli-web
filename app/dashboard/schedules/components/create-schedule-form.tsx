@@ -21,6 +21,7 @@ import type {
 } from '../types/schedule-form-types'
 import { useState } from 'react'
 import { MultiSelect } from '@/components/ui/multi-select'
+import clsx from 'clsx'
 
 interface CreateScheduleFormProps {
   users: UserOption[]
@@ -41,6 +42,20 @@ export function CreateScheduleForm({
   const [selectedTemplateId, setSelectedTemplateId] = useState<
     string | undefined
   >(undefined)
+  const [startTime, setStartTime] = useState('09:00')
+  const [endTime, setEndTime] = useState('17:00')
+
+  // Helper to generate time options in 30-minute intervals
+  const timeOptions = Array.from({ length: 48 }, (_, i) => {
+    const hour = Math.floor(i / 2)
+    const minute = i % 2 === 0 ? '00' : '30'
+    const ampm = hour < 12 ? 'AM' : 'PM'
+    const displayHour = hour % 12 === 0 ? 12 : hour % 12
+    return {
+      value: `${hour.toString().padStart(2, '0')}:${minute}`,
+      label: `${displayHour}:${minute} ${ampm}`,
+    }
+  })
 
   async function handleCreate(formData: FormData) {
     // Add selected assignees to form data
@@ -56,6 +71,10 @@ export function CreateScheduleForm({
     if (selectedTemplate) {
       formData.set('title', selectedTemplate.title)
     }
+
+    // Set start and end time
+    formData.set('start_time', startTime)
+    formData.set('end_time', endTime)
 
     const res = await createSchedule(formData)
     if (res?.error) toast.error(res.error)
@@ -114,11 +133,17 @@ export function CreateScheduleForm({
             </SelectContent>
           </Select>
         </div>
-        <div className="">
+        <div
+          className={clsx(
+            selectedAssignees.length > 0 ? 'mb-10' : 'mb-0',
+            'transition-all duration-300',
+          )}
+        >
           <Label htmlFor="assignee_ids">
             Assignees <span className="text-red-500">*</span>
           </Label>
           <MultiSelect
+            className=""
             name="assignee_ids"
             required
             value={selectedAssignees}
@@ -163,11 +188,58 @@ export function CreateScheduleForm({
               >
                 Yearly
               </SelectItem>
+              <SelectItem
+                value="every-weekday"
+                className="hover:bg-gray-100 cursor-pointer"
+              >
+                Every Weekday
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
+        <div className="flex flex-row gap-4 items-center">
+          <div className="flex-1 flex flex-col">
+            <Label htmlFor="start_time">
+              Start Time <span className="text-red-500">*</span>
+            </Label>
+            <select
+              id="start_time"
+              name="start_time"
+              required
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              {timeOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <span className="mx-2 text-lg font-medium">~</span>
+          <div className="flex-1 flex flex-col">
+            <Label htmlFor="end_time">
+              End Time <span className="text-red-500">*</span>
+            </Label>
+            <select
+              id="end_time"
+              name="end_time"
+              required
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              {timeOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
-      <div className="flex justify-end gap-2">
+      <div className="flex justify-end  gap-2">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>

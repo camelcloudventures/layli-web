@@ -54,6 +54,8 @@ export interface Schedule {
   assignees: Assignee[]
   next_date?: string
   status?: string
+  start_time?: string
+  end_time?: string
 }
 
 export interface Pagination {

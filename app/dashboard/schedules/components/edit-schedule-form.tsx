@@ -192,36 +192,7 @@ export function EditScheduleForm({
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="priority">
-            Priority <span className="text-red-500">*</span>
-          </Label>
-          <Select name="priority" required defaultValue={schedule.priority}>
-            <SelectTrigger id="priority" className="w-full">
-              <SelectValue placeholder="Select a priority" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem
-                value="low"
-                className="hover:bg-gray-100 cursor-pointer"
-              >
-                Low
-              </SelectItem>
-              <SelectItem
-                value="medium"
-                className="hover:bg-gray-100 cursor-pointer"
-              >
-                Medium
-              </SelectItem>
-              <SelectItem
-                value="high"
-                className="hover:bg-gray-100 cursor-pointer"
-              >
-                High
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+
         <div className="space-y-2">
           <Label htmlFor="status">
             Status <span className="text-red-500">*</span>

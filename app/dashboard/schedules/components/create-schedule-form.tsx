@@ -3,7 +3,6 @@
 import type React from 'react'
 
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -39,6 +38,9 @@ export function CreateScheduleForm({
   onCancel,
 }: CreateScheduleFormProps) {
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>([])
+  const [selectedTemplateId, setSelectedTemplateId] = useState<
+    string | undefined
+  >(undefined)
 
   async function handleCreate(formData: FormData) {
     // Add selected assignees to form data
@@ -46,6 +48,14 @@ export function CreateScheduleForm({
     selectedAssignees.forEach((id) => {
       formData.append('assignee_ids', id)
     })
+
+    // Set the title from the selected template
+    const selectedTemplate = templates.find(
+      (t) => String(t.id) === selectedTemplateId,
+    )
+    if (selectedTemplate) {
+      formData.set('title', selectedTemplate.title)
+    }
 
     const res = await createSchedule(formData)
     if (res?.error) toast.error(res.error)
@@ -59,21 +69,14 @@ export function CreateScheduleForm({
     <form action={handleCreate} className="flex flex-col gap-4">
       <div className="flex flex-col gap-4">
         <div className="">
-          <Label htmlFor="title">
-            Schedule Title <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="title"
-            name="title"
-            placeholder="e.g., Weekly Safety Inspection"
-            required
-          />
-        </div>
-        <div className="">
           <Label htmlFor="template_id">
             Audit Template <span className="text-red-500">*</span>
           </Label>
-          <Select name="template_id" required>
+          <Select
+            name="template_id"
+            required
+            onValueChange={setSelectedTemplateId}
+          >
             <SelectTrigger id="template_id" className="w-full">
               <SelectValue placeholder="Select an audit template" />
             </SelectTrigger>
@@ -159,36 +162,6 @@ export function CreateScheduleForm({
                 className="hover:bg-gray-100 cursor-pointer"
               >
                 Yearly
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="">
-          <Label htmlFor="priority">
-            Priority <span className="text-red-500">*</span>
-          </Label>
-          <Select name="priority" required>
-            <SelectTrigger id="priority" className="w-full">
-              <SelectValue placeholder="Select a priority" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem
-                value="low"
-                className="hover:bg-gray-100 cursor-pointer"
-              >
-                Low
-              </SelectItem>
-              <SelectItem
-                value="medium"
-                className="hover:bg-gray-100 cursor-pointer"
-              >
-                Medium
-              </SelectItem>
-              <SelectItem
-                value="high"
-                className="hover:bg-gray-100 cursor-pointer"
-              >
-                High
               </SelectItem>
             </SelectContent>
           </Select>

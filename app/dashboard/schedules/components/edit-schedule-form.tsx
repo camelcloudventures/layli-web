@@ -1,7 +1,7 @@
 'use client'
 
 import type React from 'react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -67,6 +67,20 @@ export function EditScheduleForm({
     }
   })
 
+  const [selectedTemplateId, setSelectedTemplateId] = useState(
+    String(schedule.template_id),
+  )
+  const [scheduleTitle, setScheduleTitle] = useState(
+    templates.find((t) => String(t.id) === String(schedule.template_id))
+      ?.title || '',
+  )
+
+  useEffect(() => {
+    const newTitle =
+      templates.find((t) => String(t.id) === selectedTemplateId)?.title || ''
+    setScheduleTitle(newTitle)
+  }, [selectedTemplateId, templates])
+
   async function handleEdit(formData: FormData) {
     // Add selected assignees to form data
     formData.delete('assignee_ids')
@@ -95,15 +109,9 @@ export function EditScheduleForm({
       <input type="hidden" name="id" value={schedule.id} />
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="title">
-            Schedule Title <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="title"
-            name="title"
-            defaultValue={schedule.title}
-            required
-          />
+          <Label htmlFor="title">Schedule Title</Label>
+          <Input id="title" name="title" disabled value={scheduleTitle} />
+          <input type="hidden" name="title" value={scheduleTitle} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="template_id">
@@ -112,7 +120,8 @@ export function EditScheduleForm({
           <Select
             name="template_id"
             required
-            defaultValue={String(schedule.template_id)}
+            value={selectedTemplateId}
+            onValueChange={setSelectedTemplateId}
           >
             <SelectTrigger id="template_id" className="w-full">
               <SelectValue placeholder="Select an audit template" />

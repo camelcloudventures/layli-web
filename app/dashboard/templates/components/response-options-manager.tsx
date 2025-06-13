@@ -251,7 +251,7 @@ export function ResponseOptionsManager({
 
               <div className="flex items-center gap-2">
                 <div
-                  className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md border"
+                  className="relative flex h-6 w-6 cursor-pointer items-center justify-center rounded-md border"
                   style={{ backgroundColor: option.color }}
                   title="Choose a color"
                 >
@@ -261,35 +261,25 @@ export function ResponseOptionsManager({
                     onChange={(e) =>
                       updateResponseOption(option.id, 'color', e.target.value)
                     }
-                    className="opacity-0 absolute inset-0 w-6 h-6 cursor-pointer"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    aria-label={`Choose color for ${option.label}`}
+                    tabIndex={0}
                   />
                 </div>
 
                 <div className="flex items-center">
-                  <Input
-                    type="number"
-                    value={option.score}
-                    onChange={(e) =>
-                      updateResponseOption(
-                        option.id,
-                        'score',
-                        Number.parseInt(e.target.value) || 0,
-                      )
-                    }
-                    className="w-16 text-xs"
-                    title="Score value"
-                  />
-                </div>
-
-                <div className="flex items-center">
-                  <Switch
-                    id={`option-flag-${option.id}`}
-                    checked={option.is_flagged}
-                    onCheckedChange={(checked) =>
-                      updateResponseOption(option.id, 'is_flagged', checked)
-                    }
-                    title="Flag this option"
-                  />
+                  {question.is_flagged && (
+                    <Switch
+                      id={`option-flag-${option.id}`}
+                      checked={option.is_flagged}
+                      onCheckedChange={(checked) =>
+                        updateResponseOption(option.id, 'is_flagged', checked)
+                      }
+                      title="Flag this option"
+                      aria-label={`Flag ${option.label} as critical issue`}
+                      tabIndex={0}
+                    />
+                  )}
                 </div>
 
                 <Button

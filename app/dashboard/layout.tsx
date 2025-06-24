@@ -15,9 +15,9 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <>
+    <div className="">
       <DashboardHeader />
-      <div className="container grid flex-1 gap-12 md:grid-cols-[200px_1fr] lg:grid-cols-[240px_1fr]">
+      <div className="flex  flex-1 gap-12 md:grid-cols-[200px_1fr] lg:grid-cols-[240px_1fr] mx-12">
         <aside className="hidden border-r md:block">
           <div className="sticky top-16 -ml-2 h-[calc(100vh-4rem)]">
             <SidebarNav items={dashboardNavItems} />
@@ -27,6 +27,6 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
-    </>
+    </div>
   )
 }

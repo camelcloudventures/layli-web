@@ -247,13 +247,7 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-6">
       {/* Header with Create Button */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Welcome back, {mockUser.fullName}! Here&apos;s an overview of your
-            audit system.
-          </p>
-        </div>
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
 
         {/* Create Button with Dropdown */}
         <DropdownMenu>

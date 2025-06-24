@@ -59,7 +59,7 @@ export function SidebarNav({ items }: SidebarNavProps) {
   }
 
   return (
-    <nav className="flex flex-col h-full justify-between ">
+    <nav className="flex flex-col h-full py-6 w-56 justify-between ">
       <div className="space-y-1">{renderNavItems(items.top)}</div>
       <div className="flex-1 py-6">{renderNavItems(items.middle)}</div>
       <div className="space-y-1">{renderNavItems(items.bottom)}</div>

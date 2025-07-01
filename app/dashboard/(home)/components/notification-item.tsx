@@ -86,7 +86,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
 
   return (
     <div
-      className={`relative max-w-1/2 flex items-start gap-4 rounded-xl border-2 ${borderColor} ${bgColor} p-4 transition-all hover:shadow-md ${
+      className={`relative flex items-start gap-4 rounded-xl border-2 ${borderColor} ${bgColor} p-4 transition-all hover:shadow-md ${
         !notification.is_read ? 'ring-2 ring-blue-100' : ''
       }`}
     >

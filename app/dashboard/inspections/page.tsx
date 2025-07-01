@@ -1,5 +1,51 @@
-import React from 'react'
+'use client'
 
-export default function page() {
-  return <div>Inspections</div>
+import { useState, useEffect } from 'react'
+import { Card, CardContent } from '@/components/ui/card'
+import { getAllInspections } from '@/lib/data/mock-inspections'
+import type { Inspection } from '@/lib/types/inspection-types'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import { InspectionList } from './components/inspection-list'
+
+export default function InspectionsPage() {
+  const router = useRouter()
+  const [loading, setLoading] = useState(true)
+  const [inspections, setInspections] = useState<Inspection[]>([])
+
+  useEffect(() => {
+    const fetchInspections = async () => {
+      try {
+        const data = await getAllInspections()
+        setInspections(data)
+      } catch (error) {
+        console.error('Error fetching inspections:', error)
+        toast.error('Failed to load inspections')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchInspections()
+  }, [])
+
+  const handleCreateInspection = () => {
+    router.push('/dashboard/inspections/create')
+  }
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold tracking-tight">Inspections</h1>
+
+      <Card>
+        <CardContent className="pt-6">
+          <InspectionList
+            inspections={inspections}
+            loading={loading}
+            onCreateInspection={handleCreateInspection}
+          />
+        </CardContent>
+      </Card>
+    </div>
+  )
 }

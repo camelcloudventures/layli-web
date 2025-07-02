@@ -1,7 +1,7 @@
 export enum Priority {
-  Low = "low",
-  Medium = "medium",
-  High = "high",
+  Low = 'low',
+  Medium = 'medium',
+  High = 'high',
 }
 
 export interface InspectionAction {
@@ -23,6 +23,15 @@ export interface InspectionQuestion {
   note: string
   attachment: string | null
   action: InspectionAction | null
+  field_type?: string
+  required?: boolean
+  is_flagged?: boolean
+  flag_rule?: {
+    operator?: string
+    value?: string | number
+    value2?: string | number
+  }
+  response_options?: string[]
 }
 
 export interface InspectionSection {
@@ -44,7 +53,7 @@ export interface Inspection {
   location: Location
   sections: InspectionSection[]
   user_name: string
-  status: "draft" | "in_progress" | "completed"
+  status: 'draft' | 'in_progress' | 'completed'
   last_modified: Date
   completed_on?: Date
   score: number | null

@@ -1,37 +1,21 @@
 'use client'
 
-import type React from 'react'
-
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import type {
+  InspectionQuestion,
+  InspectionSection,
+} from '@/lib/types/inspection-types'
 import { Button } from '@/components/ui/button'
+import { PlusCircle, Trash2, ChevronUp, ChevronDown } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import {
   Select,
-  SelectContent,
-  SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectContent,
+  SelectItem,
 } from '@/components/ui/select'
-import { toast } from 'sonner'
-import { mockLocations } from '@/lib/data/mock-locations'
-import { saveInspection } from '@/lib/data/mock-inspections'
-import type {
-  Inspection,
-  InspectionQuestion,
-} from '@/lib/types/inspection-types'
-import { PlusCircle, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import type { InspectionSection } from '@/lib/types/inspection-types'
 import { Switch } from '@/components/ui/switch'
 import {
   Card as UiCard,
@@ -40,45 +24,13 @@ import {
   CardTitle as UiCardTitle,
 } from '@/components/ui/card'
 
-// Constants for A4 page height and element heights (in px)
-const A4_PAGE_HEIGHT_PX = 1122
-const SECTION_HEADER_HEIGHT = 40
-const QUESTION_HEIGHT = 60
-
-// Utility to group sections/questions into pages
-function groupSectionsIntoPages(
-  sections: InspectionSection[],
-): InspectionSection[][] {
-  const pages: InspectionSection[][] = []
-  let currentPage: InspectionSection[] = []
-  let currentHeight = 0
-
-  for (const section of sections) {
-    const sectionHeight =
-      SECTION_HEADER_HEIGHT + section.questions.length * QUESTION_HEIGHT
-    if (
-      currentHeight + sectionHeight > A4_PAGE_HEIGHT_PX &&
-      currentPage.length > 0
-    ) {
-      pages.push(currentPage)
-      currentPage = []
-      currentHeight = 0
-    }
-    currentPage.push(section)
-    currentHeight += sectionHeight
-  }
-  if (currentPage.length > 0) pages.push(currentPage)
-  return pages
-}
-
-// Custom QuestionsManager for inspection data structure
 interface InspectionQuestionsManagerProps {
   sections: InspectionSection[]
   setSections: React.Dispatch<React.SetStateAction<InspectionSection[]>>
   section: InspectionSection
 }
 
-function InspectionQuestionsManager({
+export function InspectionQuestionsManager({
   sections,
   setSections,
   section,
@@ -203,6 +155,7 @@ function InspectionQuestionsManager({
       <div className="flex items-center justify-between">
         <h4 className="font-medium text-sm text-muted-foreground">Questions</h4>
         <Button
+          type="button"
           onClick={() => addQuestion(sectionIndex)}
           variant="outline"
           size="sm"
@@ -220,6 +173,7 @@ function InspectionQuestionsManager({
             No questions added to this section
           </p>
           <Button
+            type="button"
             onClick={() => addQuestion(sectionIndex)}
             size="sm"
             variant="outline"
@@ -233,8 +187,8 @@ function InspectionQuestionsManager({
           {section.questions.map((question, questionIndex) => (
             <UiCard
               key={question.id}
-              className={`border ${
-                expandedQuestions.includes(question.id) ? 'border-primary' : ''
+              className={`shadow-sm border-slate-200 ${
+                expandedQuestions.includes(question.id) ? '' : ''
               }`}
             >
               <UiCardHeader
@@ -501,367 +455,5 @@ function InspectionQuestionsManager({
         </div>
       )}
     </div>
-  )
-}
-
-export function CreateInspectionForm() {
-  const router = useRouter()
-  const [isCreating, setIsCreating] = useState(false)
-  const [inspectionName, setInspectionName] = useState('')
-  const [locationId, setLocationId] = useState('')
-  const [preparedBy, setPreparedBy] = useState('')
-  const [scheduledDate, setScheduledDate] = useState('')
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
-  const [createdInspection, setCreatedInspection] = useState<Inspection | null>(
-    null,
-  )
-  const [sections, setSections] = useState<InspectionSection[]>([
-    {
-      id: `section-${Date.now()}`,
-      name: 'General Information',
-      questions: [
-        {
-          id: `question-${Date.now()}`,
-          name: 'Is all required PPE available?',
-          response: null,
-          score: 0,
-          note: '',
-          attachment: null,
-          action: null,
-        },
-      ],
-    },
-  ])
-
-  const addSection = () => {
-    setSections([
-      ...sections,
-      {
-        id: `section-${Date.now()}-${sections.length}`,
-        name: `Section ${sections.length + 1}`,
-        questions: [],
-      },
-    ])
-  }
-
-  const removeSection = (sectionIndex: number) => {
-    const newSections = [...sections]
-    newSections.splice(sectionIndex, 1)
-    setSections(newSections)
-  }
-
-  const updateSectionName = (sectionIndex: number, name: string) => {
-    const newSections = [...sections]
-    newSections[sectionIndex].name = name
-    setSections(newSections)
-  }
-
-  const moveSection = (sectionIndex: number, direction: 'up' | 'down') => {
-    if (
-      (direction === 'up' && sectionIndex === 0) ||
-      (direction === 'down' && sectionIndex === sections.length - 1)
-    ) {
-      return
-    }
-
-    const newSections = [...sections]
-    const newIndex = direction === 'up' ? sectionIndex - 1 : sectionIndex + 1
-
-    // Swap sections using a temporary variable
-    const temp = newSections[sectionIndex]
-    newSections[sectionIndex] = newSections[newIndex]
-    newSections[newIndex] = temp
-
-    setSections(newSections)
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!inspectionName || !locationId) {
-      toast.error('Please provide an inspection name and location.')
-      return
-    }
-
-    // Validate that all sections have names and at least one question
-    for (const section of sections) {
-      if (!section.name) {
-        toast.error('All sections must have a name.')
-        return
-      }
-
-      if (section.questions.length === 0) {
-        toast.error(
-          `Section "${section.name}" must have at least one question.`,
-        )
-        return
-      }
-
-      // Validate that all questions have names
-      for (const question of section.questions) {
-        if (!question.name) {
-          toast.error(
-            `A question in section "${section.name}" is missing text.`,
-          )
-          return
-        }
-      }
-    }
-
-    setIsCreating(true)
-
-    try {
-      const location = mockLocations.find((loc) => loc.id === locationId)
-
-      if (!location) {
-        throw new Error('Selected location not found')
-      }
-
-      const inspectionId = `inspection-${Date.now()}`
-      const newInspection: Inspection = {
-        id: inspectionId,
-        name: inspectionName,
-        conducted_on: scheduledDate ? new Date(scheduledDate) : new Date(),
-        location: location,
-        sections: sections,
-        user_name: preparedBy || 'Anonymous',
-        status: 'draft',
-        last_modified: new Date(),
-        score: null,
-      }
-
-      // Save to localStorage
-      await saveInspection(newInspection)
-
-      // Store the created inspection for the success dialog
-      setCreatedInspection(newInspection)
-      setShowSuccessDialog(true)
-    } catch (error) {
-      console.error('Error creating inspection:', error)
-      toast.error('Failed to create inspection.')
-      setIsCreating(false)
-    }
-  }
-
-  const handleViewInspection = () => {
-    if (createdInspection) {
-      router.push(`/dashboard/inspections/${createdInspection.id}/report`)
-    }
-    setShowSuccessDialog(false)
-  }
-
-  const handleStartInspection = () => {
-    if (createdInspection) {
-      router.push(`/dashboard/inspections/${createdInspection.id}/edit`)
-    }
-    setShowSuccessDialog(false)
-  }
-
-  return (
-    <>
-      <form onSubmit={handleSubmit}>
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>New Inspection</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="inspection-name">Inspection Name</Label>
-              <Input
-                id="inspection-name"
-                value={inspectionName}
-                onChange={(e) => setInspectionName(e.target.value)}
-                placeholder="Enter inspection name"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
-              <Select value={locationId} onValueChange={setLocationId}>
-                <SelectTrigger id="location">
-                  <SelectValue placeholder="Select location" />
-                </SelectTrigger>
-                <SelectContent>
-                  {mockLocations.map((location) => (
-                    <SelectItem key={location.id} value={location.id}>
-                      {location.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="prepared-by">Prepared By</Label>
-              <Input
-                id="prepared-by"
-                value={preparedBy}
-                onChange={(e) => setPreparedBy(e.target.value)}
-                placeholder="Enter your name"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="scheduled-date">Scheduled Date</Label>
-              <Input
-                id="scheduled-date"
-                type="date"
-                value={scheduledDate}
-                onChange={(e) => setScheduledDate(e.target.value)}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Sections and Questions</h2>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={addSection}
-              className="flex items-center gap-2"
-            >
-              <PlusCircle className="h-4 w-4" />
-              Add Section
-            </Button>
-          </div>
-
-          {/* Automatic A4 Page Grouping */}
-          {groupSectionsIntoPages(sections).map((pageSections, pageIndex) => (
-            <div
-              key={pageIndex}
-              className="mb-8 pb-8 border-b border-dashed border-gray-300"
-            >
-              <div className="text-xs text-gray-400 mb-4 font-medium">
-                Page {pageIndex + 1}
-              </div>
-
-              <div className="space-y-4">
-                {pageSections.map((section) => {
-                  const globalSectionIndex = sections.indexOf(section)
-                  return (
-                    <Card key={section.id} className="border border-gray-200">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex  items-center gap-2">
-                            <Input
-                              value={section.name}
-                              onChange={(e) =>
-                                updateSectionName(
-                                  globalSectionIndex,
-                                  e.target.value,
-                                )
-                              }
-                              placeholder="Section name"
-                              className="w-full"
-                            />
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() =>
-                                moveSection(globalSectionIndex, 'up')
-                              }
-                              disabled={globalSectionIndex === 0}
-                            >
-                              <ChevronUp className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() =>
-                                moveSection(globalSectionIndex, 'down')
-                              }
-                              disabled={
-                                globalSectionIndex === sections.length - 1
-                              }
-                            >
-                              <ChevronDown className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeSection(globalSectionIndex)}
-                              disabled={sections.length === 1}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pt-0">
-                        <InspectionQuestionsManager
-                          sections={sections}
-                          setSections={setSections}
-                          section={section}
-                        />
-                      </CardContent>
-                    </Card>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
-
-          {sections.length === 0 && (
-            <div className="flex flex-col items-center justify-center rounded-md border border-dashed py-12">
-              <div className="text-muted-foreground mb-4">
-                <PlusCircle className="h-16 w-16 mx-auto" />
-              </div>
-              <h3 className="text-lg font-medium mb-2">No Sections Added</h3>
-              <p className="text-center text-muted-foreground mb-4">
-                Add sections to organize your inspection questions
-              </p>
-              <Button onClick={addSection} className="flex items-center gap-2">
-                <PlusCircle className="h-4 w-4" />
-                Add First Section
-              </Button>
-            </div>
-          )}
-        </div>
-
-        <div className="flex justify-end space-x-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push('/dashboard/inspections')}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isCreating}>
-            {isCreating ? 'Creating...' : 'Create Inspection'}
-          </Button>
-        </div>
-      </form>
-
-      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Inspection Created</DialogTitle>
-            <DialogDescription>
-              Your inspection &quot;{createdInspection?.name}&quot; has been
-              created successfully.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex flex-col sm:flex-row gap-2">
-            <Button
-              variant="outline"
-              onClick={handleViewInspection}
-              className="sm:flex-1"
-            >
-              View Inspection
-            </Button>
-            <Button onClick={handleStartInspection} className="sm:flex-1">
-              Start Inspection
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
   )
 }

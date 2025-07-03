@@ -1,7 +1,7 @@
 'use client'
 
-import type React from 'react'
-
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -13,8 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { Site } from '@/lib/types/inspection-types'
-import { PlusCircle, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -23,119 +21,136 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { InspectionQuestionsManager } from './inspections-question-manager'
-import { useInspectionForm } from '../hooks/useInspectionForm'
 import { useAuth } from '@/lib/context/auth-provider'
 import { createInspection } from '../../actions/actions'
+import { UserOption } from '@/app/dashboard/schedules/types/schedule-form-types'
+import { MultiSelect } from '@/components/ui/multi-select'
+import { AuditTemplate, Page, Section } from '@/types/audit-types'
+import { PagesManager } from '../../../templates/components/pages-manager'
+import { toast } from 'sonner'
+import { omit } from 'lodash'
+import { PlusCircle } from 'lucide-react'
+import SubmitBtn from '@/components/custom/submit-btn'
 
-const mockUsers = [
-  //create mock users
-  {
-    id: '0',
-    name: 'Admin',
-    email: 'admin@example.com',
-  },
-  {
-    id: '1',
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-  },
-  {
-    id: '2',
-    name: 'Jane Doe',
-    email: 'jane.doe@example.com',
-  },
-]
-export function CreateInspectionForm({ sites }: { sites: Site[] }) {
-  const {
-    sections,
-    setSections,
-    groupSectionsIntoPages,
-    isCreating,
-    inspectionName,
-    locationId,
-    scheduledDate,
-    showSuccessDialog,
-    setShowSuccessDialog,
+export function CreateInspectionForm({
+  sites,
+  users,
+}: {
+  sites: { id: string; name: string }[]
+  users: UserOption[]
+}) {
+  const router = useRouter()
+  const { user } = useAuth()
+  const [isCreating, setIsCreating] = useState(false)
+  const [selectedLocation, setSelectedLocation] = useState('')
+  const [assignedTo, setAssignedTo] = useState<string[]>([])
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [
     createdInspection,
-    router,
-    addSection,
-    removeSection,
-    moveSection,
-    assignedTo,
-    getPageName,
-  } = useInspectionForm()
+    setCreatedInspection,
+  ] = useState<AuditTemplate | null>(null)
 
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault()
+  // Generate unique IDs for the cover page and section
+  const coverPageId = `cover-page-${Date.now()}`
+  const coverSectionId = `cover-section-${Date.now()}`
 
-  //   if (!inspectionName || !locationId) {
-  //     toast.error('Please provide an inspection name and location.')
-  //     return
-  //   }
+  // Create the cover section
+  const coverSection: Section = {
+    id: coverSectionId,
+    page_id: coverPageId,
+    title: 'General Information',
+    ordinal: 1,
+    questions: [],
+  }
 
-  //   // Validate that all sections have names and at least one question
-  //   for (const section of sections) {
-  //     if (!section.name) {
-  //       toast.error('All sections must have a name.')
-  //       return
-  //     }
+  // Create the first page with the cover section
+  const firstPage: Page = {
+    id: coverPageId,
+    template_id: `temp-${Date.now()}`,
+    title: 'Inspection Details',
+    description: 'Add inspection details here',
+    ordinal: 1,
+    sections: [coverSection],
+  }
 
-  //     if (section.questions.length === 0) {
-  //       toast.error(
-  //         `Section "${section.name}" must have at least one question.`,
-  //       )
-  //       return
-  //     }
+  const [template, setTemplate] = useState<AuditTemplate>({
+    id: `temp-${Date.now()}`,
+    title: '',
+    description: '',
+    pages: [firstPage],
+  })
 
-  //     // Validate that all questions have names
-  //     for (const question of section.questions) {
-  //       if (!question.name) {
-  //         toast.error(
-  //           `A question in section "${section.name}" is missing text.`,
-  //         )
-  //         return
-  //       }
-  //     }
-  //   }
+  const addSection = () => {
+    const newSection: Section = {
+      id: `section-${Date.now()}`,
+      page_id: template.pages[0].id,
+      title: `Section ${template.pages.flatMap((p) => p.sections).length + 1}`,
+      ordinal: template.pages.flatMap((p) => p.sections).length + 1,
+      questions: [],
+    }
 
-  //   setIsCreating(true)
-
-  //   try {
-  //     const location = mockLocations.find((loc) => loc.id === locationId)
-
-  //     if (!location) {
-  //       throw new Error('Selected location not found')
-  //     }
-
-  //     const inspectionId = `inspection-${Date.now()}`
-  //     const newInspection: Inspection = {
-  //       id: inspectionId,
-  //       name: inspectionName,
-  //       conducted_on: scheduledDate ? new Date(scheduledDate) : new Date(),
-  //       location: location,
-  //       sections: sections,
-  //       user_name: user?.full_name as string,
-  //       status: 'draft',
-  //       last_modified: new Date(),
-  //       score: null,
-  //     }
-
-  //     // Save to localStorage
-  //     await saveInspection(newInspection)
-
-  //     // Store the created inspection for the success dialog
-  //     setCreatedInspection(newInspection)
-  //     setShowSuccessDialog(true)
-  //   } catch (error) {
-  //     console.error('Error creating inspection:', error)
-  //     toast.error('Failed to create inspection.')
-  //     setIsCreating(false)
-  //   }
-  // }
+    setTemplate((prev) => ({
+      ...prev,
+      pages: [
+        {
+          ...prev.pages[0],
+          sections: [...prev.pages[0].sections, newSection],
+        },
+        ...prev.pages.slice(1),
+      ],
+    }))
+  }
 
   async function handleSubmit(formData: FormData) {
-    await createInspection(formData)
+    setIsCreating(true)
+    try {
+      // Update template with form data
+      const updatedTemplate = {
+        ...template,
+        title: formData.get('inspection-name') as string,
+        description: `Inspection for ${
+          sites.find((s) => s.id === selectedLocation)?.name
+        }`,
+      }
+
+      // Prepare pages data without IDs
+      const updatePages = updatedTemplate.pages.map((page) => ({
+        ...omit(page, ['id', 'template_id']),
+        sections: page.sections.map((section) => ({
+          ...omit(section, ['id']),
+          questions: section.questions.map((question) => ({
+            ...omit(question, ['id']),
+            response_options:
+              question.response_options?.map((option) =>
+                omit(option, ['id', 'question_id']),
+              ) ?? [],
+          })),
+        })),
+      }))
+
+      formData.set('pages', JSON.stringify(updatePages))
+
+      const result = await createInspection(
+        formData,
+        assignedTo,
+        selectedLocation,
+        user?.id || '',
+      )
+
+      if (result && 'error' in result) {
+        toast.error(String(result.error))
+        return
+      }
+
+      // Set the created inspection for the success dialog
+      setCreatedInspection(result.data)
+      setShowSuccessDialog(true)
+    } catch (error) {
+      console.error('Error creating inspection:', error)
+      toast.error('Failed to create inspection')
+    } finally {
+      setIsCreating(false)
+    }
   }
 
   const handleViewInspection = () => {
@@ -144,7 +159,6 @@ export function CreateInspectionForm({ sites }: { sites: Site[] }) {
     }
     setShowSuccessDialog(false)
   }
-  const { user } = useAuth()
 
   const handleStartInspection = () => {
     if (createdInspection) {
@@ -166,21 +180,29 @@ export function CreateInspectionForm({ sites }: { sites: Site[] }) {
               <Input
                 id="inspection-name"
                 name="inspection-name"
-                defaultValue={inspectionName}
+                value={template.title}
+                onChange={(e) =>
+                  setTemplate((prev) => ({ ...prev, title: e.target.value }))
+                }
                 placeholder="Enter inspection name"
               />
             </div>
 
-            <div className="flex items-center justify-between gap-8">
+            <div className="flex items-center justify-between gap-8 mb-6">
               <span className="w-full">
                 <Label htmlFor="location">Location</Label>
-                <Select name="location" defaultValue={locationId}>
+                <Select
+                  name="location"
+                  value={selectedLocation}
+                  onValueChange={setSelectedLocation}
+                  required
+                >
                   <SelectTrigger className="w-full" id="location">
                     <SelectValue placeholder="Select location" />
                   </SelectTrigger>
                   <SelectContent className="w-full">
                     {sites.map((location) => (
-                      <SelectItem key={location.id} value={location.id}>
+                      <SelectItem key={location.id} value={String(location.id)}>
                         {location.name}
                       </SelectItem>
                     ))}
@@ -190,18 +212,17 @@ export function CreateInspectionForm({ sites }: { sites: Site[] }) {
 
               <span className="w-full">
                 <Label htmlFor="assigned-to">Assign To</Label>
-                <Select name="assigned-to" defaultValue={assignedTo}>
-                  <SelectTrigger className="w-full" id="assigned-to">
-                    <SelectValue placeholder="Select user" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {mockUsers.map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <MultiSelect
+                  name="assignee_ids"
+                  required
+                  value={assignedTo}
+                  onValueChange={setAssignedTo}
+                  placeholder="Select assignees"
+                  options={users.map((user) => ({
+                    value: user.user.id,
+                    label: user.user.full_name,
+                  }))}
+                />
               </span>
             </div>
 
@@ -223,129 +244,53 @@ export function CreateInspectionForm({ sites }: { sites: Site[] }) {
                 id="scheduled-date"
                 name="scheduled-date"
                 type="date"
-                defaultValue={scheduledDate}
+                defaultValue={new Date().toISOString().split('T')[0]}
               />
             </div>
           </CardContent>
         </Card>
 
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Sections and Questions</h2>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={addSection}
-              className="flex items-center gap-2"
-            >
-              <PlusCircle className="h-4 w-4" />
-              Add Section
-            </Button>
-          </div>
-
-          {/* Automatic A4 Page Grouping */}
-          {groupSectionsIntoPages(sections).map((pageSections, pageIndex) => (
-            <div
-              key={pageIndex}
-              className="mb-8 pb-8 border-b border-dashed border-gray-300"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="text-xs text-gray-400 font-medium">
-                  Page {pageIndex + 1}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Pages & Questions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {template.pages.map((page, pageIndex) => (
+              <div
+                key={page.id}
+                className="mb-8 pb-8 border-b border-dashed border-gray-300"
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="text-xs text-gray-400 font-medium">
+                    Page {pageIndex + 1}
+                  </div>
                 </div>
-                <Input
-                  type="text"
-                  name={`page-name-${pageIndex}`}
-                  defaultValue={getPageName(pageIndex)}
-                  placeholder={`Page ${pageIndex + 1}`}
-                  className="w-72  shadow-none text-sm"
-                />
+                <PagesManager template={template} setTemplate={setTemplate} />
               </div>
+            ))}
 
-              <div className="space-y-4">
-                {pageSections.map((section) => {
-                  const globalSectionIndex = sections.indexOf(section)
-                  return (
-                    <Card key={section.id} className="border border-gray-200">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex  items-center gap-2">
-                            <Input
-                              name={`section-name-${globalSectionIndex}`}
-                              defaultValue={section.name}
-                              placeholder="Section name"
-                              className="w-full"
-                            />
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() =>
-                                moveSection(globalSectionIndex, 'up')
-                              }
-                              disabled={globalSectionIndex === 0}
-                            >
-                              <ChevronUp className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() =>
-                                moveSection(globalSectionIndex, 'down')
-                              }
-                              disabled={
-                                globalSectionIndex === sections.length - 1
-                              }
-                            >
-                              <ChevronDown className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeSection(globalSectionIndex)}
-                              disabled={sections.length === 1}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="pt-0">
-                        <InspectionQuestionsManager
-                          sections={sections}
-                          setSections={setSections}
-                          section={section}
-                        />
-                      </CardContent>
-                    </Card>
-                  )
-                })}
+            {template.pages.flatMap((p) => p.sections).length === 0 && (
+              <div className="flex flex-col items-center justify-center rounded-md border border-dashed py-12">
+                <div className="text-muted-foreground mb-4">
+                  <PlusCircle className="h-16 w-16 mx-auto" />
+                </div>
+                <h3 className="text-lg font-medium mb-2">No Sections Added</h3>
+                <p className="text-center text-muted-foreground mb-4">
+                  Add sections to organize your inspection questions
+                </p>
+                <Button
+                  onClick={addSection}
+                  className="flex items-center gap-2"
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  Add First Section
+                </Button>
               </div>
-            </div>
-          ))}
+            )}
+          </CardContent>
+        </Card>
 
-          {sections.length === 0 && (
-            <div className="flex flex-col items-center justify-center rounded-md border border-dashed py-12">
-              <div className="text-muted-foreground mb-4">
-                <PlusCircle className="h-16 w-16 mx-auto" />
-              </div>
-              <h3 className="text-lg font-medium mb-2">No Sections Added</h3>
-              <p className="text-center text-muted-foreground mb-4">
-                Add sections to organize your inspection questions
-              </p>
-              <Button onClick={addSection} className="flex items-center gap-2">
-                <PlusCircle className="h-4 w-4" />
-                Add First Section
-              </Button>
-            </div>
-          )}
-        </div>
-
-        <div className="flex justify-end space-x-2">
+        <div className="flex justify-end space-x-2 mt-6">
           <Button
             type="button"
             variant="outline"
@@ -353,9 +298,20 @@ export function CreateInspectionForm({ sites }: { sites: Site[] }) {
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={isCreating}>
+          <SubmitBtn
+            label="Create Inspection"
+            className=""
+            variant="default"
+            isDisabled={
+              isCreating ||
+              !template.title ||
+              !selectedLocation ||
+              !assignedTo.length
+            }
+          />
+          {/* <SubmitButton type="submit" disabled={isCreating}>
             {isCreating ? 'Creating...' : 'Create Inspection'}
-          </Button>
+          </SubmitButton> */}
         </div>
       </form>
 
@@ -364,7 +320,7 @@ export function CreateInspectionForm({ sites }: { sites: Site[] }) {
           <DialogHeader>
             <DialogTitle>Inspection Created</DialogTitle>
             <DialogDescription>
-              Your inspection &quot;{createdInspection?.name}&quot; has been
+              Your inspection &quot;{createdInspection?.title}&quot; has been
               created successfully.
             </DialogDescription>
           </DialogHeader>

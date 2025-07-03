@@ -115,13 +115,13 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+          {/* <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="text-lg font-medium">Pages</h3>
             <Button onClick={addNewPage} variant="outline" size="sm">
               <Plus className="mr-2 h-4 w-4" />
               Add Page
             </Button>
-          </div>
+          </div> */}
 
           <div className="flex flex-col md:flex-row gap-6">
             {/* Page sidebar navigation */}

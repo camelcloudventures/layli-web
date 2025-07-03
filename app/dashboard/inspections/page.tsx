@@ -2,11 +2,23 @@
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { getAllInspections } from '@/lib/data/mock-inspections'
 import type { Inspection } from '@/lib/types/inspection-types'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { InspectionList } from './components/inspection-list'
+import { getAllInspections } from './actions/actions'
+
+interface ApiResponse {
+  success?: string
+  error?: string
+  data?: Inspection[]
+  pagination?: {
+    total: number
+    page: number
+    pageSize: number
+    totalPages: number
+  }
+}
 
 export default function InspectionsPage() {
   const router = useRouter()
@@ -16,8 +28,12 @@ export default function InspectionsPage() {
   useEffect(() => {
     const fetchInspections = async () => {
       try {
-        const data = await getAllInspections()
-        setInspections(data)
+        const result = (await getAllInspections()) as ApiResponse
+        if (result.error) {
+          toast.error(result.error)
+          return
+        }
+        setInspections(result.data || [])
       } catch (error) {
         console.error('Error fetching inspections:', error)
         toast.error('Failed to load inspections')

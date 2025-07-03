@@ -38,7 +38,7 @@ export const useInspectionForm = () => {
   const [createdInspection, setCreatedInspection] = useState<Inspection | null>(
     null,
   )
-  const [assignedTo, setAssignedTo] = useState('')
+  const [assignedTo, setAssignedTo] = useState<string[]>([])
   const [pageNames, setPageNames] = useState<{ [key: number]: string }>({})
   const A4_PAGE_HEIGHT_PX = 1122
   const SECTION_HEADER_HEIGHT = 40

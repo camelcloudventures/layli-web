@@ -3,18 +3,20 @@ import {
   getActiveUsers,
   getSites,
 } from '@/app/dashboard/schedules/actions/actions'
+import { getTemplates } from '@/app/dashboard/templates/actions/actions'
 
 export default async function CreateInspectionPage() {
   const sites = await getSites()
   const users = await getActiveUsers()
+  const templates = await getTemplates(1)
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tight">Create Inspection</h1>
-      </div>
-
-      <CreateInspectionForm sites={sites} users={users?.data || []} />
+    <div className="container mx-auto py-6">
+      <CreateInspectionForm
+        sites={sites}
+        users={users.data}
+        templates={templates?.data || []}
+      />
     </div>
   )
 }

@@ -49,6 +49,12 @@ export default function InspectionsPage() {
     router.push('/dashboard/inspections/create')
   }
 
+  //log out the status of the inspections
+  console.log(
+    'inspections',
+    inspections.map((inspection) => inspection.status),
+  )
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold tracking-tight">Inspections</h1>

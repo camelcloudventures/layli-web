@@ -1,26 +1,32 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Plus } from 'lucide-react'
+import { Search, Plus, FileText, PlusCircle } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import type { Inspection } from '@/lib/types/inspection-types'
 import { columns } from './columns'
 import { DataTable } from '@/components/custom/data-table'
 import Loading from './loading'
+import { useRouter } from 'next/navigation'
 
 interface InspectionListProps {
   inspections: Inspection[]
   loading?: boolean
-  onCreateInspection: () => void
 }
 
 export function InspectionList({
   inspections = [],
   loading = false,
-  onCreateInspection,
 }: InspectionListProps) {
   const [searchQuery, setSearchQuery] = useState('')
+  const router = useRouter()
 
   // Ensure inspections is an array
   const inspectionsArray = Array.isArray(inspections) ? inspections : []
@@ -36,6 +42,14 @@ export function InspectionList({
         .includes(searchQuery.toLowerCase())
     )
   })
+
+  const handleCreateFromScratch = () => {
+    router.push('/dashboard/inspections/create?mode=scratch')
+  }
+
+  const handleCreateFromTemplate = () => {
+    router.push('/dashboard/inspections/create?mode=template')
+  }
 
   if (loading) {
     return <Loading />
@@ -54,10 +68,24 @@ export function InspectionList({
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Button onClick={onCreateInspection}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Inspection
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Inspection
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[200px]">
+            <DropdownMenuItem onClick={handleCreateFromScratch}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Create from Scratch
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleCreateFromTemplate}>
+              <FileText className="mr-2 h-4 w-4" />
+              Use Template
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div>

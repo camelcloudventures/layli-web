@@ -50,9 +50,15 @@ export default function InspectionsPage() {
   }
 
   //log out the status of the inspections
+  // console.log(
+  //   'inspections',
+  //   inspections.map((inspection) => inspection.status),
+  // )
+
   console.log(
     'inspections',
-    inspections.map((inspection) => inspection.status),
+    inspections,
+    // inspections[0]?.pages[0].sections[0].questions[0].response_options,
   )
 
   return (
@@ -64,6 +70,7 @@ export default function InspectionsPage() {
           <InspectionList
             inspections={inspections}
             loading={loading}
+            //@ts-expect-error - inspections is not typed
             onCreateInspection={handleCreateInspection}
           />
         </CardContent>

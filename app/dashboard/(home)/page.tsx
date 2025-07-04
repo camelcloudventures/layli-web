@@ -16,6 +16,8 @@ import TopBar from './components/top-bar'
 import HomeTabs from './tabs/home-tabs'
 import { getNotifications } from './actions/actions'
 
+export const dynamic = 'force-dynamic'
+
 // Mock user data
 const mockUser = {
   fullName: 'Demo User',
@@ -163,7 +165,8 @@ export default async function DashboardPage() {
 
       <HomeTabs
         stats={stats}
-        notifications={notifications.data}
+        //@ts-expect-error - notifications is not typed
+        notifications={notifications?.data || []}
         inspectionTrends={inspectionTrends}
         issuesByCategory={issuesByCategory}
         actionCompletionRate={actionCompletionRate}

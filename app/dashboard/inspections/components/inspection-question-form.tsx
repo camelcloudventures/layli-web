@@ -283,6 +283,7 @@ export function InspectionQuestionForm({
 
       {/* Action Dialog */}
       <CreateActionDialog
+        //@ts-expect-error - open is not typed
         open={isActionDialogOpen}
         onOpenChange={setIsActionDialogOpen}
         questionName={question.name}

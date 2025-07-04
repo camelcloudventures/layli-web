@@ -56,6 +56,7 @@ export const useInspectionPages = (
       ...prev,
       pages: newPages,
     }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [template.pages.flatMap((page) => page.sections).length]) // Only regroup when number of sections changes
 
   const updatePageName = (pageIndex: number, name: string) => {

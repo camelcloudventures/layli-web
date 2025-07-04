@@ -5,6 +5,7 @@ import type {
   Section,
   Question,
   ResponseOption,
+  InspectionStatus,
 } from '@/lib/types/inspection-types'
 
 const mockResponseOptions: ResponseOption[] = [
@@ -27,7 +28,7 @@ const mockResponseOptions: ResponseOption[] = [
 const mockQuestion: Question = {
   id: 158,
   text: 'Are fire extinguishers properly mounted?',
-  field_type: 'RADIO',
+  field_type: 'SELECT',
   required: true,
   multiple_selection: false,
   ordinal: 1,
@@ -87,7 +88,7 @@ export const mockInspections: Inspection[] = [
     template_id: null,
     template: null,
     schedule_id: null,
-    status: 'pending',
+    status: 'pending' as InspectionStatus,
     started_at: null,
     completed_at: null,
     paused_at: null,
@@ -192,7 +193,7 @@ export const createInspection = async (
     id: uuidv4(),
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    status: 'pending' as const,
+    status: 'pending' as InspectionStatus,
     total_points_earned: 0,
     total_points_possible: 0,
     critical_violations: 0,
@@ -277,7 +278,7 @@ export const createDefaultInspection = (
     template_id: null,
     template: null,
     schedule_id: null,
-    status: 'pending' as const,
+    status: 'pending' as InspectionStatus,
     started_at: null,
     completed_at: null,
     paused_at: null,

@@ -63,24 +63,36 @@ export interface FlagRule {
 export interface Question {
   id: number
   text: string
-  field_type: 'TEXT' | 'RADIO' | 'CHECKBOX' | 'NUMBER' | 'DATE'
-  required: boolean
-  multiple_selection: boolean
-  ordinal: number
-  risk_level: 'minor' | 'major' | 'critical'
-  response_options: ResponseOption[]
-  auto_score: boolean
-  max_value?: number
-  min_value?: number
-  point_value: number
-  step_value?: number
   weight: number
-  is_flagged: boolean | null
-  flag_rule: FlagRule | null
-  organization_id: string | null
+  ordinal: number
   page_id: number | null
-  section_id: number
+  required: boolean
+  flag_rule: FlagRule | null
+  max_value: number
+  min_value: number
+  auto_score: boolean
   created_at: string
+  field_type:
+    | 'TEXT'
+    | 'DATE'
+    | 'PERSON'
+    | 'LOCATION'
+    | 'NUMBER'
+    | 'BOOLEAN'
+    | 'PHOTO'
+    | 'SELECT'
+    | 'MULTI_SELECT'
+    | 'SIGNATURE'
+    | 'SLIDER'
+    | 'ASSET'
+  is_flagged: boolean | null
+  risk_level: 'minor' | 'major' | 'critical'
+  section_id: number
+  step_value: number
+  point_value: number
+  organization_id: string | null
+  response_options: ResponseOption[]
+  multiple_selection: boolean
 }
 
 export interface Section {
@@ -115,8 +127,20 @@ export interface SectionScore {
 export interface Response {
   question_id: number
   value: string | number | boolean
-  note?: string
-  attachments?: string[]
+  selected_options: number[]
+  response_value: string
+  inspector_notes?: string
+  file_attachments?: {
+    filename: string
+    file_path: string
+    file_size: number
+    mime_type: string
+  }[]
+  location_data?: {
+    latitude: number
+    longitude: number
+    address: string
+  }
 }
 
 export interface Violation {
@@ -182,10 +206,14 @@ export interface Inspection {
 }
 
 export interface User {
-  id: string
-  name: string
-  email: string
-  role: string
+  user: {
+    id: string
+    name: string
+    email: string
+    role: string
+
+    full_name: string
+  }
 }
 
 export interface Asset {
@@ -193,4 +221,17 @@ export interface Asset {
   name: string
   type: string
   site_id: string
+}
+
+export interface Response {
+  selected_options: number[]
+  response_value: string
+  inspector_notes?: string
+  file_attachments?: {
+    filename: string
+    file_path: string
+    file_size: number
+    mime_type: string
+  }[]
+  action_required?: boolean
 }

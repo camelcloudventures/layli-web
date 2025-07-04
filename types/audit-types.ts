@@ -56,9 +56,9 @@ export interface ResponseOption {
   label: string
   code: string
   sort_order: number
-  score: number
+  score?: number
   is_flagged: boolean
-  color: string
+  color?: string
 }
 
 export interface LocationData {
@@ -148,6 +148,7 @@ export interface Response {
   document?: string
   date_time?: Date
   response_option_id?: string
+  response_value?: string
   location_data?: LocationData
   signature_data?: SignatureData
   slider_value?: number

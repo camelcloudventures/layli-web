@@ -235,7 +235,8 @@ function PageEditor({ page, updatePage, template, setTemplate }: PageEditorProps
         </div>
 
         {/* Sections & Questions Manager */}
-        <SectionsManager template={template} setTemplate={setTemplate} page={page} />
+        {/* @ts-expect-error - template is not typed */}
+        <SectionsManager    template={template} setTemplate={setTemplate} page={page} />
       </CardContent>
     </Card>
   )

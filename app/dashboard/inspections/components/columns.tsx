@@ -39,7 +39,7 @@ function InspectionActions({ inspection }: { inspection: Inspection }) {
     window.location.href = `/dashboard/inspections/${inspection.id}/report`
   }
 
-  const handleEditInspection = () => {
+  const handleStartInspection = () => {
     window.location.href = `/dashboard/inspections/${inspection.id}/edit`
   }
 
@@ -89,7 +89,7 @@ function InspectionActions({ inspection }: { inspection: Inspection }) {
     )
   }
 
-  if (inspection.status !== InspectionStatus.CANCELLED) {
+  if (inspection.status === InspectionStatus.PENDING) {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -101,14 +101,14 @@ function InspectionActions({ inspection }: { inspection: Inspection }) {
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem onClick={handleEditInspection}>
+          <DropdownMenuItem onClick={handleStartInspection}>
             <Edit className="mr-2 h-4 w-4" />
-            Edit Inspection
+            Start Inspection
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleDownloadReport}>
+          {/* <DropdownMenuItem onClick={handleDownloadReport}>
             <Download className="mr-2 h-4 w-4" />
-            Download Report
-          </DropdownMenuItem>
+            View Inspection
+          </DropdownMenuItem> */}
         </DropdownMenuContent>
       </DropdownMenu>
     )

@@ -6,6 +6,8 @@ import {
 } from './actions/actions'
 import { SchedulesList } from './components/schedules-list'
 
+export const dynamic = 'force-dynamic'
+
 export default async function SchedulesPage() {
   const schedulesResponse = await getSchedules(1)
   const schedules = schedulesResponse?.data || []

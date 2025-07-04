@@ -2,6 +2,8 @@ import { getTemplate } from '@/app/dashboard/templates/actions/actions'
 import { redirect } from 'next/navigation'
 import EditTemplateShell from './components/edit-template-shell'
 
+export const dynamic = 'force-dynamic'
+
 export default async function EditTemplatePage({
   params,
 }: {

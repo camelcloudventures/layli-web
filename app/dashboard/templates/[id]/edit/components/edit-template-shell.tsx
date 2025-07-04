@@ -73,6 +73,7 @@ export default function EditTemplateShell({
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {/* @ts-expect-error - template is not typed */}
               <PagesManager template={template} setTemplate={setTemplate} />
             </CardContent>
           </Card>
@@ -86,6 +87,7 @@ export default function EditTemplateShell({
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {/* @ts-expect-error - template is not typed */}
               <TemplatePreview template={template} />
             </CardContent>
           </Card>

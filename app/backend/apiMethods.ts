@@ -295,3 +295,52 @@ export async function PATCH<T>(
     return null
   }
 }
+
+//PUT request
+export async function PUT<T>(
+  url: string,
+  data: T,
+  tags?: string[],
+): Promise<T | null> {
+  try {
+    const accessToken = await getAccessToken()
+    if (!accessToken) {
+      //@ts-expect-error --need to fix this
+      return { error: 'You are not logged in' }
+    }
+
+    const activeOrgId = await getActiveOrgId()
+    if (!activeOrgId) {
+      //@ts-expect-error --need to fix this
+      return { error: 'No active organization selected' }
+    }
+
+    const thisUrl = `${baseUrl}/api${url}`
+    const response = await fetch(thisUrl, {
+      method: 'PUT',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+        'X-Organization-Id': activeOrgId,
+      },
+      body: JSON.stringify(data),
+      cache: 'no-store',
+      next: tags ? { tags } : undefined,
+    })
+    const rawResponse = await response.text()
+
+    if (response.headers.get('content-type')?.includes('application/json')) {
+      const jsonResponse = JSON.parse(rawResponse)
+      if (!response.ok) {
+        return jsonResponse
+      }
+      return jsonResponse
+    }
+
+    // @ts-expect-error --need to fix this
+    return 'Unexpected response format'
+  } catch (error) {
+    console.error('PUT request failed:', error)
+    return null
+  }
+}

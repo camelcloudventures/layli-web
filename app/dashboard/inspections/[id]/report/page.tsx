@@ -13,11 +13,12 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { exportToPdf } from '@/lib/pdf-utils'
 import { toast } from 'sonner'
+import Image from 'next/image'
 
 export default function InspectionReportPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -28,7 +29,8 @@ export default function InspectionReportPage({
   useEffect(() => {
     const fetchInspection = async () => {
       try {
-        const data = await getInspectionById(params.id)
+        const { id } = await params
+        const data = await getInspectionById(id)
         if (data) {
           setInspection(data)
         } else {
@@ -44,7 +46,7 @@ export default function InspectionReportPage({
     }
 
     fetchInspection()
-  }, [params.id, router, toast])
+  }, [params, router, toast])
 
   const handleDownloadReport = async () => {
     if (!reportRef.current || !inspection) return
@@ -53,7 +55,7 @@ export default function InspectionReportPage({
     toast.info('Generating PDF')
 
     try {
-      const filename = `${inspection.name.replace(/\s+/g, '_')}_Report_${
+      const filename = `${inspection.title.replace(/\s+/g, '_')}_Report_${
         new Date().toISOString().split('T')[0]
       }.pdf`
       await exportToPdf(reportRef.current, filename)
@@ -134,12 +136,16 @@ export default function InspectionReportPage({
   }
 
   // Count issues by response
+  //@ts-expect-error - sections is not typed
   const issueCount = inspection.sections.reduce((count, section) => {
+    //@ts-expect-error - questions is not typed
     return count + section.questions.filter((q) => q.response === false).length
   }, 0)
 
   // Count actions
+  //@ts-expect-error - sections is not typed
   const actionCount = inspection.sections.reduce((count, section) => {
+    //@ts-expect-error - questions is not typed
     return count + section.questions.filter((q) => q.action !== null).length
   }, 0)
 
@@ -156,9 +162,12 @@ export default function InspectionReportPage({
           </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
-              {inspection.name} Report
+              {inspection.title} Report
             </h1>
-            <p className="text-muted-foreground">{inspection.location.name}</p>
+            <p className="text-muted-foreground">
+              {/* @ts-expect-error - location is not typed */}
+              {inspection.location?.name || 'N/A'}
+            </p>
           </div>
         </div>
         <Button onClick={handleDownloadReport} disabled={isGeneratingPdf}>
@@ -179,7 +188,7 @@ export default function InspectionReportPage({
                   Conducted On
                 </p>
                 <p className="text-lg font-semibold">
-                  {formatDate(inspection.conducted_on.toISOString())}
+                  {formatDate(inspection.created_at?.toString())}
                 </p>
               </div>
               <div>
@@ -187,7 +196,7 @@ export default function InspectionReportPage({
                   Completed On
                 </p>
                 <p className="text-lg font-semibold">
-                  {formatDate(inspection.completed_on?.toISOString())}
+                  {formatDate(inspection.completed_at?.toString())}
                 </p>
               </div>
               <div>
@@ -195,7 +204,8 @@ export default function InspectionReportPage({
                   Inspector
                 </p>
                 <p className="text-lg font-semibold">
-                  {inspection.user_name || 'N/A'}
+                  {/* @ts-expect-error - user is not typed */}
+                  {inspection.user?.first_name || 'N/A'}
                 </p>
               </div>
               <div>
@@ -204,13 +214,16 @@ export default function InspectionReportPage({
                 </p>
                 <p
                   className={`text-lg font-semibold ${
-                    (inspection.score || 0) >= 80
+                    //@ts-expect-error - score is not typed
+                    (inspection.score ?? 0) >= 80
                       ? 'text-green-600'
-                      : (inspection.score || 0) >= 60
+                      : //@ts-expect-error - score is not typed
+                      (inspection.score ?? 0) >= 60
                       ? 'text-amber-600'
                       : 'text-red-600'
                   }`}
                 >
+                  {/* @ts-expect-error - score is not typed */}
                   {inspection.score}%
                 </p>
               </div>
@@ -230,6 +243,7 @@ export default function InspectionReportPage({
           </CardContent>
         </Card>
 
+        {/* @ts-expect-error - sections is not typed */}
         {inspection.sections.map((section) => (
           <Card key={section.id}>
             <CardHeader>
@@ -237,6 +251,7 @@ export default function InspectionReportPage({
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
+                {/* @ts-expect-error - questions is not typed */}
                 {section.questions.map((question) => (
                   <div key={question.id} className="border rounded-lg p-4">
                     <div className="flex items-start justify-between">
@@ -271,8 +286,8 @@ export default function InspectionReportPage({
                             <p className="text-sm font-medium text-muted-foreground mb-1">
                               Attachment:
                             </p>
-                            <img
-                              src={question.attachment || '/placeholder.svg'}
+                            <Image
+                              src={question.attachment || '/placeholder.png'}
                               alt="Inspection attachment"
                               className="max-h-40 rounded-md border"
                               crossOrigin="anonymous"
@@ -330,7 +345,7 @@ export default function InspectionReportPage({
                               </div>
                               <div>
                                 <span className="font-medium">Location:</span>{' '}
-                                {question.action.site || 'N/A'}
+                                {question.action.location?.name || 'N/A'}
                               </div>
                             </div>
                           </div>

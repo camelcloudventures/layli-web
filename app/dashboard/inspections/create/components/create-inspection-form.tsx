@@ -2,13 +2,7 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -132,13 +126,11 @@ export function CreateInspectionForm({ sites, users, templates }: Props) {
             <CardTitle>New Inspection</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="inspection-name">Inspection Name</Label>
-              <Input
-                id="inspection-name"
-                name="inspection-name"
-                value={selectedTemplate?.title}
-                placeholder="Enter inspection name"
+            <div className="w-full">
+              <TemplateSelector
+                templates={templates}
+                selectedTemplate={selectedTemplate}
+                setSelectedTemplate={setSelectedTemplate}
               />
             </div>
 
@@ -164,7 +156,9 @@ export function CreateInspectionForm({ sites, users, templates }: Props) {
                 </Select>
               </span>
 
-              <span className="w-full">
+              <span
+                className={`w-full ${assignedTo.length > 0 ? 'mb-4' : 'mb-0'}`}
+              >
                 <Label htmlFor="assigned-to">Assign To</Label>
                 <MultiSelect
                   name="assignee_ids"
@@ -219,23 +213,6 @@ export function CreateInspectionForm({ sites, users, templates }: Props) {
                 </label>
               </div>
             )}
-          </CardContent>
-        </Card>
-        <Card className="mb-6 w-full">
-          <CardHeader>
-            <CardTitle>Select Template</CardTitle>
-            <CardDescription>
-              Choose a template to use for this inspection
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="w-full">
-            <div className="w-full">
-              <TemplateSelector
-                templates={templates}
-                selectedTemplate={selectedTemplate}
-                setSelectedTemplate={setSelectedTemplate}
-              />
-            </div>
           </CardContent>
         </Card>
         <div className="flex justify-end space-x-2 mt-6">

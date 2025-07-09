@@ -24,11 +24,16 @@ import {
   Save,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { completeInspection, saveResponse } from '../../../actions/actions'
+import {
+  completeInspection,
+  pauseInspection,
+  saveResponse,
+} from '../../../actions/actions'
 import type {
   Inspection,
   Response,
   Question,
+  LocationResponse,
 } from '@/lib/types/inspection-types'
 import { FieldMapper } from './fields/field-mapper'
 
@@ -41,6 +46,12 @@ interface ResponseData {
   value: string
   selected_options: number[]
   response_value: string
+  location_data?: {
+    address: string
+    latitude: number
+    longitude: number
+    place_id?: string
+  } | null
   file_attachments?: {
     filename: string
     file_path: string
@@ -57,7 +68,7 @@ interface SaveResponseResult {
 export function DoInspectionForm({ inspection }: Props) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
+  const [pause, setPausing] = useState<boolean>(false)
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false)
   const [isFileDialogOpen, setIsFileDialogOpen] = useState(false)
   const [activeQuestionId, setActiveQuestionId] = useState<number | null>(null)
@@ -78,45 +89,69 @@ export function DoInspectionForm({ inspection }: Props) {
 
   // Handle response changes
   const handleResponse = useCallback(
-    (question: Question, value: string, files?: File[]) => {
-      // Prepare response data
-      const responseData: ResponseData = {
-        question_id: question.id,
-        value: value,
-        selected_options: [],
-        response_value: value,
-        ...(files &&
-          files.length > 0 && {
-            file_attachments: files.map((file) => ({
-              filename: file.name,
-              file_path: '',
-              file_size: file.size,
-              mime_type: file.type,
-            })),
-          }),
+    (question: Question, value: string | LocationResponse, files?: File[]) => {
+      let responseData: ResponseData
+
+      if (
+        typeof value === 'object' &&
+        value !== null &&
+        'location_data' in value
+      ) {
+        // This is a LocationResponse object
+        responseData = {
+          question_id: question.id,
+          value: value.response_value, // Use the address string for value
+          response_value: value.response_value,
+          selected_options: value.selected_options || [],
+          location_data: value.location_data,
+        }
+      } else if (typeof value === 'string') {
+        // This is a string value from another field type
+        responseData = {
+          question_id: question.id,
+          value: value,
+          response_value: value,
+          selected_options: [],
+        }
+      } else {
+        // Exit if the value is not of a recognized type
+        return
       }
 
-      // Update local state immediately for optimistic update
+      // Add file attachments if they exist
+      if (files && files.length > 0) {
+        responseData.file_attachments = files.map((file) => ({
+          filename: file.name,
+          file_path: '', // file_path can be updated after upload
+          file_size: file.size,
+          mime_type: file.type,
+        }))
+      }
+
+      // Update local state for an optimistic UI
       setResponses((prev) => ({
         ...prev,
         [question.id]: {
-          ...prev[question.id],
+          ...(prev[question.id] || {}),
           ...responseData,
-          response_value: value,
-          text_value: value,
-          id: prev[question.id]?.id || undefined,
+          id: prev[question.id]?.id,
           created_at: prev[question.id]?.created_at || new Date().toISOString(),
           updated_at: new Date().toISOString(),
           inspection_id: inspection.id,
           points_earned: 0,
           points_possible: 0,
           manual_score: false,
-          inspector_notes: prev[question.id]?.inspector_notes || '',
-          file_attachments: responseData.file_attachments || [],
-          location_address: null,
-          location_latitude: null,
-          location_longitude: null,
-          location_place_id: null,
+          inspector_notes:
+            typeof value === 'object' && 'location_data' in value
+              ? value.inspector_notes ||
+                prev[question.id]?.inspector_notes ||
+                ''
+              : prev[question.id]?.inspector_notes || '',
+          file_attachments:
+            responseData.file_attachments ||
+            prev[question.id]?.file_attachments ||
+            [],
+          location_data: responseData.location_data || null,
         } as Response,
       }))
 
@@ -135,19 +170,19 @@ export function DoInspectionForm({ inspection }: Props) {
 
     setSavingFields((prev) => ({ ...prev, [questionId]: true }))
     try {
-      const result = (await saveResponse(
+      const result = await saveResponse(
         inspection.id,
         String(questionId),
         unsavedChanges[questionId],
-      )) as SaveResponseResult
+      )
 
-      console.log('results', result)
-      if (result?.data) {
-        console.log('result', result)
+      if (typeof result === 'object' && result !== null && 'data' in result) {
+        const resultWithData = result as SaveResponseResult
+        console.log('result', resultWithData)
 
         setResponses((prev) => ({
           ...prev,
-          [questionId]: result.data,
+          [questionId]: resultWithData.data,
         }))
 
         // Remove from unsaved changes
@@ -158,6 +193,10 @@ export function DoInspectionForm({ inspection }: Props) {
         })
 
         toast.success('Response saved')
+      } else {
+        // Handle cases where the response might be a simple message
+        console.warn('Received unexpected response format:', result)
+        toast.error('Failed to save response: unexpected format')
       }
     } catch (error) {
       console.error('Error saving response:', error)
@@ -171,58 +210,28 @@ export function DoInspectionForm({ inspection }: Props) {
     }
   }
 
-  // Save all unsaved changes
-  const saveAllChanges = async () => {
-    setIsSaving(true)
+  async function handlePauseInspection(inspection_id: string) {
+    setPausing(true)
     try {
-      const unsavedQuestionIds = Object.keys(unsavedChanges)
-      if (unsavedQuestionIds.length === 0) {
-        toast.success('All changes are saved')
-        return
+      const res = await pauseInspection(inspection_id)
+      if (res?.success) {
+        toast.success(res.success)
+        router.push(`/dashboard/inspections/`)
+      } else {
+        toast.error(res?.message || 'Failed to pause inspection')
       }
-
-      // Save all unsaved changes in parallel
-      const savePromises = unsavedQuestionIds.map(async (questionId) => {
-        const id = parseInt(questionId, 10)
-        if (isNaN(id)) {
-          throw new Error(`Invalid question ID: ${questionId}`)
-        }
-
-        const result = (await saveResponse(
-          inspection.id,
-          questionId,
-          unsavedChanges[id],
-        )) as SaveResponseResult
-
-        if (result?.data) {
-          // Update responses with server data
-          setResponses((prev) => ({
-            ...prev,
-            [id]: result.data,
-          }))
-        }
-        return result
-      })
-
-      await Promise.all(savePromises)
-
-      // Clear unsaved changes after successful save
-      setUnsavedChanges({})
-      toast.success('All changes saved successfully')
     } catch (error) {
-      console.error('Error saving changes:', error)
-      toast.error('Failed to save some changes')
+      toast.error(
+        (error as Error)?.message || 'An error occurred, please try again',
+      )
     } finally {
-      setIsSaving(false)
+      setPausing(false)
     }
   }
 
   const handleComplete = async () => {
     setIsSubmitting(true)
     try {
-      // First save any unsaved changes
-      // await saveAllChanges()
-
       const res = await completeInspection(inspection.id)
       console.log('completed res', res)
       toast.success(res.success)
@@ -371,16 +380,15 @@ export function DoInspectionForm({ inspection }: Props) {
         </div>
 
         <div className="flex items-center gap-2">
-          {hasUnsavedChanges && (
-            <Button
-              variant="outline"
-              onClick={saveAllChanges}
-              disabled={isSaving}
-            >
-              <Save className="mr-2 h-4 w-4" />
-              {isSaving ? 'Saving...' : 'Save Changes'}
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            onClick={() => handlePauseInspection(inspection.id)}
+            disabled={pause}
+          >
+            <Save className="mr-2 h-4 w-4" />
+            {pause ? 'Pausing...' : 'Pause Inspection'}
+          </Button>
+
           <Button
             onClick={handleComplete}
             disabled={isSubmitting || hasUnsavedChanges}
@@ -416,12 +424,12 @@ export function DoInspectionForm({ inspection }: Props) {
       <Card>
         <CardContent className="pt-6">
           <Tabs defaultValue={inspection.pages[0].id.toString()}>
-            <TabsList className="grid grid-cols-2 lg:grid-cols-4 mb-4">
+            <TabsList className="flex justify-center p-4 gap-2">
               {inspection.pages.map((page) => (
                 <TabsTrigger
                   key={page.id}
                   value={page.id.toString()}
-                  className="text-sm"
+                  className="mx-2  p-4 text-sm font-medium  transition-colors data-[state=active]:bg-green-800 data-[state=active]:text-white data-[state=inactive]:bg-muted data-[state=inactive]:text-muted-foreground "
                 >
                   {page.title}
                 </TabsTrigger>
@@ -448,7 +456,11 @@ export function DoInspectionForm({ inspection }: Props) {
                                   question={question}
                                   response={response}
                                   onResponse={(value, files) =>
-                                    handleResponse(question, value, files)
+                                    handleResponse(
+                                      question,
+                                      value as string | LocationResponse,
+                                      files,
+                                    )
                                   }
                                   onSave={handleFieldSave}
                                   hasUnsavedChanges={hasUnsavedChange}

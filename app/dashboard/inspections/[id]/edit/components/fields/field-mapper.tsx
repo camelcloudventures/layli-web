@@ -13,12 +13,16 @@ import { SignatureField } from './signature-field'
 import { SliderField } from './slider-field'
 import { TextField } from './text-field'
 import { FileField } from './file-field'
-import type { Question, Response } from '@/lib/types/inspection-types'
+import type {
+  Question,
+  Response,
+  LocationResponse,
+} from '@/lib/types/inspection-types'
 
 interface FieldMapperProps {
   question: Question
   response?: Response
-  onResponse: (value: string, files?: File[]) => void
+  onResponse: (value: string | LocationResponse, files?: File[]) => void
   onSave?: (questionId: number) => Promise<void>
   hasUnsavedChanges?: boolean
   isSaving?: boolean

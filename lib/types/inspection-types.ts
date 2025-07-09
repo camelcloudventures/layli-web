@@ -145,10 +145,12 @@ export interface Response {
   manual_score?: boolean
   text_value?: string | null
   numeric_value?: number | null
-  location_address?: string | null
-  location_latitude?: number | null
-  location_longitude?: number | null
-  location_place_id?: string | null
+  location_data?: {
+    address?: string | null
+    latitude?: number | null
+    longitude?: number | null
+    place_id?: string | null
+  } | null
 }
 
 export interface Violation {
@@ -211,6 +213,26 @@ export interface Inspection {
   responses: Response[]
   violations: Violation[]
   pages: Page[]
+}
+
+export interface LocationData {
+  address: string
+  latitude: number
+  longitude: number
+  place_id?: string
+}
+
+export interface LocationResponse {
+  selected_options: number[]
+  response_value: string
+  location_data?: LocationData
+  inspector_notes?: string
+  file_attachments?: Array<{
+    filename: string
+    file_path: string
+    file_size: number
+    mime_type: string
+  }>
 }
 
 export interface User {

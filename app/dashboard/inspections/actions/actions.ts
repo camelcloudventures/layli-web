@@ -3,7 +3,10 @@
 import { GET, POST, PUT } from '@/app/backend/apiMethods'
 import { Page } from '@/lib/types/audit-types'
 import { Response } from '@/lib/types/inspection-types'
-import { revalidatePath } from 'next/dist/server/web/spec-extension/revalidate'
+import {
+  revalidatePath,
+  revalidateTag,
+} from 'next/dist/server/web/spec-extension/revalidate'
 
 export async function createInspection(data: {
   title: string
@@ -22,7 +25,7 @@ export async function createInspection(data: {
 }
 
 export async function getAllInspections() {
-  const res = await GET(`/inspections`)
+  const res = await GET(`/inspections`, ['inspections'])
   return res
 }
 
@@ -39,16 +42,26 @@ export async function saveResponse(
 ) {
   console.log('saveResponse question_id:', question_id)
   console.log('saveResponse inspection_id:', inspection_id)
-  console.log('saveResponse response:', response)
+  console.log('response going  to the backend', response)
+  console.log('location data', response.location_data)
+  console.log('response value', response.response_value)
+
+  if (response.location_data) {
+    console.log('!!!!!!--------------------location data is not null')
+    console.log('location data', response.location_data)
+    console.log('response value', response.response_value)
+  }
 
   // Format the response data to match API expectations
   const formattedResponse = {
     selected_options: response.selected_options || [],
-    response_value: response.response_value || response.value || '',
+    response_value: response.response_value,
     inspector_notes: response.inspector_notes || '',
     file_attachments: response.file_attachments || [],
     ...(response?.location_data && { location_data: response.location_data }),
   }
+
+  console.log('formattedResponse', formattedResponse)
 
   const res = await POST(
     `/inspections/${inspection_id}/responses/${question_id}`,
@@ -76,5 +89,11 @@ export async function updateResponse(
     response,
   )
   revalidatePath(`/dashboard/inspections/${inspection_id}/edit`)
+  return res
+}
+
+export async function pauseInspection(inspection_id: string) {
+  const res = await POST(`/inspections/${inspection_id}/pause`, {})
+  revalidateTag('inspections')
   return res
 }

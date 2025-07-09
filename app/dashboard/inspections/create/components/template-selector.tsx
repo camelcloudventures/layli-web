@@ -6,7 +6,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/components/ui/select'
 import { Template } from '@/lib/types/audit-types'
 import Image from 'next/image'
@@ -17,6 +16,7 @@ interface TemplateSelectorProps {
   setSelectedTemplate: (template: Template | null) => void
   required?: boolean
 }
+
 export default function TemplateSelector({
   templates,
   selectedTemplate,
@@ -24,34 +24,47 @@ export default function TemplateSelector({
   required = true,
 }: TemplateSelectorProps) {
   return (
-    <div className="w-full ">
+    <div className="w-full">
       <Select
         name="template"
-        value={selectedTemplate?.id}
+        value={selectedTemplate?.id?.toString()}
         onValueChange={(value) => {
-          const template = templates.find((t) => t.id === value)
+          const template = templates.find((t) => t.id.toString() === value)
           setSelectedTemplate(template || null)
         }}
         required={required}
       >
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select template" />
+          {selectedTemplate ? (
+            <span>{selectedTemplate.title}</span>
+          ) : (
+            <span className="text-muted-foreground">Select template</span>
+          )}
         </SelectTrigger>
-        <SelectContent className="">
+        <SelectContent>
           {templates.map((template) => (
-            <SelectItem key={template.id} value={template.id}>
-              {template.photo && (
-                <Image
-                  src={template.photo}
-                  alt={template.title}
-                  width={100}
-                  className="rounded-3xl h-20 w-20 object-cover"
-                  height={100}
-                />
-              )}
-              <div className="flex flex-col">
-                <p className="text-sm font-medium">{template.title}</p>
-                <p className="text-xs text-gray-500">{template.description}</p>
+            <SelectItem
+              key={template.id}
+              value={template.id.toString()}
+              className="flex items-center gap-3 py-2"
+            >
+              <div className="flex items-center gap-3">
+                {template.photo && (
+                  <div className="relative h-20 w-20 flex-shrink-0">
+                    <Image
+                      src={template.photo}
+                      alt={template.title}
+                      fill
+                      className="rounded-md object-cover"
+                    />
+                  </div>
+                )}
+                <div className="flex flex-col">
+                  <p className="text-sm font-medium">{template.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {template.description}
+                  </p>
+                </div>
               </div>
             </SelectItem>
           ))}

@@ -5,32 +5,17 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MapPin } from 'lucide-react'
 import { loadGoogleMapsApi } from '@/lib/utils/google-maps'
-import type { Question, Response } from '@/lib/types/inspection-types'
-
-interface LocationData {
-  address: string
-  latitude: number
-  longitude: number
-  place_id?: string
-}
-
-interface LocationResponse {
-  selected_options: number[]
-  response_value: string
-  location_data?: LocationData
-  inspector_notes?: string
-  file_attachments?: Array<{
-    filename: string
-    file_path: string
-    file_size: number
-    mime_type: string
-  }>
-}
+import type {
+  Question,
+  Response,
+  LocationData,
+  LocationResponse,
+} from '@/lib/types/inspection-types'
 
 interface LocationFieldProps {
   question: Question
   response?: Response
-  onResponse: (value: string) => void
+  onResponse: (value: LocationResponse) => void
 }
 
 type GoogleAutocomplete = {
@@ -117,18 +102,20 @@ export function LocationField({
 
   const handleLocationUpdate = useCallback(
     (newLocationData: LocationData) => {
+      console.log('called here')
       setLocationData(newLocationData)
 
-      // Create the response object in the format expected by the backend
+      // backend expects this format
       const responseData: LocationResponse = {
         selected_options: [],
-        response_value: newLocationData.address, // Use address as the main response value
-        location_data: newLocationData, // Store full location data in a separate field
-        inspector_notes: response?.inspector_notes, // Preserve existing notes
-        file_attachments: response?.file_attachments, // Preserve existing attachments
+        response_value: newLocationData.address,
+        location_data: newLocationData,
+        inspector_notes: response?.inspector_notes,
+        file_attachments: response?.file_attachments,
       }
 
-      onResponse(JSON.stringify(responseData))
+      console.log('responseData', responseData)
+      onResponse(responseData)
     },
     [onResponse, response?.inspector_notes, response?.file_attachments],
   )

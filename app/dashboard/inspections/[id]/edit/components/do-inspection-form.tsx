@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -74,47 +74,7 @@ export function DoInspectionForm({ inspection }: Props) {
   const [unsavedChanges, setUnsavedChanges] = useState<
     Record<number, ResponseData>
   >({})
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [savingFields, setSavingFields] = useState<Record<number, boolean>>({})
-
-  // Debounced save function
-  const debouncedSave = useCallback(
-    async (questionId: number, responseData: ResponseData) => {
-      try {
-        setIsSaving(true)
-        const result = (await saveResponse(
-          inspection.id,
-          String(questionId),
-          responseData,
-        )) as SaveResponseResult
-
-        // Update responses with server data
-        if (result?.data) {
-          setResponses((prev) => ({
-            ...prev,
-            [questionId]: result.data,
-          }))
-
-          // Remove from unsaved changes
-          setUnsavedChanges((prev) => {
-            const next = { ...prev }
-            delete next[questionId]
-            return next
-          })
-
-          toast.success('Response saved')
-        }
-      } catch (error) {
-        console.error('Error saving response:', error)
-        toast.error(
-          'Failed to save response. Changes will be saved when you click "Save Progress"',
-        )
-      } finally {
-        setIsSaving(false)
-      }
-    },
-    [inspection.id],
-  )
 
   // Handle response changes
   const handleResponse = useCallback(
@@ -136,12 +96,27 @@ export function DoInspectionForm({ inspection }: Props) {
           }),
       }
 
-      // Update local state immediately
+      // Update local state immediately for optimistic update
       setResponses((prev) => ({
         ...prev,
         [question.id]: {
           ...prev[question.id],
           ...responseData,
+          response_value: value,
+          text_value: value,
+          id: prev[question.id]?.id || undefined,
+          created_at: prev[question.id]?.created_at || new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          inspection_id: inspection.id,
+          points_earned: 0,
+          points_possible: 0,
+          manual_score: false,
+          inspector_notes: prev[question.id]?.inspector_notes || '',
+          file_attachments: responseData.file_attachments || [],
+          location_address: null,
+          location_latitude: null,
+          location_longitude: null,
+          location_place_id: null,
         } as Response,
       }))
 
@@ -150,18 +125,8 @@ export function DoInspectionForm({ inspection }: Props) {
         ...prev,
         [question.id]: responseData,
       }))
-
-      // Clear existing timeout
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current)
-      }
-
-      // Set new timeout for debounced save
-      saveTimeoutRef.current = setTimeout(() => {
-        debouncedSave(question.id, responseData)
-      }, 1000) // 1 second debounce
     },
-    [debouncedSave],
+    [inspection.id],
   )
 
   // Handle individual field save
@@ -176,7 +141,10 @@ export function DoInspectionForm({ inspection }: Props) {
         unsavedChanges[questionId],
       )) as SaveResponseResult
 
+      console.log('results', result)
       if (result?.data) {
+        console.log('result', result)
+
         setResponses((prev) => ({
           ...prev,
           [questionId]: result.data,
@@ -213,16 +181,33 @@ export function DoInspectionForm({ inspection }: Props) {
         return
       }
 
-      await Promise.all(
-        unsavedQuestionIds.map((questionId) => {
-          const id = parseInt(questionId, 10)
-          if (isNaN(id)) {
-            throw new Error(`Invalid question ID: ${questionId}`)
-          }
-          return debouncedSave(id, unsavedChanges[id])
-        }),
-      )
+      // Save all unsaved changes in parallel
+      const savePromises = unsavedQuestionIds.map(async (questionId) => {
+        const id = parseInt(questionId, 10)
+        if (isNaN(id)) {
+          throw new Error(`Invalid question ID: ${questionId}`)
+        }
 
+        const result = (await saveResponse(
+          inspection.id,
+          questionId,
+          unsavedChanges[id],
+        )) as SaveResponseResult
+
+        if (result?.data) {
+          // Update responses with server data
+          setResponses((prev) => ({
+            ...prev,
+            [id]: result.data,
+          }))
+        }
+        return result
+      })
+
+      await Promise.all(savePromises)
+
+      // Clear unsaved changes after successful save
+      setUnsavedChanges({})
       toast.success('All changes saved successfully')
     } catch (error) {
       console.error('Error saving changes:', error)
@@ -236,7 +221,7 @@ export function DoInspectionForm({ inspection }: Props) {
     setIsSubmitting(true)
     try {
       // First save any unsaved changes
-      await saveAllChanges()
+      // await saveAllChanges()
 
       const res = await completeInspection(inspection.id)
       console.log('completed res', res)
@@ -278,7 +263,7 @@ export function DoInspectionForm({ inspection }: Props) {
     }))
 
     // Save immediately for notes
-    await debouncedSave(activeQuestionId, responseData)
+    await saveResponse(inspection.id, String(activeQuestionId), responseData)
     setIsNoteDialogOpen(false)
     setNote('')
   }
@@ -318,7 +303,7 @@ export function DoInspectionForm({ inspection }: Props) {
     }))
 
     // Save immediately for files
-    await debouncedSave(activeQuestionId, responseData)
+    await saveResponse(inspection.id, String(activeQuestionId), responseData)
     setIsFileDialogOpen(false)
     setSelectedFile(null)
   }

@@ -1,15 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Plus, FileText, PlusCircle } from 'lucide-react'
+import { Search, Plus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import type { Inspection } from '@/lib/types/inspection-types'
 import { columns } from './columns'
 import { DataTable } from '@/components/custom/data-table'
@@ -43,12 +37,8 @@ export function InspectionList({
     )
   })
 
-  const handleCreateFromScratch = () => {
-    router.push('/dashboard/inspections/create?mode=scratch')
-  }
-
-  const handleCreateFromTemplate = () => {
-    router.push('/dashboard/inspections/create?mode=template')
+  const handleCreateInspection = () => {
+    router.push('/dashboard/inspections/create')
   }
 
   if (loading) {
@@ -68,24 +58,10 @@ export function InspectionList({
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Inspection
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[200px]">
-            <DropdownMenuItem onClick={handleCreateFromScratch}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Create from Scratch
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleCreateFromTemplate}>
-              <FileText className="mr-2 h-4 w-4" />
-              Use Template
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button onClick={handleCreateInspection}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Inspection
+        </Button>
       </div>
 
       <div>

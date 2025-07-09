@@ -125,22 +125,30 @@ export interface SectionScore {
 }
 
 export interface Response {
+  id?: string
   question_id: number
-  value: string | number | boolean
+  value: string
   selected_options: number[]
   response_value: string
-  inspector_notes?: string
   file_attachments?: {
     filename: string
     file_path: string
     file_size: number
     mime_type: string
   }[]
-  location_data?: {
-    latitude: number
-    longitude: number
-    address: string
-  }
+  inspector_notes?: string
+  created_at?: string
+  updated_at?: string
+  inspection_id?: string
+  points_earned?: number
+  points_possible?: number
+  manual_score?: boolean
+  text_value?: string | null
+  numeric_value?: number | null
+  location_address?: string | null
+  location_latitude?: number | null
+  location_longitude?: number | null
+  location_place_id?: string | null
 }
 
 export interface Violation {

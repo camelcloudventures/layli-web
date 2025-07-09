@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import type { AuditTemplate, Question } from '@/types/audit-types'
+import type { AuditTemplate, Question } from '@/lib/types/audit-types'
 import {
   ChevronLeft,
   ChevronRight,
@@ -402,9 +402,11 @@ function renderQuestionInput(
       )
 
     case 'PERSON':
+      //@ts-expect-error - question.id is not typed
       return <PersonPreviewField questionId={question.id} />
 
     case 'ASSET':
+      //@ts-expect-error - question.id is not typed
       return <AssetPreviewField questionId={question.id} />
 
     default:

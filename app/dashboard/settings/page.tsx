@@ -13,6 +13,8 @@ import { getInvites } from './actions/actions'
 import { Permission } from '@/lib/auth/auth'
 import HasPermission from '../components/has-permission'
 
+export const dynamic = 'force-dynamic'
+
 export default async function page() {
   const invites = await getInvites()
 

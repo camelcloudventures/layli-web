@@ -26,8 +26,8 @@ export function DashboardHeader() {
   }, [isMobile])
 
   return (
-    <header className="sticky top-0 mx-10 border-b bg-background">
-      <div className="container flex h-16 items-center justify-between py-4">
+    <header className="sticky mx-10 top-0 border-b bg-background">
+      <div className="flex w-full justify-between items-center  py-6">
         <div className="flex items-center gap-2">
           {isMobile && (
             <Sheet open={open} onOpenChange={setOpen}>
@@ -51,7 +51,7 @@ export function DashboardHeader() {
             <h1 className="text-xl font-bold">{activeOrg?.name}</h1>
           </Link>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex  items-center gap-2">
           <UserAccountNav />
         </div>
       </div>

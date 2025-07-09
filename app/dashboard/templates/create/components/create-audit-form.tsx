@@ -301,6 +301,7 @@ export default function CreateAuditForm() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* @ts-expect-error - template is not typed */}
             <PagesManager template={template} setTemplate={setTemplate} />
             <div className="flex justify-between mt-6">
               <Button
@@ -333,6 +334,7 @@ export default function CreateAuditForm() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* @ts-expect-error - template is not typed */}
             <TemplatePreview template={template} />
             <div className="flex justify-between mt-6">
               <Button

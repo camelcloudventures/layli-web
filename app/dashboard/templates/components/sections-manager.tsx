@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Plus, Trash2, GripVertical, ChevronDown, ChevronUp, LayoutGrid } from "lucide-react"
-import type { AuditTemplate, Page, Section, NewSection } from "@/types/audit-types"
+import type { AuditTemplate, Page, Section, NewSection } from "@/lib/types/audit-types"
 import { QuestionsManager } from "@/app/dashboard/templates/components/questions-manager"
 
 interface SectionsManagerProps {

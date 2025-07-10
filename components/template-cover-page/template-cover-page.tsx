@@ -5,7 +5,7 @@ import type {
   Question,
   ResponseOption,
   AuditTemplate,
-} from '@/types/audit-types'
+} from '@/lib/types/audit-types'
 import type { Response } from '@/lib/types/inspection-types'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -76,7 +76,7 @@ export const getPreloadedQuestions = (
     id: uuidv4(),
     page_id: pageId,
     section_id: sectionId,
-    text: 'Prepared by',
+    text: 'Conducted by',
     required: true,
     multiple_selection: false,
     is_flagged: false,
@@ -123,12 +123,14 @@ export function TemplateCoverPage({
 
   // Pre-select current user for "Prepared by" field
   useEffect(() => {
-    //@ts-expect-error - questions is not typed
-    if (user && !responses.some((r) => r.question_id === questions[2].id)) {
+    if (
+      user &&
+      !responses.some((r) => r.question_id === Number(questions[2].id))
+    ) {
+      //@ts-expect-error - questions is not typed
       const preparedByResponse: Response = {
         id: uuidv4(),
-        //@ts-expect-error - questions is not typed
-        question_id: questions[2].id,
+        question_id: Number(questions[2].id),
         selected_options: [],
         response_value: user.name || user.email,
         text_value: user.name || user.email,
@@ -141,14 +143,11 @@ export function TemplateCoverPage({
         numeric_value: null,
         points_earned: 0,
         points_possible: 0,
-        location_address: null,
-        location_latitude: null,
-        location_longitude: null,
-        location_place_id: null,
+        location_data: null,
       }
       setUnsavedResponses((prev) => ({
         ...prev,
-        [questions[2].id]: preparedByResponse,
+        [Number(questions[2].id)]: preparedByResponse,
       }))
       setIsDirty(true)
     }
@@ -159,21 +158,19 @@ export function TemplateCoverPage({
     const question = questions.find((q) => q.id === questionId)
     if (!question) return
 
+    const existingResponse = responses.find(
+      (r) => r.question_id === Number(questionId),
+    )
+
     //@ts-expect-error - responses is not typed
-    const existingResponse = responses.find((r) => r.question_id === questionId)
-
     let formattedResponse: Response = {
-      //@ts-expect-error - responses is not typed
-
       id: existingResponse?.id || uuidv4(),
-      //@ts-expect-error - responses is not typed
-      question_id: questionId,
+      question_id: Number(questionId),
       selected_options: [],
       response_value: newResponse.response_value || '',
       text_value: newResponse.response_value || '',
       inspector_notes: newResponse.inspector_notes || '',
       file_attachments: newResponse.file_attachments || [],
-      //@ts-expect-error - responses is not typed
       created_at: existingResponse?.created_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),
       inspection_id: inspectionId,
@@ -181,29 +178,21 @@ export function TemplateCoverPage({
       numeric_value: null,
       points_earned: 0,
       points_possible: 0,
-      location_address: null,
-      location_latitude: null,
-      location_longitude: null,
-      location_place_id: null,
+      location_data: null,
     }
 
     // Add location data if it's a location question
     if (question.field_type === 'LOCATION' && newResponse.location_data) {
       formattedResponse = {
         ...formattedResponse,
-        //@ts-expect-error - responses is not typed
-        location_address: newResponse.location_data.address,
-        location_latitude: newResponse.location_data.latitude,
-        location_longitude: newResponse.location_data.longitude,
-        //@ts-expect-error - responses is not typed
-        location_place_id: newResponse.location_data.place_id,
+        location_data: newResponse.location_data,
       }
     }
 
     // Store in unsaved responses
     setUnsavedResponses((prev) => ({
       ...prev,
-      [questionId]: formattedResponse,
+      [Number(questionId)]: formattedResponse,
     }))
     setIsDirty(true)
   }
@@ -217,17 +206,17 @@ export function TemplateCoverPage({
       const savedResponses = await Promise.all(
         Object.values(unsavedResponses).map((response) => {
           const existingResponse = responses.find(
-            (r) => r.question_id === response.question_id,
+            (r) => r.question_id === Number(response.question_id),
           )
           return existingResponse
             ? updateResponse(
                 inspectionId,
-                response.question_id.toString(),
+                Number(response.question_id).toString(),
                 response,
               )
             : saveResponse(
                 inspectionId,
-                response.question_id.toString(),
+                Number(response.question_id).toString(),
                 response,
               )
         }),
@@ -238,7 +227,7 @@ export function TemplateCoverPage({
         const updated = [...prev]
         savedResponses.forEach((savedResponse) => {
           const index = updated.findIndex(
-            (r) => r.question_id === savedResponse.question_id,
+            (r) => r.question_id === Number(savedResponse.question_id),
           )
           if (index >= 0) {
             updated[index] = savedResponse
@@ -266,7 +255,7 @@ export function TemplateCoverPage({
   const displayResponses = [...responses]
   Object.values(unsavedResponses).forEach((unsavedResponse) => {
     const index = displayResponses.findIndex(
-      (r) => r.question_id === unsavedResponse.question_id,
+      (r) => r.question_id === Number(unsavedResponse.question_id),
     )
     if (index >= 0) {
       displayResponses[index] = unsavedResponse

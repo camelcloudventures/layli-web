@@ -26,6 +26,7 @@ interface FieldMapperProps {
   onSave?: (questionId: number) => Promise<void>
   hasUnsavedChanges?: boolean
   isSaving?: boolean
+  isDisabled?: boolean
 }
 
 export function FieldMapper({
@@ -35,6 +36,7 @@ export function FieldMapper({
   onSave,
   hasUnsavedChanges,
   isSaving,
+  isDisabled,
 }: FieldMapperProps) {
   const handleNumberResponse = (value: number) => {
     onResponse(value.toString())
@@ -56,6 +58,7 @@ export function FieldMapper({
             question={question}
             response={response}
             onResponse={onResponse}
+            isDisabled={isDisabled}
           />
         )
       case 'NUMBER':
@@ -64,6 +67,7 @@ export function FieldMapper({
             question={question}
             response={response}
             onResponse={handleNumberResponse}
+            isDisabled={isDisabled}
           />
         )
       case 'BOOLEAN':
@@ -72,6 +76,7 @@ export function FieldMapper({
             question={question}
             response={response}
             onResponse={onResponse}
+            isDisabled={isDisabled}
           />
         )
       case 'DATE':
@@ -80,6 +85,7 @@ export function FieldMapper({
             question={question}
             response={response}
             onResponse={onResponse}
+            isDisabled={isDisabled}
           />
         )
       case 'LOCATION':
@@ -88,6 +94,7 @@ export function FieldMapper({
             question={question}
             response={response}
             onResponse={onResponse}
+            isDisabled={isDisabled}
           />
         )
       case 'PERSON':
@@ -96,6 +103,7 @@ export function FieldMapper({
             question={question}
             response={response}
             onResponse={onResponse}
+            isDisabled={isDisabled}
           />
         )
       case 'SELECT':
@@ -113,6 +121,7 @@ export function FieldMapper({
             question={question}
             response={response}
             onResponse={onResponse}
+            isDisabled={isDisabled}
           />
         )
       case 'SLIDER':
@@ -121,6 +130,7 @@ export function FieldMapper({
             question={question}
             response={response}
             onResponse={onResponse}
+            isDisabled={isDisabled}
           />
         )
       case 'PHOTO':
@@ -130,6 +140,7 @@ export function FieldMapper({
             question={question}
             response={response}
             onResponse={onResponse}
+            isDisabled={isDisabled}
           />
         )
       default:
@@ -138,6 +149,7 @@ export function FieldMapper({
             question={question}
             response={response}
             onResponse={onResponse}
+            isDisabled={isDisabled}
           />
         )
     }

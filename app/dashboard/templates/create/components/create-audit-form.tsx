@@ -20,7 +20,7 @@ import { toast } from 'sonner'
 import { TemplatePreview } from '../../components/template-preview'
 import Image from 'next/image'
 import { useAuth } from '@/lib/context/auth-provider'
-import { AuditTemplate } from '@/types/audit-types'
+import { AuditTemplate } from '@/lib/types/audit-types'
 import { omit } from 'lodash'
 import SubmitBtn from '@/components/custom/submit-btn'
 import { getPreloadedQuestions } from '@/components/template-cover-page/template-cover-page'
@@ -301,7 +301,6 @@ export default function CreateAuditForm() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* @ts-expect-error - template is not typed */}
             <PagesManager template={template} setTemplate={setTemplate} />
             <div className="flex justify-between mt-6">
               <Button
@@ -334,7 +333,6 @@ export default function CreateAuditForm() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* @ts-expect-error - template is not typed */}
             <TemplatePreview template={template} />
             <div className="flex justify-between mt-6">
               <Button

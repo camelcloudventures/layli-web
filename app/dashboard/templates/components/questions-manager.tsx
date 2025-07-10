@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import { GripVertical, ChevronDown, ChevronUp, Plus, HelpCircle, Trash2 } from "lucide-react"
-import type { AuditTemplate, Page, Section, Question, NewQuestion } from "../../../../types/audit-types"
+import type { AuditTemplate, Page, Section, Question, NewQuestion } from "@/lib/types/audit-types"
 import { ResponseOptionsManager } from "@/app/dashboard/templates/components/response-options-manager"
 import { ImageUpload } from "@/app/dashboard/templates/components/image-upload"
 

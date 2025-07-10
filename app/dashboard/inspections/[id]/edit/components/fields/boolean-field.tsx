@@ -1,51 +1,42 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Check, X } from 'lucide-react'
 import type { Question, Response } from '@/lib/types/inspection-types'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 
 interface BooleanFieldProps {
   question: Question
   response?: Response
   onResponse: (value: string) => void
+  isDisabled?: boolean
 }
 
 export function BooleanField({
   question,
   response,
   onResponse,
+  isDisabled,
 }: BooleanFieldProps) {
-  const value = response?.response_value
+  const selectedValue = response?.response_value || ''
 
   return (
     <div className="space-y-2">
-      <Label>
-        {question.text}
-        {question.required && <span className="text-red-500 ml-1">*</span>}
-      </Label>
-      <div className="flex items-center space-x-2">
-        <Button
-          name="response_value"
-          type="button"
-          variant={value === 'true' ? 'default' : 'outline'}
-          className="flex-1"
-          onClick={() => onResponse('true')}
-        >
-          <Check className="h-4 w-4 mr-2" />
-          Yes
-        </Button>
-        <Button
-          name="response_value"
-          type="button"
-          variant={value === 'false' ? 'default' : 'outline'}
-          className="flex-1"
-          onClick={() => onResponse('false')}
-        >
-          <X className="h-4 w-4 mr-2" />
-          No
-        </Button>
-      </div>
+      <Label>{question.text}</Label>
+      <RadioGroup
+        value={selectedValue}
+        onValueChange={onResponse}
+        className="flex space-x-4"
+        disabled={isDisabled}
+      >
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="Yes" id={`${question.id}-yes`} />
+          <Label htmlFor={`${question.id}-yes`}>Yes</Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="No" id={`${question.id}-no`} />
+          <Label htmlFor={`${question.id}-no`}>No</Label>
+        </div>
+      </RadioGroup>
     </div>
   )
 }

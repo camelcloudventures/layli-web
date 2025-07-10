@@ -1,35 +1,49 @@
 'use client'
 
 import { Label } from '@/components/ui/label'
-import { User as UserIcon } from 'lucide-react'
 import type { Question, Response } from '@/lib/types/inspection-types'
-import { Input } from '@/components/ui/input'
-import { useAuth } from '@/lib/context/auth-provider'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface PersonFieldProps {
   question: Question
   response?: Response
   onResponse: (value: string) => void
+  options?: { value: string; label: string }[]
+  isDisabled?: boolean
 }
 
-export function PersonField({ question }: PersonFieldProps) {
-  const { user } = useAuth()
-
+export function PersonField({
+  question,
+  response,
+  onResponse,
+  options = [],
+  isDisabled,
+}: PersonFieldProps) {
   return (
     <div className="space-y-2">
-      <Label htmlFor={`question-${question.id}`}>
-        {question.text}
-        {question.required && <span className="text-red-500 ml-1">*</span>}
-      </Label>
-      <div className="flex items-center space-x-2">
-        <UserIcon className="h-4 w-4 text-muted-foreground" />
-        <Input
-          name="response_value"
-          type="text"
-          value={user?.full_name || ''}
-          disabled={true}
-        />
-      </div>
+      <Label htmlFor={question.id.toString()}>{question.text}</Label>
+      <Select
+        value={response?.response_value || ''}
+        onValueChange={onResponse}
+        disabled={isDisabled}
+      >
+        <SelectTrigger id={question.id.toString()}>
+          <SelectValue placeholder="Select a person" />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   )
 }

@@ -12,46 +12,62 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import type { Question, Response } from '@/lib/types/inspection-types'
+import { useState, useEffect } from 'react'
 
 interface DateFieldProps {
   question: Question
   response?: Response
   onResponse: (value: string) => void
+  isDisabled?: boolean
 }
 
-export function DateField({ question, response, onResponse }: DateFieldProps) {
-  const value = response?.response_value
-    ? new Date(response.response_value)
-    : undefined
+export function DateField({
+  question,
+  response,
+  onResponse,
+  isDisabled,
+}: DateFieldProps) {
+  const [date, setDate] = useState<Date | undefined>(
+    response?.response_value ? new Date(response.response_value) : undefined,
+  )
 
-  console.log('value', value)
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    setDate(selectedDate)
+    if (selectedDate) {
+      onResponse(selectedDate.toISOString())
+    }
+  }
+
+  useEffect(() => {
+    setDate(
+      response?.response_value ? new Date(response.response_value) : undefined,
+    )
+  }, [response?.response_value])
+
   return (
     <div className="space-y-2">
-      <Label htmlFor={`question-${question.id}`}>
-        {question.text}
-        {question.required && <span className="text-red-500 ml-1">*</span>}
-      </Label>
+      <Label htmlFor={question.id.toString()}>{question.text}</Label>
       <Popover>
         <PopoverTrigger asChild>
           <Button
-            id={`question-${question.id}`}
-            name="response_value"
-            variant="outline"
+            variant={'outline'}
             className={cn(
               'w-full justify-start text-left font-normal',
-              !value && 'text-muted-foreground',
+              !date && 'text-muted-foreground',
             )}
+            disabled={isDisabled}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {value ? format(value, 'PPP') : <span>Pick a date</span>}
+            {date ? format(date, 'PPP') : <span>Pick a date</span>}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent className="w-auto p-0">
           <Calendar
             mode="single"
-            selected={value}
-            onSelect={(date) => date && onResponse(date.toISOString())}
+            selected={date}
+            onSelect={handleDateSelect}
             initialFocus
+            disabled={isDisabled}
           />
         </PopoverContent>
       </Popover>

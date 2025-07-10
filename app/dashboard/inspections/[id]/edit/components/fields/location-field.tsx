@@ -16,6 +16,7 @@ interface LocationFieldProps {
   question: Question
   response?: Response
   onResponse: (value: LocationResponse) => void
+  isDisabled?: boolean
 }
 
 type GoogleAutocomplete = {
@@ -76,19 +77,22 @@ export function LocationField({
   question,
   response,
   onResponse,
+  isDisabled,
 }: LocationFieldProps) {
   const [locationData, setLocationData] = useState<LocationData | null>(() => {
-    if (response?.response_value) {
-      try {
-        // Try to parse location data from the response
-        const parsedResponse = JSON.parse(response.response_value)
-        if (parsedResponse.location_data) {
-          return parsedResponse.location_data
-        }
-        return null
-      } catch (error) {
-        console.error('Error parsing location data:', error)
-        return null
+    // Initialize from the structured location_data field if it exists,
+    // otherwise, there's no initial location.
+    if (
+      response?.location_data &&
+      response.location_data.address &&
+      response.location_data.latitude &&
+      response.location_data.longitude
+    ) {
+      return {
+        address: response.location_data.address,
+        latitude: response.location_data.latitude,
+        longitude: response.location_data.longitude,
+        place_id: response.location_data.place_id || undefined,
       }
     }
     return null
@@ -269,20 +273,27 @@ export function LocationField({
         {question.required && <span className="text-red-500 ml-1">*</span>}
       </Label>
       <div className="flex items-center space-x-2">
-        <MapPin className="h-4 w-4 text-muted-foreground" />
-        <Input
-          ref={inputRef}
-          id={`question-${question.id}`}
-          type="text"
-          name="response_value"
-          defaultValue={locationData?.address || ''}
-          placeholder={
-            isLoading ? 'Getting your location...' : 'Enter location...'
-          }
-          className="w-full"
-          disabled={isLoading}
-          onBlur={handleInputBlur}
-        />
+        <div className="relative w-full">
+          <Input
+            ref={inputRef}
+            id={question.id.toString()}
+            defaultValue={locationData?.address || ''}
+            onBlur={handleInputBlur}
+            placeholder="Search for an address or drop a pin"
+            disabled={isLoading || isDisabled}
+            className="pl-10 w-full"
+          />
+          <MapPin
+            className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground"
+            onClick={!isDisabled ? getCurrentLocation : undefined}
+            style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
+          />
+        </div>
+        {isLoading && (
+          <div className="text-sm text-muted-foreground">
+            Getting your location...
+          </div>
+        )}
       </div>
       {locationData && (
         <div className="text-sm text-muted-foreground">

@@ -8,53 +8,40 @@ interface SliderFieldProps {
   question: Question
   response?: Response
   onResponse: (value: string) => void
+  isDisabled?: boolean
 }
 
 export function SliderField({
   question,
   response,
   onResponse,
+  isDisabled,
 }: SliderFieldProps) {
   const value = response?.response_value
     ? parseFloat(response.response_value)
-    : 0
-  const min = question.min_value ?? 0
-  const max = question.max_value ?? 100
-  const step = question.step_value ?? 1
+    : question.min_value || 0
+  const min = question.min_value || 0
+  const max = question.max_value || 100
+  const step = question.step_value || 1
+
+  const handleValueChange = (values: number[]) => {
+    onResponse(values[0].toString())
+  }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Label htmlFor={`question-${question.id}`}>
-          {question.text}
-          {question.required && <span className="text-red-500 ml-1">*</span>}
-        </Label>
-        <span className="text-sm font-medium">
-          {value}
-          {/* @ts-expect-error - unit is not typed */}
-          {question.unit && ` ${question.unit}`}
-        </span>
-      </div>
-      <Slider
-        id={`question-${question.id}`}
-        min={min}
-        max={max}
-        step={step}
-        value={[value]}
-        onValueChange={([newValue]) => onResponse(String(newValue))}
-        className="w-full"
-      />
-      <div className="flex justify-between text-xs text-muted-foreground">
-        <span>
-          {min}
-          {/* @ts-expect-error - unit is not typed */}
-          {question.unit && ` ${question.unit}`}
-        </span>
-        <span>
-          {max}
-          {/* @ts-expect-error - unit is not typed */}
-          {question.unit && ` ${question.unit}`}
-        </span>
+    <div className="space-y-2">
+      <Label htmlFor={question.id.toString()}>{question.text}</Label>
+      <div className="flex items-center space-x-4">
+        <Slider
+          id={question.id.toString()}
+          min={min}
+          max={max}
+          step={step}
+          value={[value]}
+          onValueChange={handleValueChange}
+          disabled={isDisabled}
+        />
+        <span className="font-semibold w-12 text-center">{value}</span>
       </div>
     </div>
   )

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -61,12 +61,11 @@ interface ResponseData {
   inspector_notes?: string
 }
 
-interface SaveResponseResult {
-  data: Response
-}
-
 export function DoInspectionForm({ inspection }: Props) {
   const router = useRouter()
+  const [currentInspection, setCurrentInspection] = useState<Inspection>(
+    inspection,
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [pause, setPausing] = useState<boolean>(false)
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false)
@@ -74,11 +73,14 @@ export function DoInspectionForm({ inspection }: Props) {
   const [activeQuestionId, setActiveQuestionId] = useState<number | null>(null)
   const [note, setNote] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [responses, setResponses] = useState<Record<number, Response>>(
-    inspection.responses.reduce((acc, response) => {
-      acc[response.question_id] = response
-      return acc
-    }, {} as Record<number, Response>),
+
+  const responses = useMemo(
+    () =>
+      currentInspection.responses.reduce((acc, response) => {
+        acc[response.question_id] = response
+        return acc
+      }, {} as Record<number, Response>),
+    [currentInspection.responses],
   )
 
   // Keep track of unsaved changes
@@ -129,31 +131,52 @@ export function DoInspectionForm({ inspection }: Props) {
       }
 
       // Update local state for an optimistic UI
-      setResponses((prev) => ({
-        ...prev,
-        [question.id]: {
-          ...(prev[question.id] || {}),
+      setCurrentInspection((prevInspection) => {
+        const newResponses = [...prevInspection.responses]
+        const responseIndex = newResponses.findIndex(
+          (r) => r.question_id === question.id,
+        )
+
+        const optimisticResponse: Response = {
+          ...(responseIndex !== -1 ? newResponses[responseIndex] : {}),
           ...responseData,
-          id: prev[question.id]?.id,
-          created_at: prev[question.id]?.created_at || new Date().toISOString(),
+          id: responseIndex !== -1 ? newResponses[responseIndex].id : undefined,
+          created_at:
+            responseIndex !== -1
+              ? newResponses[responseIndex].created_at
+              : new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          inspection_id: inspection.id,
+          inspection_id: currentInspection.id,
           points_earned: 0,
           points_possible: 0,
           manual_score: false,
           inspector_notes:
             typeof value === 'object' && 'location_data' in value
               ? value.inspector_notes ||
-                prev[question.id]?.inspector_notes ||
+                (responseIndex !== -1
+                  ? newResponses[responseIndex].inspector_notes
+                  : '') ||
                 ''
-              : prev[question.id]?.inspector_notes || '',
+              : (responseIndex !== -1
+                  ? newResponses[responseIndex].inspector_notes
+                  : '') || '',
           file_attachments:
             responseData.file_attachments ||
-            prev[question.id]?.file_attachments ||
+            (responseIndex !== -1
+              ? newResponses[responseIndex].file_attachments
+              : []) ||
             [],
           location_data: responseData.location_data || null,
-        } as Response,
-      }))
+        }
+
+        if (responseIndex !== -1) {
+          newResponses[responseIndex] = optimisticResponse
+        } else {
+          newResponses.push(optimisticResponse)
+        }
+
+        return { ...prevInspection, responses: newResponses }
+      })
 
       // Add to unsaved changes
       setUnsavedChanges((prev) => ({
@@ -161,7 +184,7 @@ export function DoInspectionForm({ inspection }: Props) {
         [question.id]: responseData,
       }))
     },
-    [inspection.id],
+    [currentInspection.id],
   )
 
   // Handle individual field save
@@ -171,19 +194,16 @@ export function DoInspectionForm({ inspection }: Props) {
     setSavingFields((prev) => ({ ...prev, [questionId]: true }))
     try {
       const result = await saveResponse(
-        inspection.id,
+        currentInspection.id,
         String(questionId),
         unsavedChanges[questionId],
       )
 
-      if (typeof result === 'object' && result !== null && 'data' in result) {
-        const resultWithData = result as SaveResponseResult
-        console.log('result', resultWithData)
+      console.log('result after save', result)
 
-        setResponses((prev) => ({
-          ...prev,
-          [questionId]: resultWithData.data,
-        }))
+      if (typeof result === 'object' && result !== null && 'data' in result) {
+        const updatedInspection = result.data as Inspection
+        setCurrentInspection(updatedInspection)
 
         // Remove from unsaved changes
         setUnsavedChanges((prev) => {
@@ -232,7 +252,7 @@ export function DoInspectionForm({ inspection }: Props) {
   const handleComplete = async () => {
     setIsSubmitting(true)
     try {
-      const res = await completeInspection(inspection.id)
+      const res = await completeInspection(currentInspection.id)
       console.log('completed res', res)
       toast.success(res.success)
       router.push('/dashboard/inspections')
@@ -257,12 +277,13 @@ export function DoInspectionForm({ inspection }: Props) {
     }
 
     // Update local state immediately
-    setResponses((prev) => ({
+    setCurrentInspection((prev) => ({
       ...prev,
-      [activeQuestionId]: {
-        ...prev[activeQuestionId],
-        inspector_notes: note,
-      } as Response,
+      responses: prev.responses.map((response) =>
+        response.question_id === activeQuestionId
+          ? ({ ...response, inspector_notes: note } as Response)
+          : response,
+      ),
     }))
 
     // Add to unsaved changes
@@ -272,7 +293,11 @@ export function DoInspectionForm({ inspection }: Props) {
     }))
 
     // Save immediately for notes
-    await saveResponse(inspection.id, String(activeQuestionId), responseData)
+    await saveResponse(
+      currentInspection.id,
+      String(activeQuestionId),
+      responseData,
+    )
     setIsNoteDialogOpen(false)
     setNote('')
   }
@@ -297,12 +322,16 @@ export function DoInspectionForm({ inspection }: Props) {
     }
 
     // Update local state immediately
-    setResponses((prev) => ({
+    setCurrentInspection((prev) => ({
       ...prev,
-      [activeQuestionId]: {
-        ...prev[activeQuestionId],
-        file_attachments: responseData.file_attachments,
-      } as Response,
+      responses: prev.responses.map((response) =>
+        response.question_id === activeQuestionId
+          ? ({
+              ...response,
+              file_attachments: responseData.file_attachments,
+            } as Response)
+          : response,
+      ),
     }))
 
     // Add to unsaved changes
@@ -312,13 +341,17 @@ export function DoInspectionForm({ inspection }: Props) {
     }))
 
     // Save immediately for files
-    await saveResponse(inspection.id, String(activeQuestionId), responseData)
+    await saveResponse(
+      currentInspection.id,
+      String(activeQuestionId),
+      responseData,
+    )
     setIsFileDialogOpen(false)
     setSelectedFile(null)
   }
 
   // Calculate completion percentage
-  const totalQuestions = inspection.pages.reduce(
+  const totalQuestions = currentInspection.pages.reduce(
     (acc, page) =>
       acc +
       page.sections.reduce(
@@ -333,7 +366,7 @@ export function DoInspectionForm({ inspection }: Props) {
   )
 
   // If there are no pages in the inspection, show a message
-  if (!inspection.pages || inspection.pages.length === 0) {
+  if (!currentInspection.pages || currentInspection.pages.length === 0) {
     return (
       <div className="container mx-auto py-6 space-y-6">
         <div className="flex items-center justify-between">
@@ -348,7 +381,7 @@ export function DoInspectionForm({ inspection }: Props) {
 
         <Card>
           <CardHeader>
-            <CardTitle>{inspection.title}</CardTitle>
+            <CardTitle>{currentInspection.title}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-center py-8 text-muted-foreground">
@@ -374,15 +407,19 @@ export function DoInspectionForm({ inspection }: Props) {
             Back
           </Button>
           <div>
-            <h1 className="text-2xl font-semibold">{inspection.title}</h1>
-            <p className="text-muted-foreground">{inspection.site?.name}</p>
+            <h1 className="text-2xl font-semibold">
+              {currentInspection.title}
+            </h1>
+            <p className="text-muted-foreground">
+              {currentInspection.site?.name}
+            </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            onClick={() => handlePauseInspection(inspection.id)}
+            onClick={() => handlePauseInspection(currentInspection.id)}
             disabled={pause}
           >
             <Save className="mr-2 h-4 w-4" />
@@ -423,9 +460,9 @@ export function DoInspectionForm({ inspection }: Props) {
 
       <Card>
         <CardContent className="pt-6">
-          <Tabs defaultValue={inspection.pages[0].id.toString()}>
+          <Tabs defaultValue={currentInspection.pages[0].id.toString()}>
             <TabsList className="flex justify-center p-4 gap-2">
-              {inspection.pages.map((page) => (
+              {currentInspection.pages.map((page) => (
                 <TabsTrigger
                   key={page.id}
                   value={page.id.toString()}
@@ -436,7 +473,7 @@ export function DoInspectionForm({ inspection }: Props) {
               ))}
             </TabsList>
 
-            {inspection.pages.map((page) => (
+            {currentInspection.pages.map((page) => (
               <TabsContent key={page.id} value={page.id.toString()}>
                 <div className="space-y-6">
                   {page.sections.map((section) => (
@@ -447,6 +484,7 @@ export function DoInspectionForm({ inspection }: Props) {
                         const hasUnsavedChange =
                           unsavedChanges[question.id] !== undefined
                         const isSaving = savingFields[question.id]
+                        const isAnswered = !!response?.id
 
                         return (
                           <Card key={question.id}>
@@ -465,6 +503,7 @@ export function DoInspectionForm({ inspection }: Props) {
                                   onSave={handleFieldSave}
                                   hasUnsavedChanges={hasUnsavedChange}
                                   isSaving={isSaving}
+                                  isDisabled={isAnswered}
                                 />
 
                                 <div className="flex flex-wrap gap-2">
@@ -476,6 +515,7 @@ export function DoInspectionForm({ inspection }: Props) {
                                       setNote(response?.inspector_notes || '')
                                       setIsNoteDialogOpen(true)
                                     }}
+                                    disabled={isAnswered}
                                   >
                                     <FileText className="mr-2 h-4 w-4" />
                                     {response?.inspector_notes
@@ -489,6 +529,7 @@ export function DoInspectionForm({ inspection }: Props) {
                                       setActiveQuestionId(question.id)
                                       setIsFileDialogOpen(true)
                                     }}
+                                    disabled={isAnswered}
                                   >
                                     <Paperclip className="mr-2 h-4 w-4" />
                                     {response?.file_attachments?.length

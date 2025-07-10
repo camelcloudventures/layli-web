@@ -17,6 +17,8 @@ export default async function EditInspectionPage({
     notFound()
   }
 
+  console.log('result', result)
+
   //@ts-expect-error - result is not typed
   return <DoInspectionForm inspection={result.data} />
 }

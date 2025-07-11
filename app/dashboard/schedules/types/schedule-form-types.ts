@@ -3,6 +3,7 @@ export interface UserOption {
     id: string
     full_name: string
     role: string
+    email: string
   }
 }
 

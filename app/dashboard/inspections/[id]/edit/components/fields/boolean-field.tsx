@@ -29,12 +29,12 @@ export function BooleanField({
         disabled={isDisabled}
       >
         <div className="flex items-center space-x-2">
-          <RadioGroupItem value="Yes" id={`${question.id}-yes`} />
-          <Label htmlFor={`${question.id}-yes`}>Yes</Label>
+          <RadioGroupItem value="true" id={`${question.id}-yes`} />
+          <Label htmlFor={`${question.id}-yes`}>True</Label>
         </div>
         <div className="flex items-center space-x-2">
-          <RadioGroupItem value="No" id={`${question.id}-no`} />
-          <Label htmlFor={`${question.id}-no`}>No</Label>
+          <RadioGroupItem value="false" id={`${question.id}-no`} />
+          <Label htmlFor={`${question.id}-no`}>False</Label>
         </div>
       </RadioGroup>
     </div>

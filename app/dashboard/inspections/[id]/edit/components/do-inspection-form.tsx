@@ -522,6 +522,7 @@ export function DoInspectionForm({ inspection }: Props) {
                                       ? 'Edit Note'
                                       : 'Add Note'}
                                   </Button>
+
                                   <Button
                                     variant="outline"
                                     size="sm"

@@ -22,7 +22,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useAuth } from '@/lib/context/auth-provider'
-import { createInspection } from '../../actions/actions'
+import { Assignees, createInspection } from '../../actions/actions'
 import { UserOption } from '@/app/dashboard/schedules/types/schedule-form-types'
 import { MultiSelect } from '@/components/ui/multi-select'
 import { AuditTemplate } from '@/lib/types/audit-types'
@@ -42,10 +42,13 @@ export function CreateInspectionForm({ sites, users, templates }: Props) {
   const { user } = useAuth()
   const [isCreating, setIsCreating] = useState(false)
   const [selectedLocation, setSelectedLocation] = useState('')
-  const [assignedTo, setAssignedTo] = useState<string[]>([])
+  const [assignedTo, setAssignedTo] = useState<Assignees[]>([])
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
   const [participateInInspection, setParticipateInInspection] = useState(false)
   const isSupervisor = user?.role === 'supervisor'
+
+  console.log('assignedTo', assignedTo)
+  console.log('users', users)
 
   const [
     selectedTemplate,
@@ -61,10 +64,15 @@ export function CreateInspectionForm({ sites, users, templates }: Props) {
     setIsCreating(true)
     try {
       // Add current user to assignees if participating
-      const finalAssignees = [...assignedTo]
+      const finalAssignees: Assignees[] = [...assignedTo]
       if (participateInInspection && user?.id) {
-        if (!finalAssignees.includes(user.id)) {
-          finalAssignees.push(user.id)
+        if (!finalAssignees.some((assignee) => assignee.id === user.id)) {
+          finalAssignees.push({
+            id: user.id,
+            full_name: user.full_name || '',
+            role: user.role || '',
+            email: user.email || '',
+          })
         }
       }
 
@@ -75,7 +83,7 @@ export function CreateInspectionForm({ sites, users, templates }: Props) {
         description: `Inspection for ${
           sites.find((s) => s.id === selectedLocation)?.name
         }`,
-        assignee_ids: finalAssignees,
+        assignees: finalAssignees,
         site_id: selectedLocation,
         prepared_by: user?.id || '',
         due_date: formData.get('scheduled-date'),
@@ -163,8 +171,28 @@ export function CreateInspectionForm({ sites, users, templates }: Props) {
                 <MultiSelect
                   name="assignee_ids"
                   required
-                  value={assignedTo}
-                  onValueChange={setAssignedTo}
+                  value={assignedTo.map((assignee) => assignee.id)}
+                  onValueChange={(selectedUserIds) => {
+                    // Transform the selected user IDs to Assignees format
+                    const transformedAssignees: Assignees[] = selectedUserIds
+                      .map((userId) => {
+                        const user = users.find((u) => u.user.id === userId)
+                        if (user) {
+                          return {
+                            id: user.user.id,
+                            full_name: user.user.full_name,
+                            role: user.user.role,
+                            email: user.user.email,
+                          }
+                        }
+                        return null
+                      })
+                      .filter(
+                        (assignee): assignee is Assignees => assignee !== null,
+                      )
+
+                    setAssignedTo(transformedAssignees)
+                  }}
                   placeholder="Select assignees"
                   options={users.map((user) => ({
                     value: user.user.id,

@@ -8,10 +8,16 @@ import {
   revalidateTag,
 } from 'next/dist/server/web/spec-extension/revalidate'
 
+export interface Assignees {
+  id: string
+  full_name: string
+  role: string
+  email: string
+}
 export async function createInspection(data: {
   title: string
   description: string
-  assignee_ids: string[]
+  assignees: Assignees[]
   site_id: string
   prepared_by: string
   due_date: FormDataEntryValue | null
@@ -19,6 +25,7 @@ export async function createInspection(data: {
   pages?: Omit<Page, 'id' | 'template_id'>[]
 }) {
   console.log('Creating inspection with data:', data)
+  console.log('assignees', data.assignees)
   const res = await POST(`/inspections/create`, data)
   console.log('Create inspection response:', res)
   return res

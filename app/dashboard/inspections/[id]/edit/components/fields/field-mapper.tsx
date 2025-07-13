@@ -156,7 +156,7 @@ export function FieldMapper({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 ">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">{renderField()}</div>
         {hasUnsavedChanges && (
@@ -167,16 +167,6 @@ export function FieldMapper({
             >
               Unsaved
             </Badge>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onSave?.(question.id)}
-              disabled={isSaving}
-              className="h-7 px-2 text-xs"
-            >
-              <Save className="mr-1 h-3 w-3" />
-              {isSaving ? 'Saving...' : 'Save'}
-            </Button>
           </div>
         )}
       </div>

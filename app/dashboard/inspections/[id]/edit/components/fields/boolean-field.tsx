@@ -1,8 +1,10 @@
 'use client'
 
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Check, X } from 'lucide-react'
 import type { Question, Response } from '@/lib/types/inspection-types'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { cn } from '@/lib/utils'
 
 interface BooleanFieldProps {
   question: Question
@@ -22,21 +24,36 @@ export function BooleanField({
   return (
     <div className="space-y-2">
       <Label>{question.text}</Label>
-      <RadioGroup
-        value={selectedValue}
-        onValueChange={onResponse}
-        className="flex space-x-4"
-        disabled={isDisabled}
-      >
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="true" id={`${question.id}-yes`} />
-          <Label htmlFor={`${question.id}-yes`}>True</Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="false" id={`${question.id}-no`} />
-          <Label htmlFor={`${question.id}-no`}>False</Label>
-        </div>
-      </RadioGroup>
+      <div className="flex w-44 gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          className={cn(
+            'flex-1 gap-2',
+            selectedValue === 'true' &&
+              'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
+          )}
+          onClick={() => onResponse('true')}
+          disabled={isDisabled}
+        >
+          <Check className="h-4 w-4" />
+          Yes
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className={cn(
+            'flex-1 gap-2',
+            selectedValue === 'false' &&
+              'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
+          )}
+          onClick={() => onResponse('false')}
+          disabled={isDisabled}
+        >
+          <X className="h-4 w-4" />
+          No
+        </Button>
+      </div>
     </div>
   )
 }

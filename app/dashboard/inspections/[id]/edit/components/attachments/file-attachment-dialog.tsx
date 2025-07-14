@@ -5,61 +5,87 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { useState } from 'react'
+import {
+  FileUploader,
+  FileWithPreview,
+} from '@/components/custom/file-uploader'
+import { attachInspectionFile } from '@/utils/common'
+import { toast } from 'sonner'
 
-type FileAttachmentProp = {
-  isFileDialogOpen: boolean
-  setIsFileDialogOpen: (isOpen: boolean) => void
-  selectedFile: File | null
-  setSelectedFile: (file: File | null) => void
-  handleAttachFile: () => void
+interface FileAttachmentDialogProps {
+  isOpen: boolean
+  onClose: () => void
+  onAttach: (files: FileWithPreview[]) => void
 }
+
 export function FileAttachmentDialog({
-  isFileDialogOpen,
-  setIsFileDialogOpen,
-  selectedFile,
-  setSelectedFile,
-  handleAttachFile,
-}: FileAttachmentProp) {
+  isOpen,
+  onClose,
+  onAttach,
+}: FileAttachmentDialogProps) {
+  const [selectedFile, setSelectedFile] = useState<FileWithPreview | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+
+  async function handleUpload(file: File) {
+    try {
+      setIsUploading(true)
+      const result = await attachInspectionFile(file, 'inspection-attachments')
+
+      if (result.success && result.fileData) {
+        const fileWithPreview = file as FileWithPreview
+        fileWithPreview.file_path = result.fileData.file_path
+        fileWithPreview.fileName = result.fileData.fileName
+        fileWithPreview.file_size = result.fileData.file_size
+        fileWithPreview.mime_type = result.fileData.mime_type
+
+        setSelectedFile(fileWithPreview)
+        toast.success('File uploaded successfully')
+      } else if (result.error) {
+        toast.error(result.error)
+      }
+    } catch {
+      toast.error('Failed to upload file')
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  function handleAttach() {
+    if (selectedFile) {
+      onAttach([selectedFile])
+      onClose()
+      setSelectedFile(null)
+    }
+  }
+
   return (
-    <Dialog open={isFileDialogOpen} onOpenChange={setIsFileDialogOpen}>
-      <DialogContent>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Attach File</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="file">Select File</Label>
-            <Input
-              id="file"
-              type="file"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) {
-                  setSelectedFile(file)
-                }
-              }}
-            />
-          </div>
-          {selectedFile && (
-            <p className="text-sm text-muted-foreground">
-              Selected file: {selectedFile.name} (
-              {Math.round(selectedFile.size / 1024)} KB)
-            </p>
-          )}
+        <div className="grid gap-4 py-4">
+          <FileUploader
+            label="Choose file or drag and drop"
+            isDisabled={isUploading}
+            onFileSelect={handleUpload}
+            initialFile={selectedFile || undefined}
+          />
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setIsFileDialogOpen(false)}>
+        <div className="flex justify-end gap-3">
+          <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleAttachFile} disabled={!selectedFile}>
+          <Button
+            onClick={handleAttach}
+            disabled={!selectedFile || isUploading}
+          >
             Attach
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   )

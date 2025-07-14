@@ -94,95 +94,43 @@ export async function uploadImage(fileData: FileData, bucketName: string) {
   }
 }
 
-export async function attachInspectionFile(
-  fileData: {
-    name: string
-    type: string
-    size: number
-    uri: string
-  },
-  bucketName: string,
-) {
+export async function attachInspectionFile(fileData: File, bucketName: string) {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) {
-    console.error('User not found during image upload')
-    return { error: 'User not found' }
-  }
 
-  const fileExt = fileData.name.split('.').pop()
-  const timestamp = Date.now()
-  const fileName = `template-${timestamp}.${fileExt}`
-  const originalFileName = fileData.name
-
-  console.log('Attempting to upload file:', {
-    fileName,
-    fileSize: fileData.size,
-    fileType: fileData.type,
-    bucketName,
-    userId: user?.id,
-  })
+  const fileName = fileData.name
 
   try {
-    // Convert URI to Blob for upload
-    const response = await fetch(fileData.uri)
-    const blob = await response.blob()
-
-    const { error: extensionError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from(bucketName)
-      .upload(fileName, blob, {
+      .upload(fileName, fileData, {
         upsert: true,
         cacheControl: '3600',
-        contentType: fileData.type,
-        duplex: 'half',
+        contentType: fileData.type || 'application/octet-stream',
       })
 
-    if (extensionError) {
-      console.log('Supabase storage upload error:', {
-        error: extensionError,
-        message: extensionError.message,
-        name: extensionError.name,
-        userId: user?.id,
-      })
-      return { error: extensionError.message }
-    }
-
-    // Update the file's owner to match the user
-    const { error: updateError } = await supabase
-      .from('storage.objects')
-      .update({ owner: user?.id })
-      .eq('name', fileName)
-      .eq('bucket_id', bucketName)
-
-    if (updateError) {
-      console.log('Error updating file owner:', {
-        error: updateError,
-        message: updateError.message,
-        userId: user?.id,
-      })
+    if (uploadError) {
+      console.error('Supabase storage upload error:', uploadError)
+      return { error: uploadError.message }
     }
 
     const { data: fileUrl } = await supabase.storage
       .from(bucketName)
       .getPublicUrl(fileName)
 
-    console.log('File uploaded successfully:', {
-      fileName,
-      publicUrl: fileUrl.publicUrl,
-      userId: user.id,
-    })
+    console.log('file url', fileUrl.publicUrl)
 
-    return {
-      success: 'Image uploaded successfully',
-      fileUrl: fileUrl.publicUrl,
-      originalFileName,
+    const newFileData = {
+      fileName: fileData.name,
+      file_path: fileUrl.publicUrl,
+      file_size: fileData.size || 0,
+      mime_type: fileData.type || 'application/octet-stream',
     }
+
+    return { success: 'File uploaded successfully', fileData: newFileData }
   } catch (error) {
-    console.error('Unexpected error during image upload:', error)
+    console.error('Unexpected error during file upload:', error)
     return {
-      error: error instanceof Error ? error.message : 'Failed to upload image',
+      error: error instanceof Error ? error.message : 'Failed to upload file',
     }
   }
 }
@@ -191,40 +139,16 @@ export async function deleteInspectionFile(
   filePath: string,
   bucketName: string,
 ) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) {
-    console.error('User not found during file deletion')
-    return { error: 'User not found' }
-  }
-
   try {
-    // Extract filename from the full path
+    const supabase = await createClient()
     const fileName = filePath.split('/').pop()
+
+    console.log('fileName', fileName)
     if (!fileName) {
-      return { error: 'Invalid file path' }
+      return { error: 'File name not found' }
     }
 
-    const { error: deleteError } = await supabase.storage
-      .from(bucketName)
-      .remove([fileName])
-
-    if (deleteError) {
-      console.log('Supabase storage delete error:', {
-        error: deleteError,
-        message: deleteError.message,
-        name: deleteError.name,
-        userId: user?.id,
-      })
-      return { error: deleteError.message }
-    }
-
-    console.log('File deleted successfully:', {
-      fileName,
-      userId: user.id,
-    })
+    await supabase.storage.from(bucketName).remove([fileName])
 
     return { success: 'File deleted successfully' }
   } catch (error) {

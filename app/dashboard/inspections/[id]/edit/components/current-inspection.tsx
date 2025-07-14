@@ -29,6 +29,8 @@ type CurrentInspectionProps = {
   setNote: (note: string) => void
   setIsNoteDialogOpen: (isOpen: boolean) => void
   setIsFileDialogOpen: (isOpen: boolean) => void
+  fileAttachments: File[]
+  setFileAttachments: (files: File[]) => void
 }
 export function CurrentInspection({
   currentInspection,
@@ -41,6 +43,8 @@ export function CurrentInspection({
   setNote,
   setIsNoteDialogOpen,
   setIsFileDialogOpen,
+  fileAttachments,
+  setFileAttachments,
 }: CurrentInspectionProps) {
   return (
     <Card className="border-none  shadow-none bg-transparent w-full">
@@ -89,6 +93,8 @@ export function CurrentInspection({
                                     files,
                                   )
                                 }
+                                fileAttachments={fileAttachments}
+                                setFileAttachments={setFileAttachments}
                                 onSave={handleFieldSave}
                                 hasUnsavedChanges={hasUnsavedChange}
                                 isSaving={isSaving}

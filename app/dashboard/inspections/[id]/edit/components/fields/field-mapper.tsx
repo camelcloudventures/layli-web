@@ -1,8 +1,6 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Save } from 'lucide-react'
 import { BooleanField } from './boolean-field'
 import { DateField } from './date-field'
 import { LocationField } from './location-field'
@@ -23,20 +21,20 @@ interface FieldMapperProps {
   question: Question
   response?: Response
   onResponse: (value: string | LocationResponse, files?: File[]) => void
-  onSave?: (questionId: number) => Promise<void>
   hasUnsavedChanges?: boolean
-  isSaving?: boolean
   isDisabled?: boolean
+  fileAttachments: File[]
+  setFileAttachments: (files: File[]) => void
 }
 
 export function FieldMapper({
   question,
   response,
   onResponse,
-  onSave,
   hasUnsavedChanges,
-  isSaving,
   isDisabled,
+  fileAttachments,
+  setFileAttachments,
 }: FieldMapperProps) {
   const handleNumberResponse = (value: number) => {
     onResponse(value.toString())
@@ -141,6 +139,8 @@ export function FieldMapper({
             response={response}
             onResponse={onResponse}
             isDisabled={isDisabled}
+            fileAttachments={fileAttachments}
+            setFileAttachments={setFileAttachments}
           />
         )
       default:

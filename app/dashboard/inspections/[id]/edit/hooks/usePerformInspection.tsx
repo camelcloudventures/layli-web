@@ -33,6 +33,7 @@ export function usePerformInspection(inspection: Inspection) {
   >({})
   const [savingFields, setSavingFields] = useState<Record<number, boolean>>({})
 
+  const [fileAttachments, setFileAttachments] = useState<File[]>([])
   // Handle individual field save
   const handleFieldSave = async (questionId: number) => {
     if (!unsavedChanges[questionId]) return
@@ -45,8 +46,6 @@ export function usePerformInspection(inspection: Inspection) {
         unsavedChanges[questionId],
       )
 
-      console.log('result after save', result)
-
       if (typeof result === 'object' && result !== null && 'data' in result) {
         const updatedInspection = result.data as Inspection
         setCurrentInspection(updatedInspection)
@@ -58,7 +57,7 @@ export function usePerformInspection(inspection: Inspection) {
           return next
         })
 
-        toast.success('Response saved')
+        toast.success(result.success)
       } else {
         // Handle cases where the response might be a simple message
         console.warn('Received unexpected response format:', result)
@@ -142,12 +141,52 @@ export function usePerformInspection(inspection: Inspection) {
         }))
       }
 
+      // Merge any existing note from unsavedChanges
+      setUnsavedChanges((prev) => {
+        const existing = prev[question.id] || {}
+        return {
+          ...prev,
+          [question.id]: {
+            ...responseData,
+            inspector_notes:
+              existing.inspector_notes || responseData.inspector_notes,
+          },
+        }
+      })
+
       // Update local state for an optimistic UI
       setCurrentInspection((prevInspection) => {
         const newResponses = [...prevInspection.responses]
         const responseIndex = newResponses.findIndex(
           (r) => r.question_id === question.id,
         )
+        // Determine the note to use:
+        let preservedNote = ''
+        if (
+          typeof value === 'object' &&
+          value !== null &&
+          'inspector_notes' in value &&
+          value.inspector_notes
+        ) {
+          preservedNote = value.inspector_notes
+        } else if (
+          responseIndex !== -1 &&
+          newResponses[responseIndex].inspector_notes
+        ) {
+          preservedNote = newResponses[responseIndex].inspector_notes
+        } else if (
+          prevInspection &&
+          unsavedChanges &&
+          unsavedChanges[question.id] &&
+          unsavedChanges[question.id].inspector_notes
+        ) {
+          preservedNote =
+            unsavedChanges[question.id].inspector_notes ||
+            (responseIndex !== -1
+              ? newResponses[responseIndex].inspector_notes
+              : '') ||
+            ''
+        }
 
         const optimisticResponse: Response = {
           ...(responseIndex !== -1 ? newResponses[responseIndex] : {}),
@@ -158,20 +197,11 @@ export function usePerformInspection(inspection: Inspection) {
               ? newResponses[responseIndex].created_at
               : new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          inspection_id: currentInspection.id,
+          inspection_id: prevInspection.id,
           points_earned: 0,
           points_possible: 0,
           manual_score: false,
-          inspector_notes:
-            typeof value === 'object' && 'location_data' in value
-              ? value.inspector_notes ||
-                (responseIndex !== -1
-                  ? newResponses[responseIndex].inspector_notes
-                  : '') ||
-                ''
-              : (responseIndex !== -1
-                  ? newResponses[responseIndex].inspector_notes
-                  : '') || '',
+          inspector_notes: preservedNote,
           file_attachments:
             responseData.file_attachments ||
             (responseIndex !== -1
@@ -189,12 +219,6 @@ export function usePerformInspection(inspection: Inspection) {
 
         return { ...prevInspection, responses: newResponses }
       })
-
-      // Add to unsaved changes
-      setUnsavedChanges((prev) => ({
-        ...prev,
-        [question.id]: responseData,
-      }))
     },
     [currentInspection.id],
   )
@@ -221,7 +245,6 @@ export function usePerformInspection(inspection: Inspection) {
     setIsSubmitting(true)
     try {
       const res = await completeInspection(currentInspection.id)
-      console.log('completed res', res)
       toast.success(res.success)
       router.push('/dashboard/inspections')
     } catch (error) {
@@ -280,59 +303,27 @@ export function usePerformInspection(inspection: Inspection) {
     setSelectedFile(null)
   }
 
-  // async function handleAttachFile1() {
-  //   if (!activeQuestionId || !selectedFile) return
-
-  //   setCurrentInspection((prev) => {
-  //     const exists = prev.responses.some(
-  //       (res) => res.question_id === activeQuestionId,
-  //     )
-  //     if (exists) {
-  //       return {
-  //         ...prev,
-  //         responses: prev.responses.map((res) =>
-  //           res.question_id === activeQuestionId
-  //             ? {
-  //                 ...res,
-  //                 file_attachments: [
-  //                   {
-  //                     filename: selectedFile.name,
-  //                     file_path: '',
-  //                     file_size: selectedFile.size,
-  //                     mime_type: selectedFile.type,
-  //                   },
-  //                 ],
-  //               }
-  //             : res,
-  //         ),
-  //       }
-  //     } else {
-  //       const newResponse = {
-  //         question_id: activeQuestionId,
-  //         value: '',
-  //         selected_options: [],
-  //         response_value: '',
-  //         file_attachments: responseData.file_attachments,
-  //         created_at: new Date().toISOString(),
-  //         updated_at: new Date().toISOString(),
-  //         inspection_id: prev.id,
-  //         points_earned: 0,
-  //         points_possible: 0,
-  //         manual_score: false,
-  //         // file_attachments: responseData.file_attachments,
-  //         location_data: null,
-  //       }
-  //       return {
-  //         ...prev,
-  //         responses: [...prev.responses, newResponse],
-  //       }
-  //     }
-  //   })
-  // }
+  async function handleAttachFile1() {
+    if (!activeQuestionId || !selectedFile) return
+  }
 
   async function handleAddANote() {
     if (!activeQuestionId) return
 
+    // Merge note into unsavedChanges for this question
+    setUnsavedChanges((prev) => {
+      const existing = prev[activeQuestionId] || {}
+      return {
+        ...prev,
+        [activeQuestionId]: {
+          ...existing,
+          inspector_notes: note,
+          question_id: activeQuestionId,
+        },
+      }
+    })
+
+    // Also update local state for immediate UI feedback
     setCurrentInspection((prev) => {
       const exists = prev.responses.some(
         (res) => res.question_id === activeQuestionId,
@@ -347,6 +338,7 @@ export function usePerformInspection(inspection: Inspection) {
           ),
         }
       } else {
+        // Create a new response object with just the note
         const newResponse = {
           question_id: activeQuestionId,
           value: '',
@@ -404,5 +396,7 @@ export function usePerformInspection(inspection: Inspection) {
     hasUnsavedChanges,
     responses,
     handlePauseInspection,
+    fileAttachments,
+    setFileAttachments,
   }
 }

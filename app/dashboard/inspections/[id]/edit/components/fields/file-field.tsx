@@ -28,7 +28,7 @@ interface ExtendedFile extends File {
 
 interface FileFieldProps {
   question: Question
-  onResponse: (value: string | LocationResponse, files?: FileMetadata[]) => void
+  onResponse: (value: string, files?: FileMetadata[]) => void
   isDisabled?: boolean
   fileAttachments: ExtendedFile[]
   setFileAttachments: (files: ExtendedFile[]) => void
@@ -136,7 +136,7 @@ export function FileField({
             <div className="flex items-center gap-2">
               <Paperclip className="h-4 w-4" />
               <span className="text-sm font-medium truncate">
-                {questionFile.fileName || questionFile.name}
+                {questionFile.fileName}
               </span>
             </div>
           </div>

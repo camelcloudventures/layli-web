@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FieldMapper } from './fields/field-mapper'
 import { Button } from '@/components/ui/button'
-import { FileText, Save } from 'lucide-react'
+import { FileText, Save, LucideTrash2, PencilIcon } from 'lucide-react'
 import { Paperclip } from 'lucide-react'
 import { NoteDisplay } from '@/components/custom/note-with-attachments'
 import {
@@ -95,9 +95,7 @@ export function CurrentInspection({
                                 }
                                 fileAttachments={fileAttachments}
                                 setFileAttachments={setFileAttachments}
-                                onSave={handleFieldSave}
                                 hasUnsavedChanges={hasUnsavedChange}
-                                isSaving={isSaving}
                                 isDisabled={isAnswered}
                               />
                               <div className="flex flex-wrap gap-2 w-full justify-between items-center">
@@ -159,18 +157,81 @@ export function CurrentInspection({
                               {/* Display notes */}
                               {response?.inspector_notes && (
                                 <div className="mt-3">
-                                  <h1>Notes</h1>
+                                  <h1 className="font-semibold text-muted-foreground">
+                                    Notes
+                                  </h1>
                                   <NoteDisplay
                                     note={response.inspector_notes}
                                     className="mt-3"
                                   />
                                 </div>
                               )}
+
                               {response?.file_attachments &&
                                 response.file_attachments.length > 0 && (
-                                  <div className="text-sm text-muted-foreground">
-                                    Attached:{' '}
-                                    {response.file_attachments[0].filename}
+                                  <div className="font-semibold text-muted-foreground">
+                                    Attached File(s):
+                                  </div>
+                                )}
+                              {response?.file_attachments &&
+                                response.file_attachments.length > 0 && (
+                                  <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30 mt-2">
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2">
+                                        <Paperclip className="h-4 w-4" />
+                                        <span className="text-sm font-medium truncate">
+                                          {
+                                            response.file_attachments[0]
+                                              .filename
+                                          }
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                          setActiveQuestionId(question.id)
+                                          setIsFileDialogOpen(true)
+                                        }}
+                                        className="h-8 w-8 p-0"
+                                        aria-label="Edit file"
+                                        tabIndex={0}
+                                        onKeyDown={(e) => {
+                                          if (
+                                            e.key === 'Enter' ||
+                                            e.key === ' '
+                                          ) {
+                                            setActiveQuestionId(question.id)
+                                            setIsFileDialogOpen(true)
+                                          }
+                                        }}
+                                      >
+                                        <PencilIcon className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                          // Remove file logic: clear file_attachments for this response
+                                          handleResponse(question, '', [])
+                                        }}
+                                        className="h-8 w-8 p-0"
+                                        aria-label="Remove file"
+                                        tabIndex={0}
+                                        onKeyDown={(e) => {
+                                          if (
+                                            e.key === 'Enter' ||
+                                            e.key === ' '
+                                          ) {
+                                            handleResponse(question, '', [])
+                                          }
+                                        }}
+                                      >
+                                        <LucideTrash2 className="h-4 w-4 text-red-500" />
+                                      </Button>
+                                    </div>
                                   </div>
                                 )}
                             </div>

@@ -142,7 +142,7 @@ export function DoInspectionForm({ inspection }: Props) {
         setIsFileDialogOpen={setIsFileDialogOpen}
         selectedFile={selectedFile}
         setSelectedFile={setSelectedFile}
-        handleAttachFile={handleAttachFile}
+        handleAttachFile1={handleAttachFile}
       />
     </div>
   )

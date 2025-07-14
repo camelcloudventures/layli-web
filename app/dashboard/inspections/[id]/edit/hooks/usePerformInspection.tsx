@@ -16,6 +16,13 @@ import {
 } from '../../../actions/actions'
 import { ResponseData } from '@/app/dashboard/inspections/types/types'
 
+interface FileMetaType {
+  filename: string
+  file_path: string
+  file_size: number
+  mime_type: string
+}
+
 export function usePerformInspection(inspection: Inspection) {
   const router = useRouter()
   const [currentInspection, setCurrentInspection] = useState<Inspection>(
@@ -255,56 +262,110 @@ export function usePerformInspection(inspection: Inspection) {
     }
   }
 
-  const handleAttachFile = async () => {
-    if (!activeQuestionId || !selectedFile) return
+  // const handleAttachFile = async () => {
+  //   if (!activeQuestionId || !selectedFile) return
 
-    const currentResponse = responses[activeQuestionId]
-    const responseData: ResponseData = {
-      question_id: activeQuestionId,
-      value: currentResponse?.value?.toString() ?? '',
-      selected_options: currentResponse?.selected_options ?? [],
-      response_value: currentResponse?.response_value ?? '',
-      file_attachments: [
-        {
-          filename: selectedFile.name,
-          file_path: '',
-          file_size: selectedFile.size,
-          mime_type: selectedFile.type,
-        },
-      ],
-    }
+  //   const currentResponse = responses[activeQuestionId]
+  //   const responseData: ResponseData = {
+  //     question_id: activeQuestionId,
+  //     value: currentResponse?.value?.toString() ?? '',
+  //     selected_options: currentResponse?.selected_options ?? [],
+  //     response_value: currentResponse?.response_value ?? '',
+  //     file_attachments: [
+  //       {
+  //         filename: selectedFile.name,
+  //         file_path: '',
+  //         file_size: selectedFile.size,
+  //         mime_type: selectedFile.type,
+  //       },
+  //     ],
+  //   }
 
-    // Update local state immediately
-    setCurrentInspection((prev) => ({
-      ...prev,
-      responses: prev.responses.map((response) =>
-        response.question_id === activeQuestionId
-          ? ({
-              ...response,
-              file_attachments: responseData.file_attachments,
-            } as Response)
-          : response,
-      ),
-    }))
+  //   // Update local state immediately
+  //   setCurrentInspection((prev) => ({
+  //     ...prev,
+  //     responses: prev.responses.map((response) =>
+  //       response.question_id === activeQuestionId
+  //         ? ({
+  //             ...response,
+  //             file_attachments: responseData.file_attachments,
+  //           } as Response)
+  //         : response,
+  //     ),
+  //   }))
 
-    // Add to unsaved changes
+  //   // Add to unsaved changes
+  //   setUnsavedChanges((prev) => ({
+  //     ...prev,
+  //     [activeQuestionId]: responseData,
+  //   }))
+
+  //   // Save immediately for files
+  //   // await saveResponse(
+  //   //   currentInspection.id,
+  //   //   String(activeQuestionId),
+  //   //   responseData,
+  //   // )
+  //   setIsFileDialogOpen(false)
+  //   setSelectedFile(null)
+  // }
+
+  async function handleAttachFile(fileMeta: FileMetaType) {
+    if (!activeQuestionId || !fileMeta) return
+
+    // Build file_attachments array
+    const file_attachments = [fileMeta]
+
+    // Update unsavedChanges
     setUnsavedChanges((prev) => ({
       ...prev,
-      [activeQuestionId]: responseData,
+      [activeQuestionId]: {
+        ...(prev[activeQuestionId] || {}),
+        file_attachments,
+        question_id: activeQuestionId,
+      },
     }))
 
-    // Save immediately for files
-    // await saveResponse(
-    //   currentInspection.id,
-    //   String(activeQuestionId),
-    //   responseData,
-    // )
+    // Update currentInspection for immediate UI feedback
+    setCurrentInspection((prev) => {
+      const exists = prev.responses.some(
+        (res) => res.question_id === activeQuestionId,
+      )
+      if (exists) {
+        return {
+          ...prev,
+          responses: prev.responses.map((res) =>
+            res.question_id === activeQuestionId
+              ? { ...res, file_attachments }
+              : res,
+          ),
+        }
+      } else {
+        // Create a new response object with just the file
+        const newResponse = {
+          question_id: activeQuestionId,
+          value: '',
+          selected_options: [],
+          response_value: '',
+          file_attachments,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          inspection_id: prev.id,
+          points_earned: 0,
+          points_possible: 0,
+          manual_score: false,
+          inspector_notes: '',
+          location_data: null,
+        }
+        return {
+          ...prev,
+          responses: [...prev.responses, newResponse],
+        }
+      }
+    })
+
     setIsFileDialogOpen(false)
     setSelectedFile(null)
-  }
-
-  async function handleAttachFile1() {
-    if (!activeQuestionId || !selectedFile) return
   }
 
   async function handleAddANote() {

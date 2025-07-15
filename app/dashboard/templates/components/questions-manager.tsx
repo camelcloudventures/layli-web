@@ -18,9 +18,10 @@ interface QuestionsManagerProps {
   setTemplate: Dispatch<SetStateAction<AuditTemplate>>
   page: Page
   section: Section
+  isPageFull: boolean
 }
 
-export function QuestionsManager({ template, setTemplate, page, section }: QuestionsManagerProps) {
+export function QuestionsManager({ template, setTemplate, page, section, isPageFull }: QuestionsManagerProps) {
   const [expandedQuestions, setExpandedQuestions] = useState<string[]>([])
 
   const addNewQuestion = () => {
@@ -180,19 +181,12 @@ export function QuestionsManager({ template, setTemplate, page, section }: Quest
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h4 className="font-medium">Questions</h4>
-        <Button onClick={addNewQuestion} variant="outline" size="sm">
-          <Plus className="mr-2 h-4 w-4" />
-          Add Question
-        </Button>
-      </div>
-
+      <h4 className="font-medium">Questions</h4>
       {section.questions.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-md border border-dashed py-8">
           <HelpCircle className="h-12 w-12 text-muted-foreground" />
           <p className="mt-2 text-center text-muted-foreground">No questions added to this section</p>
-          <Button className="mt-4" onClick={addNewQuestion} size="sm">
+          <Button className="mt-4" onClick={addNewQuestion} size="sm" disabled={isPageFull}>
             <Plus className="mr-2 h-4 w-4" />
             Add Question
           </Button>
@@ -583,6 +577,14 @@ export function QuestionsManager({ template, setTemplate, page, section }: Quest
               )}
             </Card>
           ))}
+        </div>
+      )}
+       {section.questions.length > 0 && (
+        <div className="flex justify-end">
+            <Button onClick={addNewQuestion} variant="outline" size="sm" disabled={isPageFull}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Question
+            </Button>
         </div>
       )}
     </div>

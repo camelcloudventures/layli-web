@@ -153,7 +153,14 @@ export default function CreateAuditForm() {
         >
           Pages & Questions
         </TabsTrigger>
-        <TabsTrigger value="preview" disabled={template.pages.length === 0}>
+        <TabsTrigger
+          value="preview"
+          disabled={
+            template.pages.length === 0 ||
+            !template.title ||
+            !template.description
+          }
+        >
           Preview
         </TabsTrigger>
       </TabsList>
@@ -282,7 +289,7 @@ export default function CreateAuditForm() {
               <Button
                 type="button"
                 onClick={() => setActiveTab('pages')}
-                disabled={!template.title}
+                disabled={!template.title || !template.description}
                 aria-label="Continue to Pages"
               >
                 Continue to Pages

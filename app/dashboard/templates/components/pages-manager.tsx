@@ -1,15 +1,17 @@
 "use client"
 
-import { type Dispatch, type SetStateAction, useState } from "react"
+import { type Dispatch, type SetStateAction, useState, useEffect, useRef, useLayoutEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, GripVertical, ChevronDown, ChevronUp, FileText, Trash2 } from "lucide-react"
-import type { AuditTemplate, Page } from "@/lib/types/audit-types"
+import { GripVertical, ChevronDown, ChevronUp, Trash2 } from "lucide-react"
+import type { AuditTemplate, Page, Section } from "@/lib/types/audit-types"
 import { SectionsManager } from "@/app/dashboard/templates/components/sections-manager"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+
+const A4_PAGE_HEIGHT_PX = 1123; // Common approximation for 96 DPI
 
 interface PagesManagerProps {
   template: AuditTemplate
@@ -17,207 +19,247 @@ interface PagesManagerProps {
 }
 
 export function PagesManager({ template, setTemplate }: PagesManagerProps) {
-  const [activePage, setActivePage] = useState<number | null>(template.pages.length > 0 ? Number(template.pages[0].id) : null)
+  const [activePage, setActivePage] = useState<string | null>(null)
 
-  const addNewPage = () => {
-    const tempId = Date.now()
-    const newPage: Omit<Page, 'id' | 'created_at'> & { id: number } = {
-      id: tempId,
-      template_id: template.id,
-      title: `Page ${template.pages.length + 1}`,
-      description: '',
-      ordinal: template.pages.length + 1,
-      sections: [],
-      photo: ''
+  const repaginate = (sourcePageId: string, startSectionId: string) => {
+      const updatedTemplate = JSON.parse(JSON.stringify(template));
+      const sourcePageIndex = updatedTemplate.pages.findIndex((p: Page) => p.id === sourcePageId);
+      if (sourcePageIndex === -1) return;
+  
+      const sourcePage = updatedTemplate.pages[sourcePageIndex];
+      const startSectionIndex = sourcePage.sections.findIndex((s: Section) => s.id === startSectionId);
+      if (startSectionIndex === -1) return;
+  
+      if (sourcePage.sections.length > 0 && startSectionIndex === 0) {
+        console.warn("Section is too large to fit on a single page. Consider splitting it.");
+      }
+      
+      const targetPageIndex = sourcePageIndex + 1;
+      if (targetPageIndex >= updatedTemplate.pages.length) {
+        const newPageId = Date.now().toString();
+        updatedTemplate.pages.push({
+          id: newPageId,
+          template_id: updatedTemplate.id,
+          title: `Page ${updatedTemplate.pages.length + 1}`,
+          description: '',
+          ordinal: updatedTemplate.pages.length + 1,
+          sections: [], 
+          created_at: new Date().toISOString()
+        });
+        
+        updatedTemplate.pages.forEach((p: Page, pageIndex: number) => {
+          p.ordinal = pageIndex + 1;
+          p.sections.forEach((s: Section, sectionIndex: number) => {
+            s.ordinal = sectionIndex + 1;
+            s.page_id = p.id;
+          });
+        });
+
+        setTemplate(updatedTemplate);
+        setActivePage(newPageId); // Navigate to the new page
+      } else {
+        setTemplate(updatedTemplate);
+      }
+  };
+
+
+  useEffect(() => {
+    // If no pages exist, create the first one.
+    if (template.pages.length === 0) {
+      const newPageId = Date.now().toString();
+      setTemplate(prev => ({
+        ...prev,
+        pages: [{
+          id: newPageId,
+          template_id: prev.id,
+          title: 'Page 1',
+          description: '',
+          ordinal: 1,
+          sections: [],
+          created_at: new Date().toISOString()
+        }]
+      }));
+      setActivePage(newPageId);
+      return;
     }
 
-    const updatedTemplate = { ...template }
-    //@ts-expect-error - newPage is not typed
-    updatedTemplate.pages.push({ ...newPage, created_at: new Date().toISOString() } as Page)
-    setTemplate(updatedTemplate)
-    setActivePage(tempId)
-  }
+    // Set initial active page or handle active page deletion
+    if (activePage === null || !template.pages.some(p => p.id === activePage)) {
+      setActivePage(template.pages[0].id);
+    }
+  }, [template.pages, activePage, setTemplate, template.id]);
 
-  const updatePage = (pageId: number, field: keyof Page, value: string) => {
+
+  const updatePage = (pageId: string, field: keyof Page, value: string) => {
     const updatedTemplate = { ...template }
-    //@ts-expect-error - pageId is not typed
     const pageIndex = updatedTemplate.pages.findIndex((page) => page.id === pageId)
 
     if (pageIndex !== -1) {
-      updatedTemplate.pages[pageIndex] = {
-        ...updatedTemplate.pages[pageIndex],
-        [field]: value,
-      }
+      const pageToUpdate = updatedTemplate.pages[pageIndex];
+      (pageToUpdate[field] as Page[keyof Page]) = value
       setTemplate(updatedTemplate)
     }
   }
 
-  const handleDeletePage = (pageId: number) => {
-    //@ts-expect-error - pageId is not typed
+  const handleDeletePage = (pageId: string) => {
+    // Prevent deleting the last page
+    if (template.pages.length <= 1) {
+      alert("You cannot delete the last page.");
+      return;
+    }
     const updatedTemplate = { ...template, pages: template.pages.filter(page => page.id !== pageId) }
     setTemplate(updatedTemplate)
-    setActivePage(updatedTemplate.pages.length > 0 ? Number(updatedTemplate.pages[0].id) : null)
   }
 
-  const movePageUp = (pageId: number) => {
-    const updatedTemplate = { ...template }
-    //@ts-expect-error - pageId is not typed
-    const pageIndex = updatedTemplate.pages.findIndex((page) => page.id === pageId)
-
+  const movePageUp = (pageId: string) => {
+    const pageIndex = template.pages.findIndex((page) => page.id === pageId)
     if (pageIndex > 0) {
-      // Swap with previous page
-      ;[updatedTemplate.pages[pageIndex - 1], updatedTemplate.pages[pageIndex]] = [
-        updatedTemplate.pages[pageIndex],
-        updatedTemplate.pages[pageIndex - 1],
-      ]
-
-      // Update ordinals
-      updatedTemplate.pages.forEach((page, index) => {
-        page.ordinal = index + 1
-      })
-
-      setTemplate(updatedTemplate)
+      const newPages = [...template.pages];
+      [newPages[pageIndex - 1], newPages[pageIndex]] = [newPages[pageIndex], newPages[pageIndex - 1]];
+      setTemplate({...template, pages: newPages});
     }
   }
 
-  const movePageDown = (pageId: number) => {
-    const updatedTemplate = { ...template }
-    //@ts-expect-error - pageId is not typed
-    const pageIndex = updatedTemplate.pages.findIndex((page) => page.id === pageId)
-
-    if (pageIndex < updatedTemplate.pages.length - 1) {
-      // Swap with next page
-      ;[updatedTemplate.pages[pageIndex], updatedTemplate.pages[pageIndex + 1]] = [
-        updatedTemplate.pages[pageIndex + 1],
-        updatedTemplate.pages[pageIndex],
-      ]
-
-      // Update ordinals
-      updatedTemplate.pages.forEach((page, index) => {
-        page.ordinal = index + 1
-      })
-
-      setTemplate(updatedTemplate)
+  const movePageDown = (pageId: string) => {
+    const pageIndex = template.pages.findIndex((page) => page.id === pageId)
+    if (pageIndex < template.pages.length - 1) {
+      const newPages = [...template.pages];
+      [newPages[pageIndex], newPages[pageIndex + 1]] = [newPages[pageIndex + 1], newPages[pageIndex]];
+      setTemplate({...template, pages: newPages});
     }
   }
 
-  const activatePageTab = (pageId: number) => {
+  const activatePageTab = (pageId: string) => {
     setActivePage(pageId)
   }
 
   return (
     <div className="space-y-6">
-      {template.pages.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-10">
-          <FileText className="h-16 w-16 text-muted-foreground" />
-          <h3 className="mt-4 text-lg font-medium">No Pages Added Yet</h3>
-          <p className="mt-2 text-center text-muted-foreground">
-            Start building your template by adding your first page
-          </p>
-          <Button className="mt-4" onClick={addNewPage}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add First Page
-          </Button>
-        </div>
-      ) :
-        <div className="space-y-6">
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Page sidebar navigation */}
-            <div className="md:w-1/4">
-              <div className="space-y-2">
-                {template.pages.map((page) => (
-                  <div
-                    key={page.id}
-                    className={`flex items-center justify-between rounded-md border p-2 ${
-                      activePage === Number(page.id) ? "border-primary bg-primary/10" : ""
-                    }`}
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Page sidebar navigation */}
+          <div className="md:w-1/4">
+            <div className="space-y-2">
+              {template.pages.map((page) => (
+                <div
+                  key={page.id}
+                  className={`flex items-center justify-between rounded-md border p-2 ${
+                    activePage === page.id ? "border-primary bg-primary/10" : ""
+                  }`}
+                >
+                  <button
+                    className="flex items-center gap-2 w-full text-left"
+                    onClick={() => activatePageTab(page.id)}
                   >
-                    <button
-                      className="flex items-center gap-2 w-full text-left"
-                      //@ts-expect-error - page.id is not typed
-                      onClick={() => activatePageTab(page.id)}
+                    <GripVertical className="h-4 w-4 text-muted-foreground" />
+                    <span className="truncate">{page.title}</span>
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      disabled={page.ordinal === 1}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        movePageUp(page.id)
+                      }}
                     >
-                      <GripVertical className="h-4 w-4 text-muted-foreground" />
-                      <span className="truncate">{page.title}</span>
-                    </button>
-
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={page.ordinal === 1}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          //@ts-expect-error - page.id is not typed
-                          movePageUp(page.id)
-                        }}
-                      >
-                        <ChevronUp className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={page.ordinal === template.pages.length}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          //@ts-expect-error - page.id is not typed
-                          movePageDown(page.id)
-                        }}
-                      >
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          //@ts-expect-error - page.id is not typed
-                          handleDeletePage(page.id)
-                        }}
-                        aria-label="Delete Page"
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
+                      <ChevronUp className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      disabled={page.ordinal === template.pages.length}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        movePageDown(page.id)
+                      }}
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDeletePage(page.id)
+                      }}
+                      aria-label="Delete Page"
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Active page editor */}
-            <div className="flex-1">
-              {activePage ? (
-                <PageEditor
-                  //@ts-expect-error - activePage is not typed
-                  page={template.pages.find((p) => p.id === activePage)!}
-                  updatePage={updatePage}
-                  template={template}
-                  setTemplate={setTemplate}
-                />
-              ) : (
-                <Alert>
-                  <AlertDescription>
-                    No page selected. Please select a page from the sidebar or add a new page.
-                  </AlertDescription>
-                </Alert>
-              )}
+                </div>
+              ))}
             </div>
           </div>
+
+          {/* Active page editor */}
+          <div className="flex-1">
+            {activePage && template.pages.find((p) => p.id === activePage) ? (
+              <PageEditor
+                key={activePage} // Add key to force re-mount on page change
+                page={template.pages.find((p) => p.id === activePage)!}
+                updatePage={updatePage}
+                template={template}
+                setTemplate={setTemplate}
+                repaginate={repaginate}
+              />
+            ) : (
+              <Alert>
+                <AlertDescription>
+                  Loading page...
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
         </div>
-      }
+      </div>
     </div>
   )
 }
 
 interface PageEditorProps {
   page: Page
-  updatePage: (pageId: number, field: keyof Page, value: string) => void
+  updatePage: (pageId: string, field: keyof Page, value: string) => void
   template: AuditTemplate
   setTemplate: Dispatch<SetStateAction<AuditTemplate>>
+  repaginate: (sourcePageId: string, startSectionId: string) => void;
 }
 
-function PageEditor({ page, updatePage, template, setTemplate }: PageEditorProps) {
+function PageEditor({ page, updatePage, template, setTemplate, repaginate }: PageEditorProps) {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [isPageFull, setIsPageFull] = useState(false);
+
+  useLayoutEffect(() => {
+    const content = contentRef.current;
+    if (!content) return;
+
+    const { scrollHeight } = content;
+    const pageIsFull = scrollHeight > A4_PAGE_HEIGHT_PX;
+    setIsPageFull(pageIsFull);
+
+    if (pageIsFull) {
+      let cumulativeHeight = 0;
+      const sectionElements = Array.from(content.querySelectorAll('[data-section-id]'));
+      let overflowSectionId: string | null = null;
+
+      for (const el of sectionElements) {
+        cumulativeHeight += (el as HTMLElement).offsetHeight;
+        if (cumulativeHeight > A4_PAGE_HEIGHT_PX) {
+          overflowSectionId = el.getAttribute('data-section-id');
+          break;
+        }
+      }
+
+      if (overflowSectionId) {
+        repaginate(page.id, overflowSectionId);
+      }
+    }
+  }, [page.sections, page.id, repaginate]);
+
   return (
     <Card>
       <CardHeader>
@@ -230,7 +272,7 @@ function PageEditor({ page, updatePage, template, setTemplate }: PageEditorProps
             <Input
               id={`page-title-${page.id}`}
               value={page.title}
-              onChange={(e) => updatePage(Number(page.id), "title", e.target.value)}
+              onChange={(e) => updatePage(page.id, "title", e.target.value)}
             />
           </div>
           <div className="space-y-2">
@@ -238,14 +280,16 @@ function PageEditor({ page, updatePage, template, setTemplate }: PageEditorProps
             <Textarea
               id={`page-description-${page.id}`}
               value={page.description}
-              onChange={(e) => updatePage(Number(page.id), "description", e.target.value)}
+              onChange={(e) => updatePage(page.id, "description", e.target.value)}
               className="min-h-[100px]"
             />
           </div>
         </div>
 
         {/* Sections & Questions Manager */}
-          <SectionsManager template={template} setTemplate={setTemplate} page={page} />
+        <div ref={contentRef}>
+          <SectionsManager template={template} setTemplate={setTemplate} page={page} isPageFull={isPageFull}/>
+        </div>
       </CardContent>
     </Card>
   )

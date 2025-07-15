@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FieldMapper } from './fields/field-mapper'
 import { Button } from '@/components/ui/button'
-import { FileText, Save, LucideTrash2, PencilIcon } from 'lucide-react'
+import { FileText, Save } from 'lucide-react'
 import { Paperclip } from 'lucide-react'
 import { NoteDisplay } from '@/components/custom/note-with-attachments'
 import {
@@ -31,6 +31,7 @@ type CurrentInspectionProps = {
   setIsFileDialogOpen: (isOpen: boolean) => void
   fileAttachments: File[]
   setFileAttachments: (files: File[]) => void
+  setSelectedFile: (file: File | null) => void
 }
 export function CurrentInspection({
   currentInspection,
@@ -45,6 +46,7 @@ export function CurrentInspection({
   setIsFileDialogOpen,
   fileAttachments,
   setFileAttachments,
+  setSelectedFile,
 }: CurrentInspectionProps) {
   return (
     <Card className="border-none  shadow-none bg-transparent w-full">
@@ -121,6 +123,23 @@ export function CurrentInspection({
                                     size="sm"
                                     onClick={() => {
                                       setActiveQuestionId(question.id)
+
+                                      if (response?.file_attachments?.length) {
+                                        const attachment =
+                                          response.file_attachments[0]
+                                        const fileLikeObject = {
+                                          name: attachment.filename,
+                                          size: attachment.file_size,
+                                          type: attachment.mime_type,
+                                          file_path: attachment.file_path,
+                                          fileName: attachment.filename,
+                                        }
+                                        setSelectedFile(
+                                          (fileLikeObject as unknown) as File,
+                                        )
+                                      } else {
+                                        setSelectedFile(null)
+                                      }
                                       setIsFileDialogOpen(true)
                                     }}
                                     disabled={isAnswered}
@@ -186,51 +205,6 @@ export function CurrentInspection({
                                           }
                                         </span>
                                       </div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => {
-                                          setActiveQuestionId(question.id)
-                                          setIsFileDialogOpen(true)
-                                        }}
-                                        className="h-8 w-8 p-0"
-                                        aria-label="Edit file"
-                                        tabIndex={0}
-                                        onKeyDown={(e) => {
-                                          if (
-                                            e.key === 'Enter' ||
-                                            e.key === ' '
-                                          ) {
-                                            setActiveQuestionId(question.id)
-                                            setIsFileDialogOpen(true)
-                                          }
-                                        }}
-                                      >
-                                        <PencilIcon className="h-4 w-4" />
-                                      </Button>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => {
-                                          // Remove file logic: clear file_attachments for this response
-                                          handleResponse(question, '', [])
-                                        }}
-                                        className="h-8 w-8 p-0"
-                                        aria-label="Remove file"
-                                        tabIndex={0}
-                                        onKeyDown={(e) => {
-                                          if (
-                                            e.key === 'Enter' ||
-                                            e.key === ' '
-                                          ) {
-                                            handleResponse(question, '', [])
-                                          }
-                                        }}
-                                      >
-                                        <LucideTrash2 className="h-4 w-4 text-red-500" />
-                                      </Button>
                                     </div>
                                   </div>
                                 )}

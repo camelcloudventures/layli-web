@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   FileUploader,
   FileWithPreview,
@@ -16,6 +16,11 @@ import { attachInspectionFile } from '@/utils/common'
 import { toast } from 'sonner'
 import { Paperclip, LucideTrash2, PencilIcon } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
+
+interface ExtendedFile extends File {
+  file_path?: string
+  fileName?: string
+}
 
 interface FileMetaType {
   filename: string
@@ -45,6 +50,22 @@ export function FileAttachmentDialog({
   const [uploadedFileMeta, setUploadedFileMeta] = useState<FileMetaType | null>(
     null,
   )
+
+  // When dialog opens with an existing file, hide uploader and show file
+  useEffect(() => {
+    if (isFileDialogOpen && selectedFile) {
+      setShowUploader(false)
+      const extendedFile = selectedFile as ExtendedFile
+      if (extendedFile.file_path) {
+        setUploadedFileMeta({
+          filename: selectedFile.name,
+          file_path: extendedFile.file_path,
+          file_size: selectedFile.size,
+          mime_type: selectedFile.type,
+        })
+      }
+    }
+  }, [isFileDialogOpen, selectedFile])
 
   async function handleUpload(file: File) {
     try {
@@ -96,7 +117,10 @@ export function FileAttachmentDialog({
 
   function handleClose() {
     setIsFileDialogOpen(false)
-    setSelectedFile(null)
+    const extendedFile = selectedFile as ExtendedFile
+    if (!extendedFile?.file_path) {
+      setSelectedFile(null)
+    }
     setShowUploader(true)
     setUploadProgress(0)
     setIsUploading(false)
@@ -119,6 +143,8 @@ export function FileAttachmentDialog({
     ? (selectedFile as FileWithPreview)
     : undefined
 
+  console.log('setSelectedFile', selectedFile)
+
   return (
     <Dialog open={isFileDialogOpen} onOpenChange={handleClose}>
       <DialogContent className="">
@@ -134,13 +160,17 @@ export function FileAttachmentDialog({
               </div>
               <Progress value={uploadProgress} className="w-full" />
             </div>
-          ) : selectedFile && !showUploader ? (
+          ) : (uploadedFileMeta ||
+              (selectedFile && (selectedFile as ExtendedFile).file_path)) &&
+            !showUploader ? (
             <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <Paperclip className="h-4 w-4" />
                   <span className="text-sm font-medium truncate">
-                    {fileWithPreview?.fileName || fileWithPreview?.name}
+                    {uploadedFileMeta?.filename ||
+                      (selectedFile as ExtendedFile).fileName ||
+                      selectedFile?.name}
                   </span>
                 </div>
               </div>

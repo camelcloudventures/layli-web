@@ -13,16 +13,18 @@ interface SectionsManagerProps {
   template: AuditTemplate
   setTemplate: Dispatch<SetStateAction<AuditTemplate>>
   page: Page
+  isPageFull: boolean;
 }
 
-export function SectionsManager({ template, setTemplate, page }: SectionsManagerProps) {
+export function SectionsManager({ template, setTemplate, page, isPageFull }: SectionsManagerProps) {
   const [openSections, setOpenSections] = useState<string[]>([])
 
   const addNewSection = () => {
     const tempId = `temp-${Date.now()}`
+    const totalSections = template.pages.reduce((acc, p) => acc + p.sections.length, 0);
     const newSection: NewSection = {
       page_id: page.id,
-      title: `Section ${page.sections.length + 1}`,
+      title: `Section ${totalSections + 1}`,
       ordinal: page.sections.length + 1,
       questions: [],
     }
@@ -119,13 +121,7 @@ export function SectionsManager({ template, setTemplate, page }: SectionsManager
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">Sections</h3>
-        <Button onClick={addNewSection} variant="outline" size="sm">
-          <Plus className="mr-2 h-4 w-4" />
-          Add Section
-        </Button>
-      </div>
+      <h3 className="text-lg font-medium">Sections</h3>
 
       {page.sections.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-md border border-dashed py-8">
@@ -140,7 +136,7 @@ export function SectionsManager({ template, setTemplate, page }: SectionsManager
       ) : (
         <Accordion type="multiple" value={openSections} className="space-y-4">
           {page.sections.map((section) => (
-            <AccordionItem key={section.id} value={section.id} className="border rounded-md">
+            <AccordionItem key={section.id} value={section.id} className="border rounded-md" data-section-id={section.id}>
               <AccordionTrigger onClick={() => handleAccordionChange(section.id)} className="px-4 hover:no-underline">
                 <div className="flex items-center gap-2 text-left">
                   <GripVertical className="h-4 w-4 text-muted-foreground" />
@@ -199,12 +195,20 @@ export function SectionsManager({ template, setTemplate, page }: SectionsManager
                   </div>
 
                   {/* Questions Manager */}
-                  <QuestionsManager template={template} setTemplate={setTemplate} page={page} section={section} />
+                  <QuestionsManager template={template} setTemplate={setTemplate} page={page} section={section} isPageFull={isPageFull}/>
                 </div>
               </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
+      )}
+       {page.sections.length > 0 && (
+        <div className="flex justify-end mt-4">
+            <Button onClick={addNewSection} variant="outline" size="sm" disabled={isPageFull}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Section
+            </Button>
+        </div>
       )}
     </div>
   )

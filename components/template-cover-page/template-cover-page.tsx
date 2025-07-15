@@ -54,9 +54,9 @@ export const getPreloadedQuestions = (
     required: true,
     multiple_selection: false,
     is_flagged: false,
-    field_type: 'SELECT',
+    field_type: 'TEXT',
     ordinal: 1,
-    response_options: [createResponseOption('Site', 'SELECT', 1, false)],
+    response_options: [createResponseOption('Site', 'TEXT', 1, false)],
   },
   {
     id: uuidv4(),

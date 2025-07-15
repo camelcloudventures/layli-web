@@ -43,9 +43,6 @@ export function DoInspectionForm({ inspection }: Props) {
     fileAttachments,
     setFileAttachments,
   } = usePerformInspection(inspection)
-
-
-
   
 
   if (!currentInspection.pages || currentInspection.pages.length === 0) {
@@ -128,6 +125,7 @@ export function DoInspectionForm({ inspection }: Props) {
         setIsFileDialogOpen={setIsFileDialogOpen}
         fileAttachments={fileAttachments}
         setFileAttachments={setFileAttachments}
+        setSelectedFile={setSelectedFile}
         />
       <NoteAttachmentDialog
         isNoteDialogOpen={isNoteDialogOpen}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Inspection,
@@ -15,12 +15,22 @@ import {
   saveResponse,
 } from '../../../actions/actions'
 import { ResponseData } from '@/app/dashboard/inspections/types/types'
+import { getActiveUsers } from '@/app/dashboard/schedules/actions/actions'
+import { User } from '@/types/types'
 
 interface FileMetaType {
   filename: string
   file_path: string
   file_size: number
   mime_type: string
+}
+
+interface ExtendedFile {
+  questionId?: number
+  fileName?: string
+  file_path?: string
+  file_size?: number
+  mime_type?: string
 }
 
 export function usePerformInspection(inspection: Inspection) {
@@ -39,8 +49,43 @@ export function usePerformInspection(inspection: Inspection) {
     Record<number, ResponseData>
   >({})
   const [savingFields, setSavingFields] = useState<Record<number, boolean>>({})
+  const [users, setUsers] = useState<User[]>([])
+  const [fileAttachments, setFileAttachments] = useState<ExtendedFile[]>([])
 
-  const [fileAttachments, setFileAttachments] = useState<File[]>([])
+  // Fetch active users on component mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        console.log('Fetching active users...')
+        const usersData = await getActiveUsers()
+        console.log('getActiveUsers response:', usersData)
+
+        if (usersData && Array.isArray(usersData)) {
+          console.log('Setting users:', usersData)
+          setUsers(usersData)
+        } else {
+          console.log('usersData is not an array:', usersData)
+          // Check if it's wrapped in a data property
+          if (
+            usersData &&
+            typeof usersData === 'object' &&
+            'data' in usersData
+          ) {
+            const data = (usersData as { data: unknown }).data
+            if (Array.isArray(data)) {
+              console.log('Setting users from data property:', data)
+              setUsers(data)
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching users:', error)
+        toast.error('Failed to load users')
+      }
+    }
+    fetchUsers()
+  }, [])
+
   // Handle individual field save
   const handleFieldSave = async (questionId: number) => {
     if (!unsavedChanges[questionId]) return
@@ -474,5 +519,7 @@ export function usePerformInspection(inspection: Inspection) {
     handlePauseInspection,
     fileAttachments,
     setFileAttachments,
+    users,
+    setUsers,
   }
 }

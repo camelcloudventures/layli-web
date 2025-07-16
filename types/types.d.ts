@@ -41,3 +41,22 @@ export type OrgContext = {
   orgMemberships: OrgMembership[]
   activeOrganization: Org | null
 }
+
+export interface User {
+  id: string
+  email: string
+  role: string
+  created_at: string
+  invited_by: string
+  organization_id: string
+  token: string
+  used: boolean
+  user: {
+    id: string
+    full_name: string
+    email: string
+    role: string
+    created_at: string
+    user_id: string
+  }
+}

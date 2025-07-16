@@ -12,6 +12,7 @@ import {
   LocationResponse,
   Response,
   Question,
+  User,
 } from '@/lib/types/inspection-types'
 
 type CurrentInspectionProps = {
@@ -29,9 +30,24 @@ type CurrentInspectionProps = {
   setNote: (note: string) => void
   setIsNoteDialogOpen: (isOpen: boolean) => void
   setIsFileDialogOpen: (isOpen: boolean) => void
-  fileAttachments: File[]
-  setFileAttachments: (files: File[]) => void
+  fileAttachments: {
+    questionId?: number
+    fileName?: string
+    file_path?: string
+    file_size?: number
+    mime_type?: string
+  }[]
+  setFileAttachments: (
+    files: {
+      questionId?: number
+      fileName?: string
+      file_path?: string
+      file_size?: number
+      mime_type?: string
+    }[],
+  ) => void
   setSelectedFile: (file: File | null) => void
+  users: User[]
 }
 export function CurrentInspection({
   currentInspection,
@@ -47,6 +63,7 @@ export function CurrentInspection({
   fileAttachments,
   setFileAttachments,
   setSelectedFile,
+  users,
 }: CurrentInspectionProps) {
   return (
     <Card className="border-none  shadow-none bg-transparent w-full">
@@ -98,6 +115,7 @@ export function CurrentInspection({
                                 setFileAttachments={setFileAttachments}
                                 hasUnsavedChanges={hasUnsavedChange}
                                 isDisabled={isAnswered}
+                                users={users}
                               />
                               <div className="flex flex-wrap gap-2 w-full justify-between items-center">
                                 <div className="flex items-center gap-2">

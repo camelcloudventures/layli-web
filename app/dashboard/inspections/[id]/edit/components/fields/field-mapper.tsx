@@ -16,6 +16,7 @@ import type {
   Response,
   LocationResponse,
 } from '@/lib/types/inspection-types'
+import { User } from '@/types/types'
 
 interface ExtendedFile {
   questionId?: number
@@ -36,6 +37,7 @@ interface FieldMapperProps {
   isDisabled?: boolean
   fileAttachments: ExtendedFile[]
   setFileAttachments: (files: ExtendedFile[]) => void
+  users?: User[]
 }
 
 export function FieldMapper({
@@ -46,6 +48,7 @@ export function FieldMapper({
   isDisabled,
   fileAttachments,
   setFileAttachments,
+  users = [],
 }: FieldMapperProps) {
   const handleNumberResponse = (value: number) => {
     onResponse(value.toString())
@@ -53,6 +56,11 @@ export function FieldMapper({
 
   const handleSelectResponse = (value: string | string[]) => {
     // Pass the array directly to onResponse for SELECT fields
+    onResponse(value)
+  }
+
+  const handlePersonResponse = (value: string | string[]) => {
+    // Pass the array directly to onResponse for PERSON fields
     onResponse(value)
   }
 
@@ -108,8 +116,9 @@ export function FieldMapper({
           <PersonField
             question={question}
             response={response}
-            onResponse={onResponse}
+            onResponse={handlePersonResponse}
             isDisabled={isDisabled}
+            users={users}
           />
         )
       case 'SELECT':

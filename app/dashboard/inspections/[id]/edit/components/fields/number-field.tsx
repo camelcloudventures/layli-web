@@ -1,9 +1,11 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { Question, Response } from '@/lib/types/inspection-types'
-import { useState, useEffect } from 'react'
+import { Minus, Plus } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 interface NumberFieldProps {
   question: Question
@@ -39,18 +41,57 @@ export function NumberField({
     setInputValue(response?.response_value?.toString() || '')
   }, [response?.response_value])
 
+  const handleIncrement = () => {
+    const currentValue = Number.parseFloat(inputValue) || 0
+    const newValue = currentValue + 1
+    setInputValue(newValue.toString())
+    onResponse(newValue)
+  }
+
+  const handleDecrement = () => {
+    const currentValue = Number.parseFloat(inputValue) || 0
+    const newValue = currentValue - 1
+    setInputValue(newValue.toString())
+    onResponse(newValue)
+  }
+
   return (
-    <div className="space-y-2">
-      <Label htmlFor={question.id.toString()}>{question.text}</Label>
-      <Input
-        id={question.id.toString()}
-        type="number"
-        value={inputValue}
-        onChange={handleInputChange}
-        onBlur={handleInputBlur}
-        placeholder="Enter a number"
-        disabled={isDisabled}
-      />
+    <div className="space-y-2 w-44">
+      <Label>{question.text}</Label>
+      <div className="flex items-center border rounded-md bg-background">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-10 w-10 p-0 border-0 hover:bg-muted rounded-r-none"
+          onClick={handleDecrement}
+          disabled={isDisabled}
+          tabIndex={-1}
+        >
+          <Minus className="h-4 w-4" />
+        </Button>
+        <Input
+          id={question.id.toString()}
+          type="number"
+          value={inputValue}
+          onChange={handleInputChange}
+          onBlur={handleInputBlur}
+          placeholder="0"
+          disabled={isDisabled}
+          className="border-0 text-center focus-visible:ring-0 focus-visible:ring-offset-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none rounded-none"
+        />
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-10 w-10 p-0 border-0 hover:bg-muted rounded-l-none"
+          onClick={handleIncrement}
+          disabled={isDisabled}
+          tabIndex={-1}
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   )
 }

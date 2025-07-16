@@ -109,7 +109,11 @@ export function usePerformInspection(inspection: Inspection) {
 
   // Handle response changes
   const handleResponse = useCallback(
-    (question: Question, value: string | LocationResponse, files?: File[]) => {
+    (
+      question: Question,
+      value: string | string[] | LocationResponse,
+      files?: File[],
+    ) => {
       let responseData: ResponseData
 
       if (
@@ -125,8 +129,19 @@ export function usePerformInspection(inspection: Inspection) {
           selected_options: value.selected_options || [],
           location_data: value.location_data,
         }
+      } else if (Array.isArray(value)) {
+        // This is an array from SELECT/MULTI_SELECT fields
+        const selectedOptionIds = value
+          .map((v) => parseInt(v))
+          .filter((id) => !isNaN(id))
+        responseData = {
+          question_id: question.id,
+          value: '', // Empty for select fields
+          response_value: '', // Empty for select fields
+          selected_options: selectedOptionIds,
+        }
       } else if (typeof value === 'string') {
-        // This is a string value from another field type
+        // This is a string value from other field types
         responseData = {
           question_id: question.id,
           value: value,

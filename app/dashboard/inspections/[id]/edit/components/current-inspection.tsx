@@ -21,7 +21,7 @@ type CurrentInspectionProps = {
   savingFields: Record<number, boolean>
   handleResponse: (
     question: Question,
-    value: string | LocationResponse,
+    value: string | string[] | LocationResponse,
     files?: File[],
   ) => void
   handleFieldSave: (questionId: number) => Promise<void>
@@ -79,6 +79,9 @@ export function CurrentInspection({
                       const hasUnsavedChange =
                         unsavedChanges[question.id] !== undefined
                       const isSaving = savingFields[question.id]
+
+                      // Only disable fields after they've been saved (have a response ID)
+                      // For all field types, check if there's a response ID
                       const isAnswered = !!response?.id
 
                       return (
@@ -89,11 +92,7 @@ export function CurrentInspection({
                                 question={question}
                                 response={response}
                                 onResponse={(value, files) =>
-                                  handleResponse(
-                                    question,
-                                    value as string | LocationResponse,
-                                    files,
-                                  )
+                                  handleResponse(question, value, files)
                                 }
                                 fileAttachments={fileAttachments}
                                 setFileAttachments={setFileAttachments}

@@ -17,14 +17,25 @@ import type {
   LocationResponse,
 } from '@/lib/types/inspection-types'
 
+interface ExtendedFile {
+  questionId?: number
+  fileName?: string
+  file_path?: string
+  file_size?: number
+  mime_type?: string
+}
+
 interface FieldMapperProps {
   question: Question
   response?: Response
-  onResponse: (value: string | LocationResponse, files?: File[]) => void
+  onResponse: (
+    value: string | string[] | LocationResponse,
+    files?: File[],
+  ) => void
   hasUnsavedChanges?: boolean
   isDisabled?: boolean
-  fileAttachments: File[]
-  setFileAttachments: (files: File[]) => void
+  fileAttachments: ExtendedFile[]
+  setFileAttachments: (files: ExtendedFile[]) => void
 }
 
 export function FieldMapper({
@@ -41,11 +52,8 @@ export function FieldMapper({
   }
 
   const handleSelectResponse = (value: string | string[]) => {
-    if (Array.isArray(value)) {
-      onResponse(value.join(','))
-    } else {
-      onResponse(value)
-    }
+    // Pass the array directly to onResponse for SELECT fields
+    onResponse(value)
   }
 
   const renderField = () => {
@@ -111,6 +119,7 @@ export function FieldMapper({
             question={question}
             response={response}
             onResponse={handleSelectResponse}
+            isDisabled={isDisabled}
           />
         )
       case 'SIGNATURE':
@@ -136,7 +145,6 @@ export function FieldMapper({
         return (
           <FileField
             question={question}
-            response={response}
             onResponse={onResponse}
             isDisabled={isDisabled}
             fileAttachments={fileAttachments}

@@ -47,6 +47,7 @@ export interface Location {
 }
 
 export interface ResponseOption {
+  id: number
   label: string
   code: string
   sort_order: number

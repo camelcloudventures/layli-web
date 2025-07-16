@@ -2,7 +2,7 @@
 
 import { Label } from '@/components/ui/label'
 import { FileUploader } from '@/components/custom/file-uploader'
-import type { Question, LocationResponse } from '@/lib/types/inspection-types'
+import type { Question } from '@/lib/types/inspection-types'
 import { toast } from 'sonner'
 import { attachInspectionFile, deleteInspectionFile } from '@/utils/common'
 import { Button } from '@/components/ui/button'
@@ -10,15 +10,7 @@ import { LucideTrash2, Paperclip, PencilIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Progress } from '@/components/ui/progress'
 
-interface FileMetadata {
-  fileName: string
-  file_path: string
-  file_size: number
-  mime_type: string
-  questionId: number
-}
-
-interface ExtendedFile extends File {
+interface ExtendedFile {
   questionId?: number
   fileName?: string
   file_path?: string
@@ -28,7 +20,7 @@ interface ExtendedFile extends File {
 
 interface FileFieldProps {
   question: Question
-  onResponse: (value: string, files?: FileMetadata[]) => void
+  onResponse: (value: string, files?: File[]) => void
   isDisabled?: boolean
   fileAttachments: ExtendedFile[]
   setFileAttachments: (files: ExtendedFile[]) => void
@@ -80,7 +72,9 @@ export function FileField({
           fileWithQuestion,
         ])
 
-        onResponse(result.fileData.file_path, [result.fileData as FileMetadata])
+        onResponse(result.fileData.file_path, [
+          (result.fileData as unknown) as File,
+        ])
         toast.success('File uploaded successfully')
         setShowUploader(false)
       } else if (result.error) {

@@ -1,41 +1,46 @@
 'use client'
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { Check } from 'lucide-react'
+import { useState } from 'react'
 import type { Question, Response } from '@/lib/types/inspection-types'
+import { getTextColor } from '../../utils/utils'
 
 interface SelectFieldProps {
   question: Question
   response?: Response
   onResponse: (value: string | string[]) => void
+  isDisabled?: boolean
 }
 
 export function SelectField({
   question,
   response,
   onResponse,
+  isDisabled,
 }: SelectFieldProps) {
-  const selectedOptions = response?.selected_options || []
-  const isMultiple = question.multiple_selection
+  // Local state to track selected options for immediate UI updates
+  const [localSelectedOptions, setLocalSelectedOptions] = useState<number[]>(
+    response?.selected_options || [],
+  )
+  const isMultiple = question.field_type === 'MULTI_SELECT'
 
   const handleSelect = (value: string) => {
-    if (isMultiple) {
-      const optionId = parseInt(value)
-      const newSelected = selectedOptions.includes(optionId)
-        ? selectedOptions.filter((id) => id !== optionId)
-        : [...selectedOptions, optionId]
+    if (isDisabled) return // Don't allow selection if disabled
 
+    const optionId = parseInt(value)
+
+    if (isMultiple) {
+      const newSelected = localSelectedOptions.includes(optionId)
+        ? localSelectedOptions.filter((id) => id !== optionId)
+        : [...localSelectedOptions, optionId]
+
+      setLocalSelectedOptions(newSelected)
       onResponse(newSelected.map(String))
     } else {
-      onResponse(value)
+      // For single select, replace the selection
+      const newSelected = [optionId]
+      setLocalSelectedOptions(newSelected)
+      onResponse(newSelected.map(String))
     }
   }
 
@@ -46,74 +51,79 @@ export function SelectField({
           {question.text}
           {question.required && <span className="text-red-500 ml-1">*</span>}
         </Label>
-        <div className="space-y-2">
-          {question.response_options.map((option) => (
-            <div
-              // @ts-expect-error - option.id is not typed
-              key={option.id}
-              className={`
-                flex items-center justify-between p-2 rounded-md cursor-pointer
-                ${
-                  // @ts-expect-error - option.id is not typed
-                  selectedOptions.includes(option.id)
-                    ? 'bg-primary/10 border border-primary/20'
-                    : 'bg-muted/50 border border-muted hover:bg-muted'
-                }
-              `}
-              // @ts-expect-error - option.id is not typed
-              onClick={() => handleSelect(option.id.toString())}
-            >
-              <span className="flex items-center space-x-2">
-                <Badge
-                  variant="outline"
-                  className={option.color ? `border-${option.color}-500` : ''}
-                >
-                  {option.code}
-                </Badge>
-                <span>{option.label}</span>
-              </span>
-              {/* @ts-expect-error - option.id is not typed */}
-              {selectedOptions.includes(option.id ?? 0) && (
-                <Check className="h-4 w-4 text-primary" />
-              )}
-            </div>
-          ))}
+        <div className="flex flex-wrap gap-2">
+          {question.response_options.map((option) => {
+            const isSelected = localSelectedOptions.includes(option.id)
+
+            return (
+              <button
+                key={option.id}
+                type="button"
+                disabled={isDisabled}
+                className={`
+                  px-4 py-2 rounded-md border transition-all duration-200 font-medium
+                  ${
+                    isDisabled
+                      ? 'opacity-50 cursor-not-allowed'
+                      : isSelected
+                      ? 'border-transparent'
+                      : 'text-black border-gray-300 bg-white hover:bg-gray-50'
+                  }
+                `}
+                style={{
+                  backgroundColor: isSelected ? option.color : undefined,
+                  borderColor: isSelected ? option.color : undefined,
+                  color: isSelected ? getTextColor(option.color) : undefined,
+                }}
+                onClick={() => handleSelect(option.id.toString())}
+              >
+                {option.label}
+              </button>
+            )
+          })}
         </div>
       </div>
     )
   }
 
+  // Single select - display as horizontal buttons
   return (
     <div className="space-y-2">
-      <Label htmlFor={`question-${question.id}`}>
+      <Label>
         {question.text}
         {question.required && <span className="text-red-500 ml-1">*</span>}
       </Label>
-      <Select
-        name="response_value"
-        value={response?.response_value || ''}
-        onValueChange={handleSelect}
-      >
-        <SelectTrigger id={`question-${question.id}`}>
-          <SelectValue placeholder="Select an option" />
-        </SelectTrigger>
-        <SelectContent>
-          {question.response_options.map((option) => (
-            // @ts-expect-error - option.id is not typed
-            <SelectItem key={option.id} value={option.id.toString()}>
-              <div className="flex items-center space-x-2">
-                <Badge
-                  variant="outline"
-                  className={option.color ? `border-${option.color}-500` : ''}
-                >
-                  {option.code}
-                </Badge>
-                <span>{option.label}</span>
-              </div>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="flex flex-wrap gap-2">
+        {question.response_options.map((option) => {
+          const isSelected = localSelectedOptions.includes(option.id)
+
+          return (
+            <button
+              key={option.id}
+              type="button"
+              disabled={isDisabled}
+              className={`
+                px-4 py-2 rounded-md border transition-all duration-200 font-medium
+                ${
+                  isDisabled
+                    ? 'opacity-50 cursor-not-allowed'
+                    : isSelected
+                    ? 'border-transparent'
+                    : 'text-black border-gray-300 bg-white hover:bg-gray-50'
+                }
+              `}
+              style={{
+                backgroundColor: isSelected ? option.color : undefined,
+                borderColor: isSelected ? option.color : undefined,
+                color: isSelected ? getTextColor(option.color) : undefined,
+              }}
+              onClick={() => handleSelect(option.id.toString())}
+            >
+              {option.label}
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }

@@ -29,28 +29,28 @@ export function BooleanField({
           type="button"
           variant="outline"
           className={cn(
-            'flex-1 gap-2',
+            'flex-1 hover:bg-[#D3EFDD] hover:text-[#399D57] ',
             selectedValue === 'true' &&
-              'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
+              'bg-[#D3EFDD] text-[#399D57]  font-bold',
           )}
           onClick={() => onResponse('true')}
           disabled={isDisabled}
         >
-          <Check className="h-4 w-4" />
+          <Check className="h-4 w-4 " />
           Yes
         </Button>
         <Button
           type="button"
           variant="outline"
           className={cn(
-            'flex-1 gap-2',
+            'flex-1 hover:bg-[#EFD2D3] hover:text-[#B55A61] ',
             selectedValue === 'false' &&
-              'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
+              'bg-[#EFD2D3] text-[#B55A61] font-bold',
           )}
           onClick={() => onResponse('false')}
           disabled={isDisabled}
         >
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4 " />
           No
         </Button>
       </div>

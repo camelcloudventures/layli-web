@@ -12,8 +12,8 @@ import {
   LocationResponse,
   Response,
   Question,
-  User,
 } from '@/lib/types/inspection-types'
+import type { User } from '@/types/types'
 
 type CurrentInspectionProps = {
   currentInspection: Inspection

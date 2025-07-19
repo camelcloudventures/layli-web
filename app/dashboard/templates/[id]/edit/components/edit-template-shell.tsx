@@ -14,10 +14,10 @@ import { TemplatePreview } from '@/app/dashboard/templates/components/template-p
 import { useTemplate } from '../hooks/useTemplate'
 import { TemplateDetails } from './template-details'
 import { TemplateHeader } from './template-header'
-import { Template } from '@/types/audit-types'
+import { AuditTemplate } from '@/lib/types/audit-types'
 
 interface EditTemplateShellProps {
-  template: Template
+  template: AuditTemplate
 }
 
 export default function EditTemplateShell({
@@ -73,7 +73,6 @@ export default function EditTemplateShell({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {/* @ts-expect-error - template is not typed */}
               <PagesManager template={template} setTemplate={setTemplate} />
             </CardContent>
           </Card>
@@ -87,7 +86,6 @@ export default function EditTemplateShell({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {/* @ts-expect-error - template is not typed */}
               <TemplatePreview template={template} />
             </CardContent>
           </Card>

@@ -4,6 +4,7 @@ import { DELETE, GET, POST, UPDATE } from '@/app/backend/apiMethods'
 import type { SchedulesResponse, Schedule } from '@/lib/types/schedule-types'
 import { revalidateTag } from 'next/cache'
 import { createClient } from '@supabase/supabase-js'
+import { ActiveUser } from '@/types/types'
 
 export async function getSchedules(
   page: number,
@@ -40,7 +41,7 @@ export async function createSchedule(formData: FormData) {
   return res
 }
 
-export async function getActiveUsers() {
+export async function getActiveUsers(): Promise<ActiveUser | null> {
   return await GET(`/invites/organization/active-users`, ['users'])
 }
 

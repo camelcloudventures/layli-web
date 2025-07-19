@@ -1,94 +1,68 @@
 "use client"
 
-import { useSortable } from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
-import { format } from "date-fns"
-import { Calendar, GripVertical } from "lucide-react"
-
-import { cn } from "@/lib/utils"
+import { type Action, ActionPriority } from "@/lib/types"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import type { Action } from "@/lib/types/action-types"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { mockUsers } from "@/lib/data/mock-actions"
+import { format } from "date-fns"
+import { Calendar, Hash } from "lucide-react"
 
 interface ActionCardProps {
   action: Action
-  onClick: (action: Action) => void
+  onClick: () => void
   isDraggable?: boolean
 }
 
+const getPriorityBadgeVariant = (priority: ActionPriority) => {
+  switch (priority) {
+    case ActionPriority.HIGH:
+      return "destructive"
+    case ActionPriority.MEDIUM:
+      return "secondary"
+    case ActionPriority.LOW:
+      return "outline"
+    default:
+      return "secondary"
+  }
+}
+
 export function ActionCard({ action, onClick, isDraggable = true }: ActionCardProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: action.id,
-    disabled: !isDraggable,
-  })
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  }
-
-  const assignee = mockUsers.find((user) => user.id === action.assignee_id)
-
-  const priorityColors = {
-    low: "bg-green-100 text-green-800",
-    medium: "bg-yellow-100 text-yellow-800",
-    high: "bg-red-100 text-red-800",
-  }
-
   return (
     <Card
-      ref={setNodeRef}
-      style={style}
-      className={cn(
-        "cursor-pointer hover:border-primary/50 transition-colors",
-        isDragging ? "opacity-50 border-primary" : "opacity-100",
-      )}
-      onClick={() => onClick(action)}
+      className={`cursor-pointer transition-all hover:shadow-md ${isDraggable ? "hover:scale-[1.02]" : ""}`}
+      onClick={onClick}
     >
-      <CardContent className="p-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              {isDraggable && (
-                <button
-                  {...attributes}
-                  {...listeners}
-                  className="touch-none p-1 rounded hover:bg-muted cursor-grab active:cursor-grabbing"
-                  aria-label="Drag to reorder"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <GripVertical className="h-4 w-4 text-muted-foreground" />
-                </button>
-              )}
-              <span className="text-xs text-muted-foreground">{action.code}</span>
-              <Badge variant="outline" className={priorityColors[action.priority]}>
-                {action.priority}
-              </Badge>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Hash className="h-3 w-3" />
+            <span className="font-medium">{action.code}</span>
+          </div>
+          <Badge variant={getPriorityBadgeVariant(action.priority)} className="text-xs">
+            {action.priority}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="space-y-3">
+          <div>
+            <h3 className="font-semibold text-sm leading-tight">{action.title}</h3>
+            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{action.description}</p>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Calendar className="h-3 w-3" />
+              <span>{format(new Date(action.due_at), "MMM d, yyyy")}</span>
             </div>
-            <h3 className="font-medium text-sm">{action.title}</h3>
-            <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{action.description}</p>
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
+              {action.assignees[0]?.full_name
+                .split(" ")
+                .map((n) => n[0])
+                .join("") || "N/A"}
+            </div>
           </div>
         </div>
       </CardContent>
-      <CardFooter className="p-3 pt-0 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Calendar className="h-3 w-3" />
-          {format(new Date(action.due_at), "MMM d, yyyy")}
-        </div>
-        {assignee && (
-          <Avatar className="h-6 w-6">
-            <AvatarImage src={assignee.avatar || "/placeholder.svg"} alt={assignee.name} />
-            <AvatarFallback className="text-xs">
-              {assignee.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")}
-            </AvatarFallback>
-          </Avatar>
-        )}
-      </CardFooter>
     </Card>
   )
 }

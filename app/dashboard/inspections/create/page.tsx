@@ -16,7 +16,6 @@ export default async function CreateInspectionPage() {
     <div className="container mx-auto py-6">
       <CreateInspectionForm
         sites={sites}
-        //@ts-expect-error - users is not typed
         users={users?.data || []}
         templates={templates?.data || []}
       />

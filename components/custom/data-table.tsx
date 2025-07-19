@@ -18,17 +18,20 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useState } from 'react'
+import { cn } from '@/lib/utils'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
   className?: string
+  border?: boolean
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   className,
+  border,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
 
@@ -44,7 +47,7 @@ export function DataTable<TData, TValue>({
   })
 
   return (
-    <div className={className}>
+    <div className={cn(className, border && 'rounded-md border')}>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -70,6 +73,7 @@ export function DataTable<TData, TValue>({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && 'selected'}
+                className={cn({ border: border })}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>

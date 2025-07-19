@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/server'
 import { GET, POST } from '@/app/backend/apiMethods'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { User } from '@/lib/types'
 
 export async function signUp(formData: FormData) {
   const supabase = await createClient()
@@ -230,6 +231,10 @@ export async function acceptInvite(
     //@ts-expect-error - error is not typed
     return { error: error.message }
   }
+}
+
+export async function getUsers(): Promise<{ data: User[] } | null> {
+  return await GET('/users', ['users'])
 }
 
 interface OrgResponse {

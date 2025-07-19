@@ -22,7 +22,6 @@ export default async function SchedulesPage() {
     <main className="w-full py-8 px-4">
       <SchedulesList
         schedules={schedules}
-        // @ts-expect-error - users is an array of objects
         users={users?.data || []}
         // @ts-expect-error - templates is an array of objects
         templates={templates?.data || []}

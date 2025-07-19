@@ -10,11 +10,11 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 import { mockActions } from '@/lib/data/mock-actions'
-import type { Action, ActionStatus } from '@/lib/types/action-types'
-import { ActionBoard } from './components/action-board'
-import { ActionList } from './components/action-list'
-import { ActionDialog } from './components/action-dialog'
+
+
 import { ActionCard } from './components/action-card'
+import { Action, ActionStatus } from "@/lib/types"
+import { ActionBoard } from "./components/action-board"
 
 export default function ActionsClient() {
   const [viewMode, setViewMode] = useState<'board' | 'list'>('board')
@@ -187,7 +187,7 @@ export default function ActionsClient() {
               >
                 <ActionBoard
                   actions={actions}
-                  onEditAction={handleEditAction}
+                  onEdit={handleEditAction}
                 />
                 <DragOverlay>
                   {activeAction ? (

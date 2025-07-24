@@ -37,16 +37,44 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Redirect authenticated users away from auth pages, except reset-password and reset-email
+  if (
+    user &&
+    request.nextUrl.pathname.startsWith('/auth') &&
+    !request.nextUrl.pathname.startsWith('/auth/reset-password') &&
+    !request.nextUrl.pathname.startsWith('/auth/reset-email')
+  ) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return NextResponse.redirect(url)
+  }
+
+  // Allow unauthenticated access to reset-password, reset-email, and api/auth/callback
+  if (
+    !user &&
+    (
+      request.nextUrl.pathname.startsWith('/auth/reset-password') ||
+      request.nextUrl.pathname.startsWith('/auth/reset-email') ||
+      request.nextUrl.pathname.startsWith('/api/auth/callback')
+    )
+  ) {
+    return supabaseResponse
+  }
+
   if (
     !user &&
     !request.nextUrl.pathname.startsWith('/login') &&
     !request.nextUrl.pathname.startsWith('/auth')
+    
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    url.pathname = '/auth/login'
     return NextResponse.redirect(url)
   }
+
+
+ 
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
   // If you're creating a new response object with NextResponse.next() make sure to:

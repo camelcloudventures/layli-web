@@ -1,42 +1,19 @@
-import React from 'react'
-import SignUpForm from './components/sign-up-form'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import Link from 'next/link'
+import MultiStepForm from './components/multi-step-form'
 
-export default function page() {
+export default function SignUpPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">
+    <div className="container flex h-screen w-screen flex-col items-center justify-center">
+      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+        <div className="flex flex-col space-y-2 text-center">
+          <h1 className="text-2xl font-semibold tracking-tight">
             Create an account
-          </CardTitle>
-          <CardDescription>
-            Enter your information to create an account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <SignUpForm />
-        </CardContent>
-        <CardFooter className="flex justify-center">
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Already have an account?{' '}
-            <Link
-              href="/auth/login"
-              className="font-medium text-primary hover:underline"
-            >
-              Sign in
-            </Link>
+            Enter your details below to create your account
           </p>
-        </CardFooter>
-      </Card>
+        </div>
+        <MultiStepForm />
+      </div>
     </div>
   )
 }

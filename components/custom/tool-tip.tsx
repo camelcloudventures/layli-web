@@ -1,35 +1,25 @@
-"use client"
+'use client'
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from 'react'
 
-type TooltipPosition = "right" | "top" | "left" | "bottom"
+type TooltipPosition = 'right' | 'top' | 'left' | 'bottom'
 
 interface TooltipProps {
   text: string
   position?: TooltipPosition
 }
 
-export default function Tooltip({ text, position = "right" }: TooltipProps) {
+export default function Tooltip({ text, position = 'right' }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [isMobileView, setIsMobileView] = useState(false)
-  const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>(position)
+  const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>(
+    position,
+  )
   const tooltipRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobileView(window.innerWidth <= 768)
-      checkPosition()
-    }
-    
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-  const checkPosition = () => {
+  const checkPosition = useCallback(() => {
     if (isMobileView || !containerRef.current) return
 
     const containerRect = containerRef.current.getBoundingClientRect()
@@ -41,14 +31,27 @@ export default function Tooltip({ text, position = "right" }: TooltipProps) {
     const spaceOnLeft = containerRect.left
 
     // Determine the best position based on available space
-    if (position === 'right' && spaceOnRight < tooltipWidth + 40) { // 40px buffer
+    if (position === 'right' && spaceOnRight < tooltipWidth + 40) {
+      // 40px buffer
       setTooltipPosition('left')
     } else if (position === 'left' && spaceOnLeft < tooltipWidth + 40) {
       setTooltipPosition('right')
     } else {
       setTooltipPosition(position)
     }
-  }
+  }, [isMobileView, position])
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileView(window.innerWidth <= 768)
+      checkPosition()
+    }
+
+    handleResize()
+    window.addEventListener('resize', handleResize)
+
+    return () => window.removeEventListener('resize', handleResize)
+  }, [checkPosition])
 
   useEffect(() => {
     if (!isVisible || isMobileView) return
@@ -59,39 +62,42 @@ export default function Tooltip({ text, position = "right" }: TooltipProps) {
 
     document.addEventListener('mousemove', handleMouseMove)
     return () => document.removeEventListener('mousemove', handleMouseMove)
-  }, [isVisible, isMobileView, position])
+  }, [isVisible, isMobileView, position, checkPosition])
 
   useEffect(() => {
     if (!isMobileView) return
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (tooltipRef.current && !tooltipRef.current.contains(event.target as Node)) {
+      if (
+        tooltipRef.current &&
+        !tooltipRef.current.contains(event.target as Node)
+      ) {
         setIsVisible(false)
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener('mousedown', handleClickOutside)
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
+      document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [isMobileView])
+  }, [isMobileView, checkPosition])
 
   const getPositionClasses = (pos: TooltipPosition): string => {
     if (isMobileView) {
-      return ""
+      return ''
     }
-    
+
     switch (pos) {
-      case "right":
-        return "left-6 top-1/2 -translate-y-1/2"
-      case "left":
-        return "right-6 top-1/2 -translate-y-1/2"
-      case "top":
-        return "bottom-6 left-1/2 -translate-x-1/2"
-      case "bottom":
-        return "top-6 left-1/2 -translate-x-1/2"
+      case 'right':
+        return 'left-6 top-1/2 -translate-y-1/2'
+      case 'left':
+        return 'right-6 top-1/2 -translate-y-1/2'
+      case 'top':
+        return 'bottom-6 left-1/2 -translate-x-1/2'
+      case 'bottom':
+        return 'top-6 left-1/2 -translate-x-1/2'
       default:
-        return "left-6 top-1/2 -translate-y-1/2"
+        return 'left-6 top-1/2 -translate-y-1/2'
     }
   }
 
@@ -110,7 +116,10 @@ export default function Tooltip({ text, position = "right" }: TooltipProps) {
   }
 
   return (
-    <div className="relative inline-flex items-center h-full" ref={containerRef}>
+    <div
+      className="relative inline-flex items-center h-full"
+      ref={containerRef}
+    >
       <span
         className="inline-flex items-center text-muted-foreground cursor-help"
         onClick={handleInteraction}
@@ -132,18 +141,19 @@ export default function Tooltip({ text, position = "right" }: TooltipProps) {
       {isVisible && (
         <>
           {isMobileView && (
-            <div 
-              className="fixed inset-0 bg-black/50 z-40" 
+            <div
+              className="fixed inset-0 bg-black/50 z-40"
               onClick={() => setIsVisible(false)}
             />
           )}
-          
+
           <div
             ref={contentRef}
             className={`
-              ${isMobileView
-                ? "fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm z-50 bg-white dark:bg-gray-800"
-                : "absolute bg-gray-200 dark:bg-gray-600 min-w-[300px] md:min-w-[400px] lg:min-w-[420px]"
+              ${
+                isMobileView
+                  ? 'fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm z-50 bg-white dark:bg-gray-800'
+                  : 'absolute bg-gray-200 dark:bg-gray-600 min-w-[300px] md:min-w-[400px] lg:min-w-[420px]'
               }
               m-1 px-4 py-3 text-sm font-normal text-gray-700 dark:text-gray-100 
               border border-gray-300 dark:border-gray-500 rounded-lg shadow-lg
@@ -154,14 +164,22 @@ export default function Tooltip({ text, position = "right" }: TooltipProps) {
             {isMobileView ? (
               <div className="flex justify-between items-start gap-4">
                 <div className="flex-1">{text}</div>
-                <div 
+                <div
                   onClick={() => setIsVisible(false)}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => e.key === 'Enter' && setIsVisible(false)}
                   className="flex-shrink-0 p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer"
                 >
-                  <svg className="w-5 h-5" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
                     <path d="M6 18L18 6M6 6l12 12"></path>
                   </svg>
                 </div>
@@ -175,4 +193,3 @@ export default function Tooltip({ text, position = "right" }: TooltipProps) {
     </div>
   )
 }
-

@@ -15,18 +15,10 @@ import {
   Action,
   ActionPriority,
   ActionStatus,
-  Assignee,
   User,
+  ActionFrequency,
+  Site,
 } from '@/lib/types'
-import { CalendarIcon } from 'lucide-react'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import { cn } from '@/lib/utils'
-import { format } from 'date-fns'
-import { Calendar } from '@/components/ui/calendar'
 import { updateAction } from '../actions/actions'
 import { toast } from 'sonner'
 import { MultiSelect } from '@/components/ui/multi-select'
@@ -35,31 +27,76 @@ import { Label } from '@/components/ui/label'
 
 interface EditActionFormProps {
   users: User[]
+  sites: Site[]
   action: Action
   onCancel: () => void
 }
 
 export function EditActionForm({
   users,
+  sites,
   action,
   onCancel,
 }: EditActionFormProps) {
-  const [selectedAssignees, setSelectedAssignees] = useState<Assignee[]>(
-    action.assignees,
+  const [selectedAssigneeIds, setSelectedAssigneeIds] = useState<string[]>(
+    action.assignees.map((assignee) => assignee.id),
   )
-  const [dueDate, setDueDate] = useState<Date | undefined>(
-    new Date(action.due_at),
+  const [dueDate, setDueDate] = useState<string>(
+    new Date(action.due_at).toISOString().split('T')[0],
+  )
+  const [selectedSite, setSelectedSite] = useState<Site | null>(
+    action.site
+      ? {
+          id: String(action.site.id),
+          name: action.site.name,
+          address: action.site.address,
+          latitude: action.site.latitude,
+          longitude: action.site.longitude,
+        }
+      : null,
+  )
+  const [selectedFrequency, setSelectedFrequency] = useState<ActionFrequency>(
+    action.frequency,
   )
 
   const handleSubmit = async (formData: FormData) => {
-    formData.append('id', action.id)
-    if (dueDate) {
-      formData.append('due_at', dueDate.toISOString())
-    }
-    const assigneeIds = selectedAssignees.map((a) => a.id)
-    formData.append('assignees', JSON.stringify(assigneeIds))
+    const title = formData.get('title') as string
+    const description = formData.get('description') as string
+    const priority = formData.get('priority') as ActionPriority
+    const status = formData.get('status') as ActionStatus
+    const label = formData.get('label') as string
 
-    toast.promise(updateAction(formData), {
+    // Convert assignee IDs to assignee objects
+    const assignees = allOptions
+      .filter((option) => selectedAssigneeIds.includes(option.value))
+      .map((option) => ({
+        id: option.value,
+        full_name: option.label,
+        email: '', // We don't have email in the options
+        role: 'user', // Default role
+      }))
+
+    const payload = {
+      title,
+      description,
+      priority,
+      status,
+      due_at: dueDate,
+      frequency: selectedFrequency,
+      site: selectedSite
+        ? {
+            id: Number(selectedSite.id),
+            name: selectedSite.name,
+            address: selectedSite.address,
+            latitude: selectedSite.latitude,
+            longitude: selectedSite.longitude,
+          }
+        : undefined,
+      label,
+      assignees,
+    }
+
+    toast.promise(updateAction(action.id, payload), {
       loading: 'Updating action...',
       success: 'Action updated successfully',
       error: 'Failed to update action',
@@ -67,10 +104,42 @@ export function EditActionForm({
     onCancel()
   }
 
+  // Create user options from users array
   const userOptions = users.map((user) => ({
     value: user.user.id,
     label: user.user.full_name,
   }))
+
+  // Add assignees that might not be in the users array
+  const assigneeOptions = action.assignees.map((assignee) => ({
+    value: assignee.id,
+    label: assignee.full_name,
+  }))
+
+  // Combine and deduplicate options
+  const allOptions = [...userOptions, ...assigneeOptions].filter(
+    (option, index, self) =>
+      index === self.findIndex((o) => o.value === option.value),
+  )
+
+  console.log('action in question', action)
+  console.log('userOptions', userOptions)
+  console.log('selectedAssigneeIds', selectedAssigneeIds)
+  console.log('action.assignees', action.assignees)
+  console.log('selectedSite', selectedSite)
+  console.log('sites', sites)
+
+  // Check if assignee IDs exist in userOptions
+  const assigneeIdsInUsers = selectedAssigneeIds.filter((id) =>
+    userOptions.some((option) => option.value === id),
+  )
+  console.log('assigneeIdsInUsers', assigneeIdsInUsers)
+  console.log(
+    'Missing assignee IDs',
+    selectedAssigneeIds.filter(
+      (id) => !userOptions.some((option) => option.value === id),
+    ),
+  )
 
   return (
     <form action={handleSubmit} className="space-y-4">
@@ -82,6 +151,28 @@ export function EditActionForm({
           placeholder="e.g. Fix leaky faucet"
           defaultValue={action.title}
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="site">Site</Label>
+        <Select
+          value={selectedSite?.id ? String(selectedSite.id) : ''}
+          onValueChange={(value) => {
+            const site = sites.find((s) => String(s.id) === value)
+            setSelectedSite(site || null)
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select a site" />
+          </SelectTrigger>
+          <SelectContent>
+            {sites.map((site) => (
+              <SelectItem key={site.id} value={String(site.id)}>
+                {site.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-2">
@@ -98,7 +189,7 @@ export function EditActionForm({
         <div className="space-y-2">
           <Label>Priority</Label>
           <Select name="priority" defaultValue={action.priority}>
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Select priority" />
             </SelectTrigger>
             <SelectContent>
@@ -113,7 +204,7 @@ export function EditActionForm({
         <div className="space-y-2">
           <Label>Status</Label>
           <Select name="status" defaultValue={action.status}>
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
             <SelectContent>
@@ -126,50 +217,48 @@ export function EditActionForm({
           </Select>
         </div>
       </div>
+
+      <div className="space-y-2">
+        <Label>Frequency</Label>
+        <Select
+          value={selectedFrequency}
+          onValueChange={(value) =>
+            setSelectedFrequency(value as ActionFrequency)
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select frequency" />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.values(ActionFrequency).map((frequency) => (
+              <SelectItem key={frequency} value={frequency}>
+                {frequency.replace('_', ' ')}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="space-y-2">
         <Label>Assignees</Label>
         <MultiSelect
           name="assignees"
-          options={userOptions}
-          value={selectedAssignees.map((a) => a.id)}
-          onValueChange={(ids) => {
-            const assignees = users
-              .filter((u) => ids.includes(u.user.id))
-              .map((u) => ({
-                id: u.user.id,
-                full_name: u.user.full_name,
-                email: u.user.email,
-                role: u.user.role,
-              }))
-            setSelectedAssignees(assignees)
-          }}
+          className="mb-14"
+          options={allOptions}
+          value={selectedAssigneeIds}
+          onValueChange={setSelectedAssigneeIds}
           placeholder="Select assignees"
         />
       </div>
       <div className="space-y-2">
-        <Label>Due Date</Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant={'outline'}
-              className={cn(
-                'w-full justify-start text-left font-normal',
-                !dueDate && 'text-muted-foreground',
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {dueDate ? format(dueDate, 'PPP') : <span>Pick a date</span>}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={dueDate}
-              onSelect={setDueDate}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
+        <Label htmlFor="dueDate">Due Date</Label>
+        <Input
+          id="dueDate"
+          type="date"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+          min={new Date().toISOString().split('T')[0]}
+        />
       </div>
 
       <div className="space-y-2">

@@ -1,14 +1,27 @@
 'use client'
 
-import { Action, ActionPriority, ActionStatus } from '@/lib/types'
+import { Action, ActionPriority, ActionStatus, Site } from '@/lib/types'
 import { ColumnDef } from '@tanstack/react-table'
 import { formatDate } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowUpDown, Trash2 } from 'lucide-react'
+import { ArrowUpDown, Hash, Users2, MoreHorizontal } from 'lucide-react'
 import { toast } from 'sonner'
 import { deleteAction } from '../actions/actions'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { useState, useEffect } from 'react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { MarkAsDoneDialog } from './mark-as-done-dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 const getPriorityBadgeColor = (priority: ActionPriority) => {
   switch (priority) {
@@ -31,36 +44,94 @@ const getStatusBadgeColor = (status: ActionStatus) => {
       return 'bg-blue-100 text-blue-800 hover:bg-blue-100/80'
     case ActionStatus.COMPLETED:
       return 'bg-green-100 text-green-800 hover:bg-green-100/80'
+    case ActionStatus.DONE:
+      return 'bg-gray-100 text-gray-800 hover:bg-gray-100/80'
     default:
       return 'bg-gray-100 text-gray-800 hover:bg-gray-100/80'
   }
 }
 
-const getInitials = (name: string) => {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
+// Separate component for the actions cell to fix useState issue
+function ActionCell({
+  action,
+  sites,
+  onEdit,
+}: {
+  action: Action
+  sites: Site[]
+  onEdit?: (action: Action) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const isDone = action.status === ActionStatus.DONE
+
+  // Reset dialog state when action changes
+  useEffect(() => {
+    setOpen(false)
+  }, [action.id])
+
+  return (
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Mark as Done</DialogTitle>
+          </DialogHeader>
+          <MarkAsDoneDialog
+            key={action.id} // Force re-render when action changes
+            action={action}
+            sites={sites}
+            onComplete={() => setOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {onEdit && (
+            <DropdownMenuItem onClick={() => onEdit(action)}>
+              Edit
+            </DropdownMenuItem>
+          )}
+          {!isDone && (
+            <DropdownMenuItem onClick={() => setOpen(true)}>
+              Mark as Done
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem
+            className="text-red-500"
+            onClick={() => {
+              toast.promise(deleteAction(action.id), {
+                loading: 'Deleting action...',
+                success: 'Action deleted successfully',
+                error: 'Failed to delete action',
+              })
+            }}
+          >
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
+  )
 }
 
-export const columns: ColumnDef<Action>[] = [
+export const columns = (
+  sites: Site[],
+  onEdit?: (action: Action) => void,
+): ColumnDef<Action>[] => [
   {
     accessorKey: 'code',
-    header: 'Code',
-  },
-  {
-    accessorKey: 'title',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Title
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
+    header: 'Action Code',
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <Hash className="h-4 w-4" />
+        <span>{row.original.code}</span>
+      </div>
+    ),
   },
   {
     accessorKey: 'status',
@@ -102,12 +173,8 @@ export const columns: ColumnDef<Action>[] = [
     header: 'Assignee',
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <Avatar className="h-6 w-6">
-          <AvatarFallback>
-            {getInitials(row.original.assignees[0]?.full_name ?? 'N/A')}
-          </AvatarFallback>
-        </Avatar>
-        <span>{row.original.assignees[0]?.full_name}</span>
+        <Users2 className="h-4 w-4" />
+        <span>{row.original.assignees.length}</span>
       </div>
     ),
   },
@@ -118,20 +185,9 @@ export const columns: ColumnDef<Action>[] = [
   },
   {
     id: 'actions',
+    header: 'Actions',
     cell: ({ row }) => (
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => {
-          toast.promise(deleteAction(row.original.id), {
-            loading: 'Deleting action...',
-            success: 'Action deleted successfully',
-            error: 'Failed to delete action',
-          })
-        }}
-      >
-        <Trash2 className="h-4 w-4 text-red-500" />
-      </Button>
+      <ActionCell action={row.original} sites={sites} onEdit={onEdit} />
     ),
   },
 ]

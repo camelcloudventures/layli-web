@@ -1,7 +1,76 @@
 'use client'
 
+import { useMemo } from 'react'
+import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable'
+import { useDroppable } from '@dnd-kit/core'
+
+import { cn } from '@/lib/utils'
+import { ActionCard } from './action-card'
 import { Action, ActionStatus } from '@/lib/types'
-import { DroppableColumn } from './dnd/droppable-column'
+
+interface ActionColumnProps {
+  id: ActionStatus
+  title: string
+  actions: Action[]
+  onEditAction: (action: Action) => void
+  droppable?: boolean
+}
+
+function ActionColumn({
+  id,
+  title,
+  actions,
+  onEditAction,
+  droppable = true,
+}: ActionColumnProps) {
+  const { setNodeRef, isOver } = useDroppable({ id })
+
+  const content = (
+    <div className="space-y-3">
+      {actions.map((action) => (
+        <ActionCard
+          key={action.id}
+          action={action}
+          onClick={onEditAction}
+          isDraggable={droppable}
+        />
+      ))}
+      {actions.length === 0 && (
+        <div className="text-center py-8 text-muted-foreground text-sm border border-dashed rounded-md">
+          No actions
+        </div>
+      )}
+    </div>
+  )
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(
+        'bg-muted/50 rounded-lg p-4 min-h-[500px] w-full transition-all',
+        isOver && droppable && 'ring-2 ring-primary ring-inset bg-muted',
+        !droppable && 'opacity-70 pointer-events-none',
+      )}
+    >
+      <h3 className="font-medium mb-4 flex items-center justify-between">
+        <span>{title}</span>
+        <span className="bg-background text-muted-foreground text-xs px-2 py-1 rounded-full">
+          {actions.length}
+        </span>
+      </h3>
+      {droppable ? (
+        <SortableContext
+          items={actions.map((action) => action.id)}
+          strategy={rectSortingStrategy}
+        >
+          {content}
+        </SortableContext>
+      ) : (
+        content
+      )}
+    </div>
+  )
+}
 
 interface ActionBoardProps {
   actions: Action[]
@@ -9,30 +78,50 @@ interface ActionBoardProps {
 }
 
 export function ActionBoard({ actions, onEdit }: ActionBoardProps) {
-  const columns = {
-    [ActionStatus.TODO]: actions.filter(
-      (action) => action.status === ActionStatus.TODO,
-    ),
-    [ActionStatus.IN_PROGRESS]: actions.filter(
-      (action) => action.status === ActionStatus.IN_PROGRESS,
-    ),
-    [ActionStatus.COMPLETED]: actions.filter(
-      (action) => action.status === ActionStatus.COMPLETED,
-    ),
-  }
+  const todoActions = useMemo(
+    () => actions.filter((a) => a.status === ActionStatus.TODO),
+    [actions],
+  )
+  const inProgressActions = useMemo(
+    () => actions.filter((a) => a.status === ActionStatus.IN_PROGRESS),
+    [actions],
+  )
+  const completedActions = useMemo(
+    () => actions.filter((a) => a.status === ActionStatus.COMPLETED),
+    [actions],
+  )
+  const doneActions = useMemo(
+    () => actions.filter((a) => a.status === ActionStatus.DONE),
+    [actions],
+  )
 
   return (
-    <div className="flex gap-4">
-      {Object.entries(columns).map(([status, actions]) => (
-        <DroppableColumn
-          key={status}
-          id={status}
-          title={`${status.replace('_', ' ')}`}
-          count={actions.length}
-          actions={actions}
-          onEdit={onEdit}
-        />
-      ))}
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <ActionColumn
+        id={ActionStatus.TODO}
+        title="To Do"
+        actions={todoActions}
+        onEditAction={onEdit}
+      />
+      <ActionColumn
+        id={ActionStatus.IN_PROGRESS}
+        title="In Progress"
+        actions={inProgressActions}
+        onEditAction={onEdit}
+      />
+      <ActionColumn
+        id={ActionStatus.COMPLETED}
+        title="Completed"
+        actions={completedActions}
+        onEditAction={onEdit}
+      />
+      <ActionColumn
+        id={ActionStatus.DONE}
+        title="Done"
+        actions={doneActions}
+        onEditAction={() => {}}
+        droppable={false}
+      />
     </div>
   )
 }

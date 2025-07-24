@@ -25,7 +25,7 @@ export function DroppableColumn({
   })
 
   return (
-    <div ref={setNodeRef} className="w-1/3 rounded-lg bg-gray-100 p-4">
+    <div ref={setNodeRef} className="w-1/3 rounded-lg bg-gray-50 p-4">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold capitalize">{title}</h2>
         <span className="text-sm font-bold text-gray-500">{count}</span>

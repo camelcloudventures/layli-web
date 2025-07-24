@@ -117,6 +117,8 @@ export type Site = {
   id: string
   name: string
   address: string
+  latitude: number
+  longitude: number
 }
 
 export enum ActionFrequency {
@@ -135,6 +137,7 @@ export enum ActionStatus {
   TODO = 'todo',
   IN_PROGRESS = 'in_progress',
   COMPLETED = 'completed',
+  DONE = 'done',
 }
 
 export type Action = {
@@ -156,5 +159,7 @@ export type Action = {
     id: number
     name: string
     address: string
+    latitude: number
+    longitude: number
   }
 }

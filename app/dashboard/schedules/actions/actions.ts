@@ -4,7 +4,7 @@ import { DELETE, GET, POST, UPDATE } from '@/app/backend/apiMethods'
 import type { SchedulesResponse, Schedule } from '@/lib/types/schedule-types'
 import { revalidateTag } from 'next/cache'
 import { createClient } from '@supabase/supabase-js'
-import { ActiveUser } from '@/types/types'
+import { ActiveUser } from '@/lib/types'
 
 export async function getSchedules(
   page: number,

@@ -72,21 +72,17 @@ export type Assignee = {
   role: string
 }
 
-export type IssueAttachment = {
-  id: string
-  file_url: string
-  issue_id: string
-  created_at: string
-  created_by: string
-}
-
-export type IssueComment = {
-  id: string
-  comment: string
-  issue_id: string
-  created_at: string
-  created_by: string
-}
+// Re-export types from issue-types to maintain compatibility
+export type {
+  Issue,
+  IssueAttachment,
+  IssueComment,
+  IssueAssignee,
+  IssueSite,
+  IssuePriority,
+  IssueStatus,
+  IssueCategory,
+} from './types/issue-types'
 
 export enum Priority {
   low = 'low',
@@ -94,10 +90,11 @@ export enum Priority {
   high = 'high',
 }
 
-enum Status {
-  todo = 'todo',
-  in_progress = 'in_progress',
-  done = 'done',
+export enum Status {
+  OPEN = 'open',
+  IN_PROGRESS = 'in_progress',
+  RESOLVED = 'resolved',
+  CLOSED = 'closed',
 }
 
 export enum Category {
@@ -113,30 +110,6 @@ export enum Frequency {
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
   YEARLY = 'yearly',
-}
-
-export type Issue = {
-  id: string
-  code: string | null
-  category: Category
-  title: string
-  description: string
-  site_id: number
-  location: string
-  cause: string | null
-  solution: string | null
-  due_at: string
-  date_occurred: string
-  created_at: string
-  updated_at: string
-  created_by: string
-  status: Status
-  priority: Priority
-  organization_id: string
-  assignees: Assignee[]
-  site: Site
-  attachments: IssueAttachment[]
-  comments: IssueComment[]
 }
 
 //Will be updated

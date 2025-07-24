@@ -69,12 +69,12 @@ export function MultiSelect({
       {value.length > 0 && (
         <div className="absolute top-full left-0 right-0 mt-1 p-2 bg-white border rounded-md shadow-sm z-10">
           <div className="flex flex-wrap gap-1">
-            {value.map((val) => {
+            {value.map((val, index) => {
               const option = options.find((o) => o.value === val)
               return (
                 option && (
                   <div
-                    key={val}
+                    key={index}
                     className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-md text-sm"
                   >
                     <span>{option.label}</span>

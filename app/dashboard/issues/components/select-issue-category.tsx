@@ -18,6 +18,8 @@ import type React from 'react'
 interface SelectIssueCategoryProps {
   category: IssueCategory
   setCategory: (category: IssueCategory) => void
+  title: string
+  setTitle: (title: string) => void
 }
 
 interface CategoryOption {
@@ -69,6 +71,8 @@ const categoryOptions: CategoryOption[] = [
 export default function SelectIssueCategory({
   category,
   setCategory,
+  title,
+  setTitle,
 }: SelectIssueCategoryProps) {
   const getCategoryButtonStyles = (isSelected: boolean) => {
     return cn(
@@ -135,6 +139,8 @@ export default function SelectIssueCategory({
         <Input
           id="title"
           name="title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
           placeholder="Enter a clear and concise title"
           className="focus:border-red-500 focus:ring-red-500"
         />

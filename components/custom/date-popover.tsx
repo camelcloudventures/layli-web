@@ -1,16 +1,18 @@
 'use client '
 
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Calendar } from '@/components/ui/calendar'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { Label } from '../ui/label'
 import { CalendarIcon } from 'lucide-react'
+import { useState } from 'react'
 
 type DatePopoverProps = {
   date: Date | undefined
@@ -21,14 +23,21 @@ export default function DatePopover({ date, setDate }: DatePopoverProps) {
   const disabled = {
     before: new Date(),
   }
+  const [open, setOpen] = useState(false)
+
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    console.log('Date selected:', selectedDate)
+    setDate(selectedDate)
+    setOpen(false)
+  }
 
   return (
     <div className="space-y-2">
       <Label htmlFor="due-date">
         Due Date <span className="text-red-500">*</span>
       </Label>
-      <Popover>
-        <PopoverTrigger asChild>
+      <Dialog modal open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
           <Button
             variant="outline"
             className={cn(
@@ -39,17 +48,18 @@ export default function DatePopover({ date, setDate }: DatePopoverProps) {
             <CalendarIcon className="mr-2 h-4 w-4" />
             {date ? format(date, 'PPP') : <span>Select date</span>}
           </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        </DialogTrigger>
+        <DialogContent className="w-auto p-4">
+          <DialogTitle className="sr-only">Select Date</DialogTitle>
           <Calendar
             mode="single"
             selected={date}
-            onSelect={setDate}
+            onSelect={handleDateSelect}
             disabled={disabled}
             initialFocus
           />
-        </PopoverContent>
-      </Popover>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

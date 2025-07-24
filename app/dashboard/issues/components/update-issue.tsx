@@ -1,18 +1,23 @@
 'use client'
 
-import { DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Issue } from '@/types/types'
+import { Issue } from '@/lib/types'
+import { IssueDetails } from './issue-details'
 
 interface UpdateIssueProps {
   issue: Issue
+  onClose: () => void
+  assignees: Array<{
+    id: string
+    full_name: string
+    email: string
+    role: string
+  }>
 }
 
-export default function UpdateIssue({ issue }: UpdateIssueProps) {
-  return (
-    <>
-      <DialogHeader>
-        <DialogTitle>Update issue: {issue.title}</DialogTitle>
-      </DialogHeader>
-    </>
-  )
+export default function UpdateIssue({
+  issue,
+  onClose,
+  assignees,
+}: UpdateIssueProps) {
+  return <IssueDetails issue={issue} onClose={onClose} assignees={assignees} />
 }

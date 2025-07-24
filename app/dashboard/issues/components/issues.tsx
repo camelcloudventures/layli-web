@@ -1,7 +1,7 @@
 'use client'
 
 import PageHeader from '@/components/custom/page-header'
-import { User } from '@/types/types'
+import { User } from '@/lib/types'
 import { ReportIssueForm } from './report-issue-form'
 import { Download, Plus } from 'lucide-react'
 import { useState } from 'react'

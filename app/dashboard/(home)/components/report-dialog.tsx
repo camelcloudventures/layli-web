@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { AuditSummaryReport } from './reports/audit-summary-report'
 import { ComplianceReport } from './reports/compliance-report'
@@ -75,6 +75,9 @@ export function ReportDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogTitle className="sr-only">
+          {reportConfig[reportType].title}
+        </DialogTitle>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">
             {reportConfig[reportType].title} Preview

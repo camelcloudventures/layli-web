@@ -10,14 +10,12 @@ import {
   XCircle,
   Flag,
   FileText,
-  Calendar,
   User,
   Download,
 } from 'lucide-react'
 import { Inspection, InspectionResponse } from '../types/inspection-types'
 import { downloadInspectionPDF } from '../utils/pdf-generator'
 import { toast } from 'sonner'
-import { PDFTest } from './pdf-test'
 
 interface InspectionReportProps {
   inspection: Inspection
@@ -102,6 +100,15 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
     }
   }
 
+  // Calculate issues and actions counts
+  const issueCount = inspection.responses.filter((r) => r.is_flagged).length
+  const actionCount = inspection.responses.filter((r) => r.action_id).length
+
+  // Get inspector name from assignees
+  const inspector =
+    inspection.assignees.find((a) => a.role === 'auditor') ||
+    inspection.assignees[0]
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -127,95 +134,66 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
         </div>
       </div>
 
-      {/* PDF Test Component (Development Only) */}
-      <PDFTest inspection={inspection} />
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Final Score
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold">
-                {inspection.final_score}%
-              </span>
-              <Badge className={getGradeColor(inspection.final_grade)}>
-                {inspection.final_grade}
-              </Badge>
+      {/* Inspection Summary */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Inspection Summary</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                Conducted On
+              </p>
+              <p className="text-lg font-semibold">
+                {formatDate(inspection.created_at)}
+              </p>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              {inspection.passed ? (
-                <CheckCircle className="w-5 h-5 text-green-600" />
-              ) : (
-                <XCircle className="w-5 h-5 text-red-600" />
-              )}
-              <span className="text-lg font-semibold capitalize">
-                {inspection.passed ? 'Passed' : 'Failed'}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Violations
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-1">
-              <div className="flex justify-between">
-                <span className="text-sm">Critical:</span>
-                <span className="font-semibold text-red-600">
-                  {inspection.critical_violations}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm">Major:</span>
-                <span className="font-semibold text-orange-600">
-                  {inspection.major_violations}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm">Minor:</span>
-                <span className="font-semibold text-yellow-600">
-                  {inspection.minor_violations}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Completion Date
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-gray-500" />
-              <span className="text-sm">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                Completed On
+              </p>
+              <p className="text-lg font-semibold">
                 {formatDate(inspection.completed_at)}
-              </span>
+              </p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                Inspector
+              </p>
+              <p className="text-lg font-semibold">
+                {inspector?.full_name || 'N/A'}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Score</p>
+              <p
+                className={`text-lg font-semibold ${
+                  (inspection.final_score || 0) >= 80
+                    ? 'text-green-600'
+                    : (inspection.final_score || 0) >= 60
+                    ? 'text-amber-600'
+                    : 'text-red-600'
+                }`}
+              >
+                {inspection.final_score}%
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                Issues Found
+              </p>
+              <p className="text-lg font-semibold">{issueCount}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                Actions Created
+              </p>
+              <p className="text-lg font-semibold">{actionCount}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Assignees */}
       {inspection.assignees.length > 0 && (
@@ -404,6 +382,18 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
                                 </div>
                               </div>
                             )}
+                        </div>
+                      )}
+
+                      {/* Show "No response" for questions without responses */}
+                      {!response && (
+                        <div className="bg-gray-50 p-3 rounded">
+                          <span className="text-sm font-medium text-gray-700">
+                            Response:
+                          </span>
+                          <p className="text-sm text-gray-500 mt-1">
+                            No response recorded
+                          </p>
                         </div>
                       )}
                     </div>

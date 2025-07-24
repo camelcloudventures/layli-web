@@ -66,6 +66,35 @@ export interface InspectionPage {
   created_at: string
 }
 
+export interface Site {
+  id: number
+  name: string
+  address: string
+  latitude: number
+  longitude: number
+}
+
+export interface Template {
+  id: number
+  title: string
+  description: string
+  created_at: string
+  created_by: string
+  organization_id: string
+  pages: InspectionPage[]
+  pass_threshold: number
+  photo: string
+  critical_fail_enabled: boolean
+  grading_enabled: boolean
+  grading_scale: {
+    excellent: number
+    good: number
+    satisfactory: number
+    needs_improvement: number
+    fail: number
+  }
+}
+
 export interface Inspection {
   id: string
   title: string
@@ -77,6 +106,7 @@ export interface Inspection {
   created_at: string
   completed_at: string
   due_date: string
+  started_at?: string
   critical_violations: number
   major_violations: number
   minor_violations: number
@@ -89,4 +119,11 @@ export interface Inspection {
   schedule_id?: string
   prepared_by: string
   paused_at?: string
+  site: Site
+  site_id: number
+  template: Template
+  template_id: number
+  total_points_earned: number
+  total_points_possible: number
+  violations: unknown[]
 }

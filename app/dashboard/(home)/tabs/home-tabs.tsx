@@ -9,6 +9,7 @@ import Reports from './reports'
 import Notifications from './notifications'
 import Overview from './overview'
 import { Notification } from '@/lib/types/notifications'
+import { type AnalyticsSummary } from '../../analytics/actions/actions'
 
 type IProps = {
   stats: {
@@ -26,13 +27,14 @@ type IProps = {
     failed: number
   }[]
   issuesByCategory: {
-    category: string
-    count: number
+    name: string
+    value: number
   }[]
   actionCompletionRate: {
     month: string
     rate: number
   }[]
+  summary?: AnalyticsSummary | null
 }
 
 export default function HomeTabs({
@@ -41,6 +43,7 @@ export default function HomeTabs({
   inspectionTrends,
   issuesByCategory,
   actionCompletionRate,
+  summary,
 }: IProps) {
   const [selectedTab, setSelectedTab] = useState('overview')
   const [reportDialogState, setReportDialogState] = useState<{
@@ -79,6 +82,7 @@ export default function HomeTabs({
             inspectionTrends={inspectionTrends}
             issuesByCategory={issuesByCategory}
             actionCompletionRate={actionCompletionRate}
+            summary={summary}
           />
         )
       case 'reports':

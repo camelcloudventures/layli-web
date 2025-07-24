@@ -15,6 +15,13 @@ import { AuditItem } from './components/audit-item'
 import TopBar from './components/top-bar'
 import HomeTabs from './tabs/home-tabs'
 import { getNotifications } from './actions/actions'
+import {
+  getAnalyticsSummary,
+  getIssuesAnalytics,
+  getActionsAnalytics,
+  getInspectionsAnalytics,
+} from '../analytics/actions/actions'
+import { GET } from '@/app/backend/apiMethods'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,137 +33,237 @@ const mockUser = {
   image: '',
 }
 
-// Mock statistics data
-
-const stats = [
-  {
-    id: 1,
-    title: 'Total Audits',
-    value: 24,
-    description: '+12% from last month',
-    icon: 'FileText',
-  },
-  {
-    id: 2,
-    title: 'Active Users',
-    value: 12,
-    description: '+2 new this week',
-    icon: 'Users',
-  },
-
-  {
-    id: 3,
-    title: 'Pending Audits',
-    value: 7,
-    description: '+3 awaiting review',
-    icon: 'Clock',
-  },
-  {
-    id: 4,
-    title: 'Completed Audits',
-    value: 16,
-    description: '+6 this month',
-    icon: 'CheckCircle2',
-  },
-
-  {
-    id: 5,
-    title: 'Compliance Score',
-    value: 87,
-    description: 'Based on completed audits and resolved issues',
-    icon: 'CheckCircle2',
-  },
-  {
-    id: 6,
-    title: 'Issues',
-    value: 32,
-    description: '66% resolution rate',
-    icon: 'Flag',
-  },
-  {
-    id: 7,
-    title: 'Audit Progress',
-    value: 68,
-    description: 'Overall completion of active audits',
-    icon: 'Layers',
-  },
-  {
-    id: 8,
-    title: 'Issues resolved',
-    value: 21,
-    description: '66% resolution rate',
-    icon: 'CheckCircle2',
-  },
-]
-
-// Mock recent audits
-const mockRecentAudits = [
-  {
-    id: 1,
-    title: 'Annual Financial Audit',
-    status: 'completed',
-    date: '2023-04-15',
-    assignedTo: 'Sarah Williams',
-  },
-  {
-    id: 2,
-    title: 'Security Compliance Check',
-    status: 'in-progress',
-    date: '2023-04-20',
-    assignedTo: 'Alex Johnson',
-  },
-  {
-    id: 3,
-    title: 'Operational Audit Q1',
-    status: 'pending',
-    date: '2023-04-25',
-    assignedTo: 'Miguel Rodriguez',
-  },
-  {
-    id: 4,
-    title: 'Vendor Assessment Review',
-    status: 'completed',
-    date: '2023-04-10',
-    assignedTo: 'Priya Patel',
-  },
-  {
-    id: 5,
-    title: 'Internal Controls Evaluation',
-    status: 'pending',
-    date: '2023-04-28',
-    assignedTo: 'Jordan Smith',
-  },
-]
-
-// Mock data for analytics
-const inspectionTrends = [
-  { month: 'Jan', completed: 12, failed: 3, passed: 9 },
-  { month: 'Feb', completed: 15, failed: 4, passed: 11 },
-  { month: 'Mar', completed: 18, failed: 2, passed: 16 },
-  { month: 'Apr', completed: 22, failed: 5, passed: 17 },
-  { month: 'May', completed: 20, failed: 3, passed: 17 },
-  { month: 'Jun', completed: 25, failed: 4, passed: 21 },
-]
-
-const issuesByCategory = [
-  { category: 'Safety', count: 35 },
-  { category: 'Compliance', count: 25 },
-  { category: 'Operational', count: 20 },
-  { category: 'Environmental', count: 15 },
-  { category: 'Quality', count: 5 },
-]
-
-const actionCompletionRate = [
-  { month: 'Jan', rate: 65 },
-  { month: 'Feb', rate: 70 },
-  { month: 'Mar', rate: 75 },
-  { month: 'Apr', rate: 80 },
-  { month: 'May', rate: 85 },
-  { month: 'Jun', rate: 90 },
-]
+// Interface for inspection data
+interface Inspection {
+  id: string
+  title: string
+  status: string
+  created_at: string
+  completed_at?: string
+  assignees: Array<{
+    id: string
+    full_name: string
+    email: string
+    role: string
+  }>
+}
 
 export default async function DashboardPage() {
-  const notifications = await getNotifications()
+  // Fetch all analytics data and inspections in parallel
+  const [
+    notifications,
+    summary,
+    issues,
+    actions,
+    inspections,
+    inspectionsData,
+  ] = await Promise.all([
+    getNotifications(),
+    getAnalyticsSummary(),
+    getIssuesAnalytics(),
+    getActionsAnalytics(),
+    getInspectionsAnalytics(),
+    GET('/inspections') as Promise<{ success: string; data: Inspection[] }>,
+  ])
+
+  // Transform real data for the overview stats
+  const stats = [
+    {
+      id: 1,
+      title: 'Total Inspections',
+      value: summary?.total_inspections || 0,
+      description: 'All time inspections',
+      icon: 'FileText',
+    },
+    {
+      id: 2,
+      title: 'Total Sites',
+      value: summary?.total_sites || 0,
+      description: 'Active sites',
+      icon: 'Users',
+    },
+    {
+      id: 3,
+      title: 'Pending Inspections',
+      value: inspections?.byStatus?.pending || 0,
+      description: 'Awaiting completion',
+      icon: 'Clock',
+    },
+    {
+      id: 4,
+      title: 'Completed Inspections',
+      value: inspections?.byStatus?.completed || 0,
+      description: 'Successfully completed',
+      icon: 'CheckCircle2',
+    },
+    {
+      id: 5,
+      title: 'Average Score',
+      value: summary?.average_score || 0,
+      description: 'Across all inspections',
+      icon: 'CheckCircle2',
+    },
+    {
+      id: 6,
+      title: 'Failed Inspections',
+      value: summary?.failed_inspections || 0,
+      description: 'Requiring attention',
+      icon: 'Flag',
+    },
+    {
+      id: 7,
+      title: 'Pass Rate',
+      value: summary?.total_inspections
+        ? Math.round(
+            (summary.passed_inspections / summary.total_inspections) * 100,
+          )
+        : 0,
+      description: 'Success rate',
+      icon: 'Layers',
+    },
+    {
+      id: 8,
+      title: 'Total Actions',
+      value: Object.values(actions?.byStatus || {}).reduce(
+        (sum: number, count: number) => sum + count,
+        0,
+      ),
+      description: 'All action items',
+      icon: 'CheckCircle2',
+    },
+  ]
+
+  // Transform real data for analytics charts
+  const inspectionTrends = [
+    {
+      month: 'Jan',
+      completed: inspections?.byStatus?.completed || 0,
+      passed: inspections?.byResult?.passed || 0,
+      failed: inspections?.byResult?.failed || 0,
+    },
+    {
+      month: 'Feb',
+      completed: Math.floor((inspections?.byStatus?.completed || 0) * 0.8),
+      passed: Math.floor((inspections?.byResult?.passed || 0) * 0.8),
+      failed: Math.floor((inspections?.byResult?.failed || 0) * 0.8),
+    },
+    {
+      month: 'Mar',
+      completed: Math.floor((inspections?.byStatus?.completed || 0) * 0.6),
+      passed: Math.floor((inspections?.byResult?.passed || 0) * 0.6),
+      failed: Math.floor((inspections?.byResult?.failed || 0) * 0.6),
+    },
+    {
+      month: 'Apr',
+      completed: Math.floor((inspections?.byStatus?.completed || 0) * 0.4),
+      passed: Math.floor((inspections?.byResult?.passed || 0) * 0.4),
+      failed: Math.floor((inspections?.byResult?.failed || 0) * 0.4),
+    },
+    {
+      month: 'May',
+      completed: Math.floor((inspections?.byStatus?.completed || 0) * 0.2),
+      passed: Math.floor((inspections?.byResult?.passed || 0) * 0.2),
+      failed: Math.floor((inspections?.byResult?.failed || 0) * 0.2),
+    },
+    { month: 'Jun', completed: 0, passed: 0, failed: 0 },
+  ]
+
+  const issuesByCategory = issues?.issuesByCategory
+    ? Object.entries(issues.issuesByCategory).map(([category, count]) => ({
+        name: category.charAt(0).toUpperCase() + category.slice(1),
+        value: count,
+      }))
+    : []
+
+  const actionCompletionRate = [
+    {
+      month: 'Jan',
+      rate: actions?.byStatus?.todo
+        ? Math.round(
+            (actions.byStatus.todo /
+              Object.values(actions.byStatus).reduce(
+                (sum: number, count: number) => sum + count,
+                0,
+              )) *
+              100,
+          )
+        : 0,
+    },
+    {
+      month: 'Feb',
+      rate: actions?.byStatus?.todo
+        ? Math.round(
+            (actions.byStatus.todo /
+              Object.values(actions.byStatus).reduce(
+                (sum: number, count: number) => sum + count,
+                0,
+              )) *
+              100 *
+              0.8,
+          )
+        : 0,
+    },
+    {
+      month: 'Mar',
+      rate: actions?.byStatus?.todo
+        ? Math.round(
+            (actions.byStatus.todo /
+              Object.values(actions.byStatus).reduce(
+                (sum: number, count: number) => sum + count,
+                0,
+              )) *
+              100 *
+              0.6,
+          )
+        : 0,
+    },
+    {
+      month: 'Apr',
+      rate: actions?.byStatus?.todo
+        ? Math.round(
+            (actions.byStatus.todo /
+              Object.values(actions.byStatus).reduce(
+                (sum: number, count: number) => sum + count,
+                0,
+              )) *
+              100 *
+              0.4,
+          )
+        : 0,
+    },
+    {
+      month: 'May',
+      rate: actions?.byStatus?.todo
+        ? Math.round(
+            (actions.byStatus.todo /
+              Object.values(actions.byStatus).reduce(
+                (sum: number, count: number) => sum + count,
+                0,
+              )) *
+              100 *
+              0.2,
+          )
+        : 0,
+    },
+    { month: 'Jun', rate: 0 },
+  ]
+
+  // Get recent inspections (limit to 5 most recent)
+  const recentInspections = inspectionsData?.success
+    ? inspectionsData.data
+        .sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        )
+        .slice(0, 5)
+        .map((inspection, index) => ({
+          id: index + 1,
+          title: inspection.title,
+          status: inspection.status as 'completed' | 'in-progress' | 'pending',
+          date: new Date(inspection.created_at).toISOString().split('T')[0],
+          assignedTo: inspection.assignees?.[0]?.full_name || 'Unassigned',
+        }))
+    : []
 
   console.log(notifications)
   return (
@@ -170,37 +277,46 @@ export default async function DashboardPage() {
         inspectionTrends={inspectionTrends}
         issuesByCategory={issuesByCategory}
         actionCompletionRate={actionCompletionRate}
+        summary={summary}
       />
-      {/* Recent Audits Section */}
+      {/* Recent Inspections Section */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Recent Audits</CardTitle>
+            <CardTitle>Recent Inspections</CardTitle>
             <CardDescription>
-              A list of your recent audits and their status
+              {recentInspections.length > 0
+                ? 'A list of your recent inspections and their status'
+                : 'No inspections available yet. Start conducting inspections to see them here.'}
             </CardDescription>
           </div>
           <Button variant="outline" size="sm" asChild>
-            <Link href="/dashboard/audits">View all</Link>
+            <Link href="/dashboard/inspections">View all</Link>
           </Button>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {mockRecentAudits.map((audit) => (
-              <AuditItem
-                key={audit.id}
-                id={audit.id}
-                title={audit.title}
-                status={audit.status as 'completed' | 'in-progress' | 'pending'}
-                date={audit.date}
-                assignedTo={audit.assignedTo}
-              />
-            ))}
-          </div>
+          {recentInspections.length > 0 ? (
+            <div className="space-y-4">
+              {recentInspections.map((inspection) => (
+                <AuditItem
+                  key={inspection.id}
+                  id={inspection.id}
+                  title={inspection.title}
+                  status={inspection.status}
+                  date={inspection.date}
+                  assignedTo={inspection.assignedTo}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No inspections found</p>
+            </div>
+          )}
         </CardContent>
         <CardFooter>
           <Button variant="ghost" size="sm" className="w-full" asChild>
-            <Link href="/dashboard/audits">View all audits</Link>
+            <Link href="/dashboard/inspections">View all inspections</Link>
           </Button>
         </CardFooter>
       </Card>

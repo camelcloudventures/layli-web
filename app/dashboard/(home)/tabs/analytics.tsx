@@ -26,33 +26,85 @@ import {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']
 
+// Fallback data for when real data is not available
+const fallbackInspectionTrends = [
+  { month: 'Jan', completed: 0, passed: 0, failed: 0 },
+  { month: 'Feb', completed: 0, passed: 0, failed: 0 },
+  { month: 'Mar', completed: 0, passed: 0, failed: 0 },
+  { month: 'Apr', completed: 0, passed: 0, failed: 0 },
+  { month: 'May', completed: 0, passed: 0, failed: 0 },
+  { month: 'Jun', completed: 0, passed: 0, failed: 0 },
+]
+
+const fallbackIssuesByCategory = [{ name: 'No Data', value: 1 }]
+
+const fallbackActionCompletionRate = [
+  { month: 'Jan', rate: 0 },
+  { month: 'Feb', rate: 0 },
+  { month: 'Mar', rate: 0 },
+  { month: 'Apr', rate: 0 },
+  { month: 'May', rate: 0 },
+  { month: 'Jun', rate: 0 },
+]
+
 type IProps = {
-  inspectionTrends: {
+  inspectionTrends?: {
     month: string
     completed: number
     passed: number
     failed: number
   }[]
-  issuesByCategory: {
-    category: string
-    count: number
+  issuesByCategory?: {
+    name: string
+    value: number
   }[]
-  actionCompletionRate: {
+  actionCompletionRate?: {
     month: string
     rate: number
   }[]
+  summary?: {
+    total_inspections: number
+    total_sites: number
+    average_score: number
+    failed_inspections: number
+    passed_inspections: number
+  } | null
 }
+
 export default function Analytics({
-  inspectionTrends,
-  issuesByCategory,
-  actionCompletionRate,
+  inspectionTrends = fallbackInspectionTrends,
+  issuesByCategory = fallbackIssuesByCategory,
+  actionCompletionRate = fallbackActionCompletionRate,
+  summary,
 }: IProps) {
+  // Use backend data if available, otherwise use fallback data
+  const totalInspections = summary?.total_inspections || 0
+  const averageScore = summary?.average_score || 0
+  const openIssues = summary?.failed_inspections || 0
+  const actionCompletion =
+    summary?.passed_inspections && summary?.total_inspections
+      ? Math.round(
+          (summary.passed_inspections / summary.total_inspections) * 100,
+        )
+      : 0
+
+  // Check if we have real data
+  const hasRealData = summary && summary.total_inspections > 0
+  const hasIssuesData =
+    issuesByCategory &&
+    issuesByCategory.length > 0 &&
+    issuesByCategory[0].name !== 'No Data'
+  const hasTrendsData =
+    inspectionTrends && inspectionTrends.some((trend) => trend.completed > 0)
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Analytics</CardTitle>
         <CardDescription>
-          View detailed analytics about your audit activities
+          {hasRealData
+            ? 'View detailed analytics about your audit activities'
+            : 'No analytics data available yet. Start conducting inspections to see insights here.'}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
@@ -62,36 +114,36 @@ export default function Analytics({
             <span className="text-sm font-medium text-muted-foreground">
               Total Inspections
             </span>
-            <span className="text-3xl font-bold">112</span>
-            <span className="text-xs text-green-600">
-              +18% from previous period
+            <span className="text-3xl font-bold">{totalInspections}</span>
+            <span className="text-xs text-muted-foreground">
+              {hasRealData ? 'All time inspections' : 'No inspections yet'}
             </span>
           </div>
           <div className="flex flex-col items-center justify-center rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
             <span className="text-sm font-medium text-muted-foreground">
               Average Score
             </span>
-            <span className="text-3xl font-bold">83%</span>
-            <span className="text-xs text-green-600">
-              +5% from previous period
+            <span className="text-3xl font-bold">{averageScore}%</span>
+            <span className="text-xs text-muted-foreground">
+              {hasRealData ? 'Across all inspections' : 'No scores yet'}
             </span>
           </div>
           <div className="flex flex-col items-center justify-center rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
             <span className="text-sm font-medium text-muted-foreground">
-              Open Issues
+              Failed Inspections
             </span>
-            <span className="text-3xl font-bold">24</span>
-            <span className="text-xs text-green-600">
-              -12% from previous period
+            <span className="text-3xl font-bold">{openIssues}</span>
+            <span className="text-xs text-muted-foreground">
+              {hasRealData ? 'Requiring attention' : 'No issues yet'}
             </span>
           </div>
           <div className="flex flex-col items-center justify-center rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
             <span className="text-sm font-medium text-muted-foreground">
-              Action Completion
+              Pass Rate
             </span>
-            <span className="text-3xl font-bold">78%</span>
-            <span className="text-xs text-green-600">
-              +8% from previous period
+            <span className="text-3xl font-bold">{actionCompletion}%</span>
+            <span className="text-xs text-muted-foreground">
+              {hasRealData ? 'Success rate' : 'No data yet'}
             </span>
           </div>
         </div>
@@ -115,6 +167,11 @@ export default function Analytics({
                 </BarChart>
               </ResponsiveContainer>
             </div>
+            {!hasTrendsData && (
+              <p className="text-sm text-muted-foreground text-center">
+                No trend data available. Complete inspections to see trends.
+              </p>
+            )}
           </div>
 
           {/* Issues by Category Chart */}
@@ -146,6 +203,12 @@ export default function Analytics({
                 </PieChart>
               </ResponsiveContainer>
             </div>
+            {!hasIssuesData && (
+              <p className="text-sm text-muted-foreground text-center">
+                No issues data available. Report issues to see category
+                breakdown.
+              </p>
+            )}
           </div>
         </div>
 
@@ -171,6 +234,11 @@ export default function Analytics({
               </LineChart>
             </ResponsiveContainer>
           </div>
+          {!hasRealData && (
+            <p className="text-sm text-muted-foreground text-center">
+              No action data available. Create actions to see completion rates.
+            </p>
+          )}
         </div>
 
         <div className="flex justify-center">

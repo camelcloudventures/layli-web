@@ -15,14 +15,17 @@ import {
 import { toast } from 'sonner'
 import SubmitBtn from '@/components/custom/submit-btn'
 import { updateSchedule } from '../actions/actions'
-import type { TemplateOption, SiteOption } from '../types/schedule-form-types'
+import type {
+  TemplateOption,
+  SiteOption,
+  UserOption,
+} from '../types/schedule-form-types'
 import type { Schedule } from '@/lib/types/schedule-types'
 import { MultiSelect } from '@/components/ui/multi-select'
-import { User } from '@/types/types'
 
 interface EditScheduleFormProps {
   schedule: Schedule
-  users: User[]
+  users: UserOption[]
   templates: TemplateOption[]
   sites: SiteOption[]
   onSubmit: (formData: FormData) => void

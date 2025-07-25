@@ -1,45 +1,44 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function AnalyticsLoading() {
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <div className="h-8 w-48 bg-muted/50 rounded-md mb-2"></div>
-          <div className="h-4 w-64 bg-muted/30 rounded-md"></div>
+          <Skeleton className="h-8 w-48 mb-2" />
+          <Skeleton className="h-4 w-64" />
         </div>
-        <div className="h-10 w-[180px] bg-muted/50 rounded-md"></div>
       </div>
 
-      {/* Summary Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {[1, 2, 3, 4].map((i) => (
-          <Card key={i} className="animate-pulse">
-            <CardHeader className="h-20 bg-muted/50"></CardHeader>
-            <CardContent className="h-10 bg-muted/30 mt-2"></CardContent>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i}>
+            <CardHeader className="pb-2">
+              <Skeleton className="h-4 w-24" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-8 w-16 mb-2" />
+              <Skeleton className="h-4 w-20" />
+            </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Tabs */}
-      <div className="h-10 w-full max-w-md bg-muted/50 rounded-md"></div>
-
-      {/* Charts */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card className="animate-pulse">
-          <CardHeader>
-            <div className="h-6 w-48 bg-muted/50 rounded-md mb-2"></div>
-            <div className="h-4 w-64 bg-muted/30 rounded-md"></div>
-          </CardHeader>
-          <CardContent className="h-[300px] bg-muted/20"></CardContent>
-        </Card>
-        <Card className="animate-pulse">
-          <CardHeader>
-            <div className="h-6 w-48 bg-muted/50 rounded-md mb-2"></div>
-            <div className="h-4 w-64 bg-muted/30 rounded-md"></div>
-          </CardHeader>
-          <CardContent className="h-[300px] bg-muted/20"></CardContent>
-        </Card>
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i}>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-64 w-full" />
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   )

@@ -6,6 +6,7 @@ import type { AuditTemplate } from '@/lib/types/audit-types'
 import Link from 'next/link'
 import Pagination from './pagination'
 import Image from 'next/image'
+import { formatDate } from '@/lib/utils'
 
 interface TemplateSearchProps {
   templates: AuditTemplate[]
@@ -102,7 +103,7 @@ export function TemplateSearch({
             <div className="border-t bg-muted/50 p-3">
               <div className="flex w-full items-center justify-between text-xs text-muted-foreground">
                 <span>
-                  Created: {new Date(template.created_at).toLocaleDateString()}
+                  Created: {formatDate(template.created_at || new Date())}
                 </span>
                 <Link
                   href={`/dashboard/templates/${template.id}/preview`}

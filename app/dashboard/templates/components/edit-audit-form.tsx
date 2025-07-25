@@ -20,7 +20,7 @@ import { toast } from 'sonner'
 import { TemplatePreview } from '@/app/dashboard/templates/components/template-preview'
 import Image from 'next/image'
 import { Loader2 } from 'lucide-react'
-import type { AuditTemplate } from '@/types/audit-types'
+import type { AuditTemplate } from '@/lib/types/audit-types'
 
 interface EditAuditFormProps {
   template: AuditTemplate
@@ -241,7 +241,6 @@ export default function EditAuditForm({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* @ts-expect-error - template is not typed */}
             <PagesManager template={template} setTemplate={setTemplate} />
             <div className="flex justify-between mt-6">
               <Button
@@ -274,7 +273,6 @@ export default function EditAuditForm({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* @ts-expect-error - template is not typed */}
             <TemplatePreview template={template} />
             <div className="flex justify-between mt-6">
               <Button

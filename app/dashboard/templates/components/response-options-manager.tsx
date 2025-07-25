@@ -13,7 +13,7 @@ import type {
   Question,
   ResponseOption,
   NewResponseOption,
-} from '@/types/audit-types'
+} from '@/lib/types/audit-types'
 import {
   PreloadedResponsePicker,
   ResponseOption as PreloadedOption,

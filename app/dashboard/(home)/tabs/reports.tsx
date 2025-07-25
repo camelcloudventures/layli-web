@@ -20,11 +20,51 @@ type IProps = {
     open: boolean
     type: 'auditSummary' | 'compliance' | 'issues'
   }
+  reportData?: {
+    auditSummary: {
+      totalInspections: number
+      completedInspections: number
+      pendingInspections: number
+      totalIssues: number
+      resolvedIssues: number
+      recentInspections: Array<{
+        id: number
+        title: string
+        status: string
+        date: string
+        assignedTo: string
+      }>
+    }
+    issues: {
+      totalIssues: number
+      resolvedIssues: number
+      openIssues: number
+      issuesByCategory: Record<string, number>
+      criticalIssues: Array<{
+        id: string
+        title: string
+        category: string
+        priority: string
+        due_at: string
+        assignees: Array<{
+          id: string
+          full_name: string
+          email: string
+          role: string
+        }>
+      }>
+      topRecurringIssues: Array<{
+        title: string
+        occurrences: number
+      }>
+    }
+  }
 }
 
 export default function Reports({
   setReportDialogState,
   reportDialogState,
+  reportData,
 }: IProps) {
   return (
     <div className="w-full">
@@ -97,6 +137,7 @@ export default function Reports({
           setReportDialogState({ ...reportDialogState, open })
         }
         reportType={reportDialogState.type}
+        reportData={reportData}
       />
     </div>
   )

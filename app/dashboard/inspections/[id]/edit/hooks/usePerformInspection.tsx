@@ -16,7 +16,7 @@ import {
 } from '../../../actions/actions'
 import { ResponseData } from '@/app/dashboard/inspections/types/types'
 import { getActiveUsers } from '@/app/dashboard/schedules/actions/actions'
-import { User } from '@/types/types'
+import { User } from '@/lib/types'
 
 interface FileMetaType {
   filename: string
@@ -287,7 +287,7 @@ export function usePerformInspection(inspection: Inspection) {
         return { ...prevInspection, responses: newResponses }
       })
     },
-    [currentInspection.id],
+    [unsavedChanges],
   )
 
   async function handlePauseInspection(inspection_id: string) {

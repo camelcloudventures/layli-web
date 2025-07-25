@@ -1,5 +1,5 @@
 import { GET } from '@/app/backend/apiMethods'
-import { Site } from '@/lib/types'
+import { revalidatePath } from 'next/cache'
 
 export async function getSites() {
   return await GET('/sites', ['sites'])

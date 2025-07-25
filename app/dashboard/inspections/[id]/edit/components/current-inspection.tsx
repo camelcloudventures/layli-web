@@ -13,7 +13,7 @@ import {
   Response,
   Question,
 } from '@/lib/types/inspection-types'
-import type { User } from '@/types/types'
+import { User } from '@/lib/types'
 
 type CurrentInspectionProps = {
   currentInspection: Inspection

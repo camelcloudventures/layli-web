@@ -402,11 +402,9 @@ function renderQuestionInput(
       )
 
     case 'PERSON':
-      //@ts-expect-error - question.id is not typed
       return <PersonPreviewField questionId={question.id} />
 
     case 'ASSET':
-      //@ts-expect-error - question.id is not typed
       return <AssetPreviewField questionId={question.id} />
 
     default:

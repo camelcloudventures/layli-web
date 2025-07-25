@@ -19,7 +19,7 @@ interface TemplateDetailsFormProps {
 export function TemplateDetailsForm({ template, setTemplate, onContinue }: TemplateDetailsFormProps) {
   const [title, setTitle] = useState(template.title)
   const [description, setDescription] = useState(template.description)
-  const [photoUrl, setPhotoUrl] = useState(template.photo)
+  const [photoUrl, setPhotoUrl] = useState(template.photo || '')
   const [errors, setErrors] = useState({ title: false })
 
   // Update the parent template state when form values change

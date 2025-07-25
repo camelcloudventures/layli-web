@@ -9,6 +9,8 @@ import { columns } from './columns'
 import { DataTable } from '@/components/custom/data-table'
 import Loading from './loading'
 import { useRouter } from 'next/navigation'
+import HasPermission from '../../components/has-permission'
+import { Permission } from '@/lib/auth/auth'
 
 interface InspectionListProps {
   inspections: Inspection[]
@@ -58,10 +60,12 @@ export function InspectionList({
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Button onClick={handleCreateInspection}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Inspection
-        </Button>
+        <HasPermission permission={Permission.CREATE_INSPECTION}>
+          <Button onClick={handleCreateInspection}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Inspection
+          </Button>
+        </HasPermission>
       </div>
 
       <div>

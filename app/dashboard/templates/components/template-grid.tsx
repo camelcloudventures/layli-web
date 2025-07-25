@@ -36,7 +36,7 @@ export function TemplateGrid({ templates }: TemplateGridProps) {
     }, 0)
   }
 
-  const deleteTemplate = (templateId: number) => {
+  const deleteTemplate = (templateId: string) => {
     // Retrieve current templates
     const savedTemplates = localStorage.getItem('auditTemplates')
     if (!savedTemplates) return
@@ -127,7 +127,9 @@ export function TemplateGrid({ templates }: TemplateGridProps) {
           </CardContent>
           <CardFooter className="border-t bg-muted/50 p-3">
             <div className="flex w-full items-center justify-between text-xs text-muted-foreground">
-              <span>Created: {formatDate(template.created_at)}</span>
+              <span>
+                Created: {formatDate(template.created_at?.toString() || '')}
+              </span>
               <Button asChild size="sm" variant="ghost">
                 <Link href={`/dashboard/templates/${template.id}/preview`}>
                   Preview

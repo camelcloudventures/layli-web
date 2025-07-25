@@ -114,7 +114,7 @@ export function CreateInspectionForm({ sites, users, templates }: Props) {
 
   const handleViewInspection = () => {
     if (createdInspection) {
-      router.push(`/dashboard/inspections/${createdInspection.id}/report`)
+      router.push(`/dashboard/inspections`)
     }
     setShowSuccessDialog(false)
   }

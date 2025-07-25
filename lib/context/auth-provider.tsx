@@ -16,7 +16,7 @@ import {
   signIn,
   signUp,
 } from '@/app/auth/actions/actions'
-import { Org } from '@/types/types'
+import { Org } from '@/lib/types'
 
 interface AuthUser {
   id: string

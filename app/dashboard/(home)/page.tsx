@@ -85,6 +85,8 @@ export default async function DashboardPage() {
     GET('/issues') as Promise<{ success: string; data: Issue[] }>,
   ])
 
+  console.log('notifications are', notifications)
+
   // Transform real data for the overview stats
   const stats = [
     {

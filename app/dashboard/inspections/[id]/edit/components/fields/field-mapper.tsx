@@ -16,7 +16,7 @@ import type {
   Response,
   LocationResponse,
 } from '@/lib/types/inspection-types'
-import type { User } from '@/types/types'
+import { User } from '@/lib/types'
 
 interface ExtendedFile {
   questionId?: number

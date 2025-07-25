@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { AuditTemplate, Page, Section } from '@/types/audit-types'
+import { AuditTemplate, Page, Section } from '@/lib/types/audit-types'
 
 export const useInspectionPages = (
   template: AuditTemplate,

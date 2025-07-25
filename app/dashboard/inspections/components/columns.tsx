@@ -178,7 +178,7 @@ export const columns: ColumnDef<Inspection>[] = [
     cell: ({ row }) => {
       return row.original.final_score !== null
         ? `${row.original.final_score}%`
-        : 'N/A'
+        : 'Not Completed'
     },
   },
   {

@@ -121,7 +121,7 @@ export function DoInspectionForm({ inspection }: Props) {
         handleResponse={handleResponse}
         handleFieldSave={handleFieldSave}
         setActiveQuestionId={setActiveQuestionId}
-        setNote={setNote}
+        setNote={setNote} 
         setIsNoteDialogOpen={setIsNoteDialogOpen}
         setIsFileDialogOpen={setIsFileDialogOpen}
         fileAttachments={fileAttachments}

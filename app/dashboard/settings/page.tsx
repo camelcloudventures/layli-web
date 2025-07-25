@@ -28,11 +28,15 @@ export default async function page() {
         </p>
       </div>
 
-      <Tabs defaultValue="general" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="general">General</TabsTrigger>
+      <Tabs defaultValue="general" className="">
+        <TabsList className="w-44 ">
+          <TabsTrigger className="cursor-pointer" value="general">
+            General
+          </TabsTrigger>
           <HasPermission permission={Permission.MANAGE_USERS}>
-            <TabsTrigger value="advanced">Advanced</TabsTrigger>
+            <TabsTrigger className="cursor-pointer" value="advanced">
+              Advanced
+            </TabsTrigger>
           </HasPermission>
         </TabsList>
 

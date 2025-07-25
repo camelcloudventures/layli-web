@@ -6,9 +6,9 @@ import { notFound } from 'next/navigation'
 import { Inspection } from '@/app/dashboard/inspections/[id]/report/types/inspection-types'
 
 interface InspectionReportPageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 interface GetInspectionResponse {
@@ -20,9 +20,8 @@ interface GetInspectionResponse {
 export default async function InspectionReportPage({
   params,
 }: InspectionReportPageProps) {
-  const inspectionData = (await getInspection(
-    params.id,
-  )) as GetInspectionResponse
+  const { id } = await params
+  const inspectionData = (await getInspection(id)) as GetInspectionResponse
 
   if (!inspectionData?.data) {
     notFound()

@@ -25,7 +25,7 @@ export function DraggableCard({ action, onEdit }: DraggableCardProps) {
 
   return (
     <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
-      <ActionCard action={action} onEdit={onEdit} />
+      <ActionCard action={action} onClick={() => onEdit(action)} />
     </div>
   )
 }

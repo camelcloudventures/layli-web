@@ -35,6 +35,45 @@ type IProps = {
     rate: number
   }[]
   summary?: AnalyticsSummary | null
+  reportData?: {
+    auditSummary: {
+      totalInspections: number
+      completedInspections: number
+      pendingInspections: number
+      totalIssues: number
+      resolvedIssues: number
+      recentInspections: Array<{
+        id: number
+        title: string
+        status: string
+        date: string
+        assignedTo: string
+      }>
+    }
+    issues: {
+      totalIssues: number
+      resolvedIssues: number
+      openIssues: number
+      issuesByCategory: Record<string, number>
+      criticalIssues: Array<{
+        id: string
+        title: string
+        category: string
+        priority: string
+        due_at: string
+        assignees: Array<{
+          id: string
+          full_name: string
+          email: string
+          role: string
+        }>
+      }>
+      topRecurringIssues: Array<{
+        title: string
+        occurrences: number
+      }>
+    }
+  }
 }
 
 export default function HomeTabs({
@@ -44,6 +83,7 @@ export default function HomeTabs({
   issuesByCategory,
   actionCompletionRate,
   summary,
+  reportData,
 }: IProps) {
   const [selectedTab, setSelectedTab] = useState('overview')
   const [reportDialogState, setReportDialogState] = useState<{
@@ -90,6 +130,7 @@ export default function HomeTabs({
           <Reports
             reportDialogState={reportDialogState}
             setReportDialogState={setReportDialogState}
+            reportData={reportData}
           />
         )
       case 'notifications':

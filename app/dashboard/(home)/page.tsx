@@ -48,6 +48,23 @@ interface Inspection {
   }>
 }
 
+// Interface for issue data
+interface Issue {
+  id: string
+  title: string
+  category: string
+  status: string
+  priority: string
+  due_at: string
+  created_at: string
+  assignees: Array<{
+    id: string
+    full_name: string
+    email: string
+    role: string
+  }>
+}
+
 export default async function DashboardPage() {
   // Fetch all analytics data and inspections in parallel
   const [
@@ -57,6 +74,7 @@ export default async function DashboardPage() {
     actions,
     inspections,
     inspectionsData,
+    issuesData,
   ] = await Promise.all([
     getNotifications(),
     getAnalyticsSummary(),
@@ -64,6 +82,7 @@ export default async function DashboardPage() {
     getActionsAnalytics(),
     getInspectionsAnalytics(),
     GET('/inspections') as Promise<{ success: string; data: Inspection[] }>,
+    GET('/issues') as Promise<{ success: string; data: Issue[] }>,
   ])
 
   // Transform real data for the overview stats
@@ -265,6 +284,40 @@ export default async function DashboardPage() {
         }))
     : []
 
+  // Prepare data for reports
+  const reportData = {
+    // Audit Summary Report Data
+    auditSummary: {
+      totalInspections: summary?.total_inspections || 0,
+      completedInspections: inspections?.byStatus?.completed || 0,
+      pendingInspections: inspections?.byStatus?.pending || 0,
+      totalIssues: issuesData?.success ? issuesData.data.length : 0,
+      resolvedIssues: issuesData?.success
+        ? issuesData.data.filter((issue) => issue.status === 'closed').length
+        : 0,
+      recentInspections: recentInspections,
+    },
+    // Issues Report Data
+    issues: {
+      totalIssues: issuesData?.success ? issuesData.data.length : 0,
+      resolvedIssues: issuesData?.success
+        ? issuesData.data.filter((issue) => issue.status === 'closed').length
+        : 0,
+      openIssues: issuesData?.success
+        ? issuesData.data.filter((issue) => issue.status === 'open').length
+        : 0,
+      issuesByCategory: issues?.issuesByCategory || {},
+      criticalIssues: issuesData?.success
+        ? issuesData.data
+            .filter(
+              (issue) => issue.priority === 'high' && issue.status === 'open',
+            )
+            .slice(0, 3)
+        : [],
+      topRecurringIssues: issues?.topRecurringIssues || [],
+    },
+  }
+
   console.log(notifications)
   return (
     <div className="flex flex-col gap-6 w-full">
@@ -278,6 +331,7 @@ export default async function DashboardPage() {
         issuesByCategory={issuesByCategory}
         actionCompletionRate={actionCompletionRate}
         summary={summary}
+        reportData={reportData}
       />
       {/* Recent Inspections Section */}
       <Card>

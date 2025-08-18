@@ -1,4 +1,4 @@
-import { Skeleton } from "@/components/ui/skeleton"
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ActionsLoading() {
   return (
@@ -16,7 +16,10 @@ export default function ActionsLoading() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {Array.from({ length: 3 }).map((_, colIndex) => (
-            <div key={colIndex} className="bg-muted/50 rounded-lg p-4 min-h-[500px]">
+            <div
+              key={colIndex}
+              className="bg-muted/50 rounded-lg p-4 min-h-[500px]"
+            >
               <Skeleton className="h-6 w-24 mb-4" />
 
               <div className="space-y-3">
@@ -29,5 +32,5 @@ export default function ActionsLoading() {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,19 +1,20 @@
-'use client'
+"use client";
 
-import { useMemo } from 'react'
-import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable'
-import { useDroppable } from '@dnd-kit/core'
+import { useMemo } from "react";
+import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
+import { useDroppable } from "@dnd-kit/core";
 
-import { cn } from '@/lib/utils'
-import { ActionCard } from './action-card'
-import { Action, ActionStatus } from '@/lib/types'
+import { cn } from "@/lib/utils";
+import { ActionCard } from "./action-card";
+import { Action, ActionStatus } from "@/lib/types";
+import { CardLoadingSkeleton } from "./card-loading-skeleton";
 
 interface ActionColumnProps {
-  id: ActionStatus
-  title: string
-  actions: Action[]
-  onEditAction: (action: Action) => void
-  droppable?: boolean
+  id: ActionStatus;
+  title: string;
+  actions: Action[];
+  onEditAction: (action: Action) => void;
+  droppable?: boolean;
 }
 
 function ActionColumn({
@@ -23,7 +24,7 @@ function ActionColumn({
   onEditAction,
   droppable = true,
 }: ActionColumnProps) {
-  const { setNodeRef, isOver } = useDroppable({ id })
+  const { setNodeRef, isOver } = useDroppable({ id });
 
   const content = (
     <div className="space-y-3">
@@ -35,21 +36,17 @@ function ActionColumn({
           isDraggable={droppable}
         />
       ))}
-      {actions.length === 0 && (
-        <div className="text-center py-8 text-muted-foreground text-sm border border-dashed rounded-md">
-          No actions
-        </div>
-      )}
+      {actions.length === 0 && <CardLoadingSkeleton />}
     </div>
-  )
+  );
 
   return (
     <div
       ref={setNodeRef}
       className={cn(
-        'bg-muted/50 rounded-lg p-4 min-h-[500px] w-full transition-all',
-        isOver && droppable && 'ring-2 ring-primary ring-inset bg-muted',
-        !droppable && 'opacity-70 pointer-events-none',
+        "bg-muted/50 rounded-lg p-4 min-h-[500px] w-full transition-all",
+        isOver && droppable && "ring-2 ring-primary ring-inset bg-muted",
+        !droppable && "opacity-70 pointer-events-none"
       )}
     >
       <h3 className="font-medium mb-4 flex items-center justify-between">
@@ -69,31 +66,31 @@ function ActionColumn({
         content
       )}
     </div>
-  )
+  );
 }
 
 interface ActionBoardProps {
-  actions: Action[]
-  onEdit: (action: Action) => void
+  actions: Action[];
+  onEdit: (action: Action) => void;
 }
 
 export function ActionBoard({ actions, onEdit }: ActionBoardProps) {
   const todoActions = useMemo(
     () => actions.filter((a) => a.status === ActionStatus.TODO),
-    [actions],
-  )
+    [actions]
+  );
   const inProgressActions = useMemo(
     () => actions.filter((a) => a.status === ActionStatus.IN_PROGRESS),
-    [actions],
-  )
+    [actions]
+  );
   const completedActions = useMemo(
     () => actions.filter((a) => a.status === ActionStatus.COMPLETED),
-    [actions],
-  )
+    [actions]
+  );
   const doneActions = useMemo(
     () => actions.filter((a) => a.status === ActionStatus.DONE),
-    [actions],
-  )
+    [actions]
+  );
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -123,5 +120,5 @@ export function ActionBoard({ actions, onEdit }: ActionBoardProps) {
         droppable={false}
       />
     </div>
-  )
+  );
 }

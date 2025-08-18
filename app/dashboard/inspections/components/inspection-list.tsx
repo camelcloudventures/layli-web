@@ -1,50 +1,50 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Search, Plus } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import type { Inspection } from '@/lib/types/inspection-types'
-import { columns } from './columns'
-import { DataTable } from '@/components/custom/data-table'
-import Loading from './loading'
-import { useRouter } from 'next/navigation'
-import HasPermission from '../../components/has-permission'
-import { Permission } from '@/lib/auth/auth'
+import { useState } from "react";
+import { Search, Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import type { Inspection } from "@/lib/types/inspection-types";
+import { columns } from "./columns";
+import { DataTable } from "@/components/custom/data-table";
+import Loading from "./loading";
+import { useRouter } from "next/navigation";
+import HasPermission from "../../components/has-permission";
+import { Permission } from "@/lib/auth/auth";
 
 interface InspectionListProps {
-  inspections: Inspection[]
-  loading?: boolean
+  inspections: Inspection[];
+  loading?: boolean;
 }
 
 export function InspectionList({
   inspections = [],
   loading = false,
 }: InspectionListProps) {
-  const [searchQuery, setSearchQuery] = useState('')
-  const router = useRouter()
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
 
   // Ensure inspections is an array
-  const inspectionsArray = Array.isArray(inspections) ? inspections : []
+  const inspectionsArray = Array.isArray(inspections) ? inspections : [];
 
   const filteredInspections = inspectionsArray.filter((inspection) => {
     return (
       inspection.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (inspection.site?.name || '')
+      (inspection.site?.name || "")
         .toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
-      (inspection.prepared_by || '')
+      (inspection.prepared_by || "")
         .toLowerCase()
         .includes(searchQuery.toLowerCase())
-    )
-  })
+    );
+  });
 
   const handleCreateInspection = () => {
-    router.push('/dashboard/inspections/create')
-  }
+    router.push("/dashboard/inspections/create");
+  };
 
   if (loading) {
-    return <Loading />
+    return <Loading />;
   }
 
   return (
@@ -76,5 +76,5 @@ export function InspectionList({
         />
       </div>
     </div>
-  )
+  );
 }

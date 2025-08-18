@@ -1,35 +1,35 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import SubmitBtn from "@/components/custom/submit-btn";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { MultiSelect } from "@/components/ui/multi-select";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/lib/context/auth-provider";
 import {
+  ActionFrequency,
   ActionPriority,
   ActionStatus,
   Assignee,
-  User,
-  ActionFrequency,
   Site,
-} from '@/lib/types'
-import { createAction } from '../actions/actions'
-import { toast } from 'sonner'
-import { MultiSelect } from '@/components/ui/multi-select'
-import SubmitBtn from '@/components/custom/submit-btn'
-import { Label } from '@/components/ui/label'
-import { useAuth } from '@/lib/context/auth-provider'
+  User,
+} from "@/lib/types";
+import { useState } from "react";
+import { toast } from "sonner";
+import { createAction } from "../actions/actions";
 
 interface CreateActionFormProps {
-  users: User[]
-  sites: Site[]
-  onCancel: () => void
+  users: User[];
+  sites: Site[];
+  onCancel: () => void;
 }
 
 export function CreateActionForm({
@@ -37,69 +37,69 @@ export function CreateActionForm({
   sites,
   onCancel,
 }: CreateActionFormProps) {
-  const { user } = useAuth()
-  const [selectedAssignees, setSelectedAssignees] = useState<Assignee[]>([])
+  const { user } = useAuth();
+  const [selectedAssignees, setSelectedAssignees] = useState<Assignee[]>([]);
   const [dueDate, setDueDate] = useState<string>(
-    new Date().toISOString().split('T')[0],
-  )
-  const [selectedSite, setSelectedSite] = useState<Site | null>(null)
+    new Date().toISOString().split("T")[0]
+  );
+  const [selectedSite, setSelectedSite] = useState<Site | null>(null);
   const [selectedFrequency, setSelectedFrequency] = useState<ActionFrequency>(
-    ActionFrequency.ONE_TIME,
-  )
+    ActionFrequency.ONE_TIME
+  );
 
   const handleSubmit = async (formData: FormData) => {
     // Validate required fields
     if (!selectedSite) {
-      toast.error('Please select a site')
-      return
+      toast.error("Please select a site");
+      return;
     }
 
     if (selectedAssignees.length === 0) {
-      toast.error('Please select at least one assignee')
-      return
+      toast.error("Please select at least one assignee");
+      return;
     }
 
     // Add form data
-    formData.append('priority', ActionPriority.MEDIUM)
-    formData.append('status', ActionStatus.TODO)
-    formData.append('frequency', selectedFrequency)
-    formData.append('due_at', dueDate)
+    formData.append("priority", ActionPriority.MEDIUM);
+    formData.append("status", ActionStatus.TODO);
+    formData.append("frequency", selectedFrequency);
+    formData.append("due_at", dueDate);
 
     // Add assignees and created_by data
-    formData.append('assignees', JSON.stringify(selectedAssignees))
+    formData.append("assignees", JSON.stringify(selectedAssignees));
     formData.append(
-      'created_by',
+      "created_by",
       JSON.stringify({
-        id: user?.id || '',
-        full_name: user?.full_name || '',
-        email: user?.email || '',
-        role: user?.role || 'user',
-      }),
-    )
+        id: user?.id || "",
+        full_name: user?.full_name || "",
+        email: user?.email || "",
+        role: user?.role || "user",
+      })
+    );
 
     const result = await createAction(
       formData,
       {
-        id: user?.id || '',
-        full_name: user?.full_name || '',
-        email: user?.email || '',
-        role: user?.role || 'user',
+        id: user?.id || "",
+        full_name: user?.full_name || "",
+        email: user?.email || "",
+        role: user?.role || "user",
       },
       selectedSite!,
-      selectedAssignees,
-    )
+      selectedAssignees
+    );
     if (result && !result.error) {
-      toast.success('Action created successfully')
-      onCancel()
+      toast.success("Action created successfully");
+      onCancel();
     } else {
-      toast.error(result?.error || 'Failed to create action')
+      toast.error(result?.error || "Failed to create action");
     }
-  }
+  };
 
   const userOptions = users.map((user) => ({
     value: user.user.id,
     label: user.user.full_name,
-  }))
+  }));
 
   return (
     <form action={handleSubmit} className="space-y-4">
@@ -116,10 +116,10 @@ export function CreateActionForm({
       <div className="space-y-2">
         <Label htmlFor="site">Site *</Label>
         <Select
-          value={selectedSite?.id ? String(selectedSite.id) : ''}
+          value={selectedSite?.id ? String(selectedSite.id) : ""}
           onValueChange={(value) => {
-            const site = sites.find((s) => String(s.id) === value)
-            setSelectedSite(site || null)
+            const site = sites.find((s) => String(s.id) === value);
+            setSelectedSite(site || null);
           }}
         >
           <SelectTrigger>
@@ -192,7 +192,7 @@ export function CreateActionForm({
           <SelectContent>
             {Object.values(ActionFrequency).map((frequency) => (
               <SelectItem key={frequency} value={frequency}>
-                {frequency.replace('_', ' ')}
+                {frequency.replace("_", " ")}
               </SelectItem>
             ))}
           </SelectContent>
@@ -213,8 +213,8 @@ export function CreateActionForm({
                 full_name: u.user.full_name,
                 email: u.user.email,
                 role: u.user.role,
-              }))
-            setSelectedAssignees(assignees)
+              }));
+            setSelectedAssignees(assignees);
           }}
           placeholder="Select assignees"
         />
@@ -227,7 +227,7 @@ export function CreateActionForm({
           type="date"
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
-          min={new Date().toISOString().split('T')[0]}
+          min={new Date().toISOString().split("T")[0]}
         />
       </div>
 
@@ -243,5 +243,5 @@ export function CreateActionForm({
         <SubmitBtn label="Create Action" variant="default" className="" />
       </div>
     </form>
-  )
+  );
 }

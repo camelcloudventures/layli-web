@@ -1,19 +1,20 @@
-'use server'
+"use server";
 
-import { GET, PATCH } from '@/app/backend/apiMethods'
-import { revalidateTag } from 'next/cache'
+import { GET, PATCH } from "@/app/backend/apiMethods";
+import { NotificationResponse } from "@/lib/types/notifications";
+import { revalidateTag } from "next/cache";
 
-export async function getNotifications() {
-  return await GET('/notifications', ['notifications'])
+export async function getNotifications(): Promise<NotificationResponse | null> {
+  return await GET("/notifications", ["notifications"]);
 }
 
 export async function markNotificationAsRead(id: string) {
-  return await PATCH(`/notifications/${id}/status`, ['notifications'])
+  return await PATCH(`/notifications/${id}/status`, ["notifications"]);
 }
 
 export async function markAllAsRead(ids: string[]) {
   for (const id of ids) {
-    markNotificationAsRead(id)
-    revalidateTag('notifications')
+    markNotificationAsRead(id);
+    revalidateTag("notifications");
   }
 }

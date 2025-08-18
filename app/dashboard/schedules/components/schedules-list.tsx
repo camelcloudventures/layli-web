@@ -1,42 +1,43 @@
-'use client'
+"use client";
 
-import { useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
-import { Trash2Icon } from 'lucide-react'
-import type { Schedule } from '@/lib/types/schedule-types'
+import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Trash2Icon } from "lucide-react";
+import type { Schedule } from "@/lib/types/schedule-types";
 import type {
   UserOption,
   TemplateOption,
   SiteOption,
-} from '../types/schedule-form-types'
+} from "../types/schedule-form-types";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { CreateScheduleForm } from './create-schedule-form'
-import { EditScheduleForm } from './edit-schedule-form'
-import { ScheduleDetailsDialog } from './schedule-details-dialog'
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { CreateScheduleForm } from "./create-schedule-form";
+import { EditScheduleForm } from "./edit-schedule-form";
+import { ScheduleDetailsDialog } from "./schedule-details-dialog";
 import {
   deleteSchedule,
   updateScheduleStatus,
   UpdateScheduleStatusResponse,
-} from '../actions/actions'
-import { DeleteDialog } from '@/components/ui/delete-dialog'
-import { ScheduleHeader } from './schedule-header'
-import { ScheduleSearch } from './schedule-search'
-import { ScheduleCard } from './schedule-card'
-import HasPermission from '../../components/has-permission'
-import { Permission } from '@/lib/auth/auth'
+} from "../actions/actions";
+import { DeleteDialog } from "@/components/ui/delete-dialog";
+import { ScheduleHeader } from "./schedule-header";
+import { ScheduleSearch } from "./schedule-search";
+import { ScheduleCard } from "./schedule-card";
+import HasPermission from "../../components/has-permission";
+import { Permission } from "@/lib/auth/auth";
+import SchedulesLoadingSkeleton from "./schedules-loading-skeleton";
 
 interface SchedulesListProps {
-  schedules: Schedule[]
-  users: UserOption[]
-  templates: TemplateOption[]
-  sites: SiteOption[]
+  schedules: Schedule[];
+  users: UserOption[];
+  templates: TemplateOption[];
+  sites: SiteOption[];
 }
 
 export function SchedulesList({
@@ -45,57 +46,57 @@ export function SchedulesList({
   templates,
   sites,
 }: SchedulesListProps) {
-  console.log('schedules', schedules)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [open, setOpen] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
+  console.log("schedules", schedules);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
-    null,
-  )
-  const [detailsOpen, setDetailsOpen] = useState(false)
-  const router = useRouter()
+    null
+  );
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const router = useRouter();
 
   const filteredSchedules = useMemo(() => {
-    if (!searchQuery.trim()) return schedules
-    const query = searchQuery.toLowerCase().trim()
+    if (!searchQuery.trim()) return schedules;
+    const query = searchQuery.toLowerCase().trim();
     return schedules.filter(
       (schedule) =>
         schedule.title.toLowerCase().includes(query) ||
         schedule.site?.name?.toLowerCase().includes(query) ||
         schedule.assignees?.some((assignee) =>
-          assignee.assignee.full_name?.toLowerCase().includes(query),
+          assignee.assignee.full_name?.toLowerCase().includes(query)
         ) ||
         schedule.assignees?.some((assignee) =>
-          assignee.assignee.email?.toLowerCase().includes(query),
+          assignee.assignee.email?.toLowerCase().includes(query)
         ) ||
         schedule.template?.title?.toLowerCase().includes(query) ||
-        schedule.frequency.toLowerCase().includes(query),
-    )
-  }, [searchQuery, schedules])
+        schedule.frequency.toLowerCase().includes(query)
+    );
+  }, [searchQuery, schedules]);
 
   async function handleDelete(schedule: Schedule) {
     try {
-      await deleteSchedule(String(schedule.id))
-      toast.success('Schedule deleted successfully')
-      router.refresh()
+      await deleteSchedule(String(schedule.id));
+      toast.success("Schedule deleted successfully");
+      router.refresh();
     } catch (error) {
-      console.error('Failed to delete schedule:', error)
-      toast.error('Failed to delete schedule')
+      console.error("Failed to delete schedule:", error);
+      toast.error("Failed to delete schedule");
     }
   }
 
   async function handleStatusUpdate(status: string) {
-    if (!selectedSchedule) return
+    if (!selectedSchedule) return;
 
     const res: UpdateScheduleStatusResponse = await updateScheduleStatus(
       String(selectedSchedule.id),
-      status,
-    )
+      status
+    );
     if (res?.success) {
-      toast.success(res.success)
-      if (res.data) setSelectedSchedule(res.data)
+      toast.success(res.success);
+      if (res.data) setSelectedSchedule(res.data);
     } else if (res?.error) {
-      toast.error(res.error)
+      toast.error(res.error);
     }
   }
 
@@ -157,30 +158,28 @@ export function SchedulesList({
 
       <div className="space-y-4">
         {filteredSchedules?.length === 0 ? (
-          <div className="text-center text-gray-500 py-8">
-            No schedules found.
-          </div>
+          <SchedulesLoadingSkeleton />
         ) : (
           filteredSchedules?.map((schedule) => (
             <ScheduleCard
               key={schedule.id}
               schedule={schedule}
               onEdit={(schedule) => {
-                setSelectedSchedule(schedule)
-                setEditOpen(true)
+                setSelectedSchedule(schedule);
+                setEditOpen(true);
               }}
               onDelete={(schedule) => {
-                setSelectedSchedule(schedule)
+                setSelectedSchedule(schedule);
                 const deleteButton = document.querySelector(
-                  '[aria-label="Delete Schedule"]',
-                ) as HTMLButtonElement
+                  '[aria-label="Delete Schedule"]'
+                ) as HTMLButtonElement;
                 if (deleteButton) {
-                  deleteButton.click()
+                  deleteButton.click();
                 }
               }}
               onViewDetails={(schedule) => {
-                setSelectedSchedule(schedule)
-                setDetailsOpen(true)
+                setSelectedSchedule(schedule);
+                setDetailsOpen(true);
               }}
             />
           ))
@@ -194,5 +193,5 @@ export function SchedulesList({
         onStatusUpdate={handleStatusUpdate}
       />
     </div>
-  )
+  );
 }

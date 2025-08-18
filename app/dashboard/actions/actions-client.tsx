@@ -1,141 +1,131 @@
-'use client'
+"use client";
 
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Action, Site, User, ActionStatus } from '@/lib/types'
-import { PlusCircle, LayoutGrid, ListIcon } from 'lucide-react'
-import { useEffect, useState, useMemo, useCallback } from 'react'
-import { CreateActionForm } from './create-action-form'
-import { ActionBoard } from './action-board'
-import { EditActionForm } from './edit-action-form'
-import { Button } from '@/components/ui/button'
-import { ActionList } from './action-list'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useActions } from "@/hooks/use-actions";
+import { useSites } from "@/hooks/use-sites";
+import { useUsers } from "@/hooks/use-users";
+import { Action, ActionStatus } from "@/lib/types";
 import {
-  DndContext,
-  DragOverlay,
   closestCorners,
+  DndContext,
   DragEndEvent,
+  DragOverlay,
   DragStartEvent,
-} from '@dnd-kit/core'
-import { ActionCard } from './action-card'
-import { updateAction } from '../actions/actions'
-import { columns } from './columns'
-import { toast } from 'sonner'
+} from "@dnd-kit/core";
+import { LayoutGrid, ListIcon, PlusCircle } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { updateAction } from "./actions/actions";
+import { ActionBoard } from "./components/action-board";
+import { ActionCard } from "./components/action-card";
+import { ActionList } from "./components/action-list";
+import { columns } from "./components/columns";
+import { CreateActionForm } from "./components/create-action-form";
+import { EditActionForm } from "./components/edit-action-form";
 
-type View = 'board' | 'list'
-type UpdateActionResponse = { success?: string; error?: string }
+type View = "board" | "list";
+type UpdateActionResponse = { success?: string; error?: string };
 
-export default function Actions({
-  actions: initialActions,
-  users,
-  sites,
-}: {
-  actions: Action[]
-  users: User[]
-  sites: Site[]
-}) {
-  const [viewMode, setViewMode] = useState<View>('board')
-  const [isCreateActionDialogOpen, setIsCreateActionDialogOpen] = useState(
-    false,
-  )
-  const [isEditActionDialogOpen, setIsEditActionDialogOpen] = useState(false)
-  const [selectedAction, setSelectedAction] = useState<Action | null>(null)
-  const [actions, setActions] = useState<Action[]>([])
-  const [activeAction, setActiveAction] = useState<Action | null>(null)
+export default function ActionsClient() {
+  const [viewMode, setViewMode] = useState<View>("board");
+  const [isCreateActionDialogOpen, setIsCreateActionDialogOpen] =
+    useState(false);
+  const [isEditActionDialogOpen, setIsEditActionDialogOpen] = useState(false);
+  const [selectedAction, setSelectedAction] = useState<Action | null>(null);
+  const [activeAction, setActiveAction] = useState<Action | null>(null);
 
-  useEffect(() => {
-    setActions(initialActions)
-  }, [initialActions])
+  const { actions, setActions } = useActions();
+
+  const { users } = useUsers();
+
+  const { sites } = useSites();
 
   const handleCreateAction = () => {
-    setIsCreateActionDialogOpen(true)
-  }
+    setIsCreateActionDialogOpen(true);
+  };
 
   const handleEditAction = useCallback((action: Action) => {
-    setSelectedAction(action)
-    setIsEditActionDialogOpen(true)
-  }, [])
+    setSelectedAction(action);
+    setIsEditActionDialogOpen(true);
+  }, []);
 
   // Memoize columns to prevent recreation on every render
-  const memoizedColumns = useMemo(() => columns(sites, handleEditAction), [
-    sites,
-    handleEditAction,
-  ])
+  const memoizedColumns = useMemo(
+    () => columns(sites, handleEditAction),
+    [sites, handleEditAction]
+  );
 
   const statusMap: Record<string, ActionStatus> = {
     [ActionStatus.TODO]: ActionStatus.TODO,
     [ActionStatus.IN_PROGRESS]: ActionStatus.IN_PROGRESS,
     [ActionStatus.COMPLETED]: ActionStatus.COMPLETED,
     [ActionStatus.DONE]: ActionStatus.DONE,
-  }
+  };
 
   const getStatusFromOverId = (overId: string): ActionStatus | undefined => {
     // If overId matches a status, return it
-    if (statusMap[overId]) return statusMap[overId]
+    if (statusMap[overId]) return statusMap[overId];
     // Otherwise, try to find the action and return its status
-    const targetAction = actions.find((a) => a.id === overId)
-    return targetAction?.status
-  }
+    const targetAction = actions.find((a) => a.id === overId);
+    return targetAction?.status;
+  };
 
   const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event
-    const draggedAction = actions.find((action) => action.id === active.id)
-    setActiveAction(draggedAction || null)
-  }
+    const { active } = event;
+    const draggedAction = actions.find((action) => action.id === active.id);
+    setActiveAction(draggedAction || null);
+  };
 
   const handleDragEnd = async (event: DragEndEvent) => {
-    setActiveAction(null)
-    const { active, over } = event
-    if (!over || !active) return
-    if (active.id === over.id) return
-    const action = actions.find((a) => a.id === active.id)
-    if (!action) return
+    setActiveAction(null);
+    const { active, over } = event;
+    if (!over || !active) return;
+    if (active.id === over.id) return;
+    const action = actions.find((a) => a.id === active.id);
+    if (!action) return;
 
     // Get the new status
-    const newStatus = getStatusFromOverId(String(over.id))
-    console.log('over.id:', over.id, 'type:', typeof over.id)
-    console.log('newStatus', newStatus)
+    const newStatus = getStatusFromOverId(String(over.id));
+    console.log("over.id:", over.id, "type:", typeof over.id);
+    console.log("newStatus", newStatus);
     if (!newStatus) {
-      toast.error('Invalid status')
-      return
+      toast.error("Invalid status");
+      return;
     }
 
     // Store original state for rollback
-    const originalActions = [...actions]
-
-    // OPTIMISTIC UPDATE: Immediately update UI
-    setActions((prev) =>
-      prev.map((a) => (a.id === action.id ? { ...a, status: newStatus } : a)),
-    )
+    const originalActions = [...actions];
 
     // Send API request in background
     try {
-      console.log('Moving action', action.id, 'to status', newStatus)
+      console.log("Moving action", action.id, "to status", newStatus);
       const res = (await updateAction(action.id, {
         status: newStatus,
-      })) as UpdateActionResponse
-      console.log('Update response: is ', res)
+      })) as UpdateActionResponse;
+      console.log("Update response: is ", res);
 
       if (res && res.success) {
-        toast.success(res.success)
+        toast.success(res.success);
       } else {
         // API failed - rollback to original state
-        setActions(originalActions)
-        toast.error(res?.error || 'Failed to update action')
+        setActions(originalActions);
+        toast.error(res?.error || "Failed to update action");
       }
     } catch (error) {
       // Network error or other exception - rollback to original state
-      console.error('Update action error:', error)
-      setActions(originalActions)
-      toast.error('Failed to update action - please try again')
+      console.error("Update action error:", error);
+      setActions(originalActions);
+      toast.error("Failed to update action - please try again");
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -156,7 +146,7 @@ export default function Actions({
         <Tabs
           defaultValue="board"
           value={viewMode}
-          onValueChange={(value) => setViewMode(value as 'board' | 'list')}
+          onValueChange={(value) => setViewMode(value as "board" | "list")}
           className="w-full"
         >
           <TabsList className="grid w-[200px] grid-cols-2">
@@ -217,9 +207,9 @@ export default function Actions({
       <Dialog
         open={isEditActionDialogOpen}
         onOpenChange={(open) => {
-          setIsEditActionDialogOpen(open)
+          setIsEditActionDialogOpen(open);
           if (!open) {
-            setSelectedAction(null) // Clear selected action when dialog closes
+            setSelectedAction(null); // Clear selected action when dialog closes
           }
         }}
       >
@@ -236,13 +226,13 @@ export default function Actions({
               sites={sites}
               action={selectedAction}
               onCancel={() => {
-                setIsEditActionDialogOpen(false)
-                setSelectedAction(null) // Also clear when cancel is clicked
+                setIsEditActionDialogOpen(false);
+                setSelectedAction(null); // Also clear when cancel is clicked
               }}
             />
           )}
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

@@ -1,11 +1,8 @@
-'use client'
+"use client";
 
-import type React from 'react'
+import type React from "react";
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -14,70 +11,73 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from "@/components/ui/select";
+import { useState } from "react";
 
-import { toast } from 'sonner'
-import { inviteUser } from '@/app/dashboard/settings/actions/actions'
-import { useAuth } from '@/lib/context/auth-provider'
-import SubmitBtn from '@/components/custom/submit-btn'
-import { DataTable } from '@/components/custom/data-table'
-import { columns } from './columns'
-import { UserPlus } from 'lucide-react'
+import { inviteUser } from "@/app/dashboard/settings/actions/actions";
+import { DataTable } from "@/components/custom/data-table";
+import SubmitBtn from "@/components/custom/submit-btn";
+import { useAuth } from "@/lib/context/auth-provider";
+import { UserPlus } from "lucide-react";
+import { toast } from "sonner";
+import { columns } from "./columns";
 
-type UserRole = 'admin' | 'auditor' | 'supervisor'
+type UserRole = "admin" | "auditor" | "supervisor";
 
-interface Invite {
-  id: string
-  email: string
-  role: UserRole
-  token: string
-  invited_by: string
-  created_at: string
-  used: boolean
+export interface Invite {
+  id: string;
+  email: string;
+  role: UserRole;
+  token: string;
+  invited_by: string;
+  created_at: string;
+  used: boolean;
 }
 
 interface InvitesResponse {
-  data: Invite[]
+  data: Invite[];
 }
 
-export function UserManagement({ invites }: { invites: InvitesResponse }) {
-  const { user, activeOrg } = useAuth()
+export function UserManagement({ invites }: { invites: Invite[] }) {
+  const { user, activeOrg } = useAuth();
 
-  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [inviteForm, setInviteForm] = useState({
-    role: 'auditor' as UserRole,
-  })
+    role: "auditor" as UserRole,
+  });
 
   const handleInviteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setInviteForm((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setInviteForm((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleInviteSubmit = async (formData: FormData) => {
-    setIsLoading(true)
+    setIsLoading(true);
     const res = await inviteUser(
       formData,
-      user?.id || '',
+      user?.id || "",
       inviteForm.role,
-      activeOrg?.id || '',
-    )
-    setIsLoading(false)
+      activeOrg?.id || ""
+    );
+    setIsLoading(false);
     if (res?.error) {
-      toast.error(res?.error || 'Invitation failed, please try again.')
-      return
+      toast.error(res?.error || "Invitation failed, please try again.");
+      return;
     }
-    toast.success(res?.success)
-    setInviteForm({ role: inviteForm.role })
-    setIsInviteDialogOpen(false)
-  }
+    toast.success(res?.success);
+    setInviteForm({ role: inviteForm.role });
+    setIsInviteDialogOpen(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -134,7 +134,7 @@ export function UserManagement({ invites }: { invites: InvitesResponse }) {
               </div>
               <DialogFooter>
                 <SubmitBtn
-                  label={isLoading ? 'Sending...' : 'Send Invitation'}
+                  label={isLoading ? "Sending..." : "Send Invitation"}
                   variant="default"
                   className=""
                   isDisabled={isLoading}
@@ -148,10 +148,10 @@ export function UserManagement({ invites }: { invites: InvitesResponse }) {
       <div className="border rounded-md">
         <DataTable
           columns={columns}
-          //@ts-expect-error -0e
-          data={invites?.error ? [] : invites?.data}
+          //@ts-expect-error -0expects invites to be typed
+          data={invites}
         />
       </div>
     </div>
-  )
+  );
 }

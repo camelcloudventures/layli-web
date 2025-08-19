@@ -1,37 +1,40 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Trash2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { DeleteDialog } from '@/components/ui/delete-dialog'
-import { deleteQuestion } from '@/app/dashboard/templates/actions/actions'
-import { toast } from 'sonner'
+import { useState } from "react";
+import { Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { DeleteDialog } from "@/components/ui/delete-dialog";
+import { deleteQuestion } from "@/app/dashboard/templates/actions/actions";
+import { toast } from "sonner";
+import { useAuditTemplates } from "@/hooks/use-audit-templates";
 
 interface DeleteQuestionButtonProps {
-  questionId: string
-  sectionId: string
+  questionId: string;
+  sectionId: string;
 }
 
 export function DeleteQuestionButton({
   questionId,
   sectionId,
 }: DeleteQuestionButtonProps) {
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
+  const { reset } = useAuditTemplates();
 
   async function handleDelete() {
-    setLoading(true)
-    const result = await deleteQuestion(questionId, sectionId)
+    setLoading(true);
+    const result = await deleteQuestion(questionId, sectionId);
     // @ts-expect-error --need to fix this
     if (result && result.success) {
       // @ts-expect-error --need to fix this
-      toast.success(result.success)
+      toast.success(result.success);
+      reset(); // Reset the store to trigger a refetch
       // @ts-expect-error --need to fix this
     } else if (result && result.error) {
       // @ts-expect-error --need to fix this
-      toast.error(result.error)
+      toast.error(result.error);
     }
 
-    setLoading(false)
+    setLoading(false);
   }
 
   return (
@@ -51,5 +54,5 @@ export function DeleteQuestionButton({
         </Button>
       }
     />
-  )
+  );
 }

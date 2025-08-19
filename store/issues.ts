@@ -1,6 +1,5 @@
 import { Issue } from "@/lib/types";
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
 interface IssuesStore {
   issues: Issue[];
@@ -9,16 +8,9 @@ interface IssuesStore {
   setSuccess: (success: boolean) => void;
 }
 
-export const useIssuesStore = create<IssuesStore>()(
-  persist(
-    (set) => ({
-      issues: [],
-      success: false,
-      setIssues: (issues) => set({ issues }),
-      setSuccess: (success) => set({ success }),
-    }),
-    {
-      name: "issues-storage",
-    }
-  )
-);
+export const useIssuesStore = create<IssuesStore>()((set) => ({
+  issues: [],
+  success: false,
+  setIssues: (issues) => set({ issues }),
+  setSuccess: (success) => set({ success }),
+}));

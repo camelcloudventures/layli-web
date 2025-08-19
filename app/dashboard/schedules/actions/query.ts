@@ -1,10 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  getActiveUsers,
-  getSchedules,
-  getSites,
-  getTemplates,
-} from "./actions";
+import { getActiveUsers, getSchedules, getSites } from "./actions";
 
 export function useGetActiveUsers(enabled: boolean) {
   return useQuery({
@@ -31,16 +26,6 @@ export function useGetSchedules(page: number, enabled: boolean) {
     queryKey: ["schedules", page],
     queryFn: async () => {
       return await getSchedules(page);
-    },
-    enabled: enabled ?? true,
-  });
-}
-
-export function useGetTemplates(enabled: boolean) {
-  return useQuery({
-    queryKey: ["templates"],
-    queryFn: async () => {
-      return await getTemplates();
     },
     enabled: enabled ?? true,
   });

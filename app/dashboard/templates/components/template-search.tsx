@@ -1,42 +1,35 @@
-'use client'
+"use client";
 
-import { Search } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import type { AuditTemplate } from '@/lib/types/audit-types'
-import Link from 'next/link'
-import Pagination from './pagination'
-import Image from 'next/image'
-import { formatDate } from '@/lib/utils'
-import { AuditTemplatesSkeleton } from './audit-template-loading-skeleton'
-
+import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import type { AuditTemplate } from "@/lib/types/audit-types";
+import Link from "next/link";
+import Image from "next/image";
+import { formatDate } from "@/lib/utils";
+import { AuditTemplatesSkeleton } from "./audit-template-loading-skeleton";
 
 interface TemplateSearchProps {
-  templates: AuditTemplate[]
-  searchParams: { search?: string }
-  page: number
-  totalPages: number
-  isLoading: boolean
+  templates: AuditTemplate[];
+  searchParams: { search?: string };
+  page: number;
+
+  isLoading: boolean;
 }
 
 export function TemplateSearch({
   templates,
   searchParams,
-  page,
-  totalPages,
+
   isLoading,
 }: TemplateSearchProps) {
-  const searchQuery = searchParams.search || ''
+  const searchQuery = searchParams.search || "";
 
   const filteredTemplates = templates.filter(
     (template) =>
       template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      template.description.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+      template.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  console.log(
-    'template images',
-    templates.map((template) => template?.photo),
-  )
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row gap-4">
@@ -124,7 +117,7 @@ export function TemplateSearch({
               </div>
             ))}
           </div>
-          <Pagination page={page} totalPages={totalPages} />
+          {/* <Pagination page={page} totalPages={totalPages} /> */}
         </>
       )}
     </div>

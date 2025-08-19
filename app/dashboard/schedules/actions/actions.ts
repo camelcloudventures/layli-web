@@ -5,7 +5,6 @@ import type { SchedulesResponse, Schedule } from "@/lib/types/schedule-types";
 import { revalidateTag } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { ActiveUser, Site } from "@/lib/types";
-import { TemplatesResponse } from "./types";
 
 export async function getSchedules(
   page: number
@@ -46,11 +45,6 @@ export async function createSchedule(formData: FormData) {
 
 export async function getActiveUsers(): Promise<ActiveUser | null> {
   return await GET(`/invites/organization/active-users`, ["users"]);
-}
-
-export async function getTemplates(): Promise<TemplatesResponse | null> {
-  // Replace with your actual API endpoint or DB query for templates
-  return await GET("/audit-template/get", ["templates"]);
 }
 
 export async function getSites(): Promise<Site[] | null> {

@@ -1,59 +1,59 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import Image from 'next/image'
-import { FileText, MoreVertical, Copy, Edit, Trash2, Eye } from 'lucide-react'
-import { Card, CardContent, CardFooter } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import type { AuditTemplate } from '@/lib/types/audit-types'
+import Link from "next/link";
+import Image from "next/image";
+import { FileText, MoreVertical, Copy, Edit, Trash2, Eye } from "lucide-react";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import type { AuditTemplate } from "@/lib/types/audit-types";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu";
 
 interface TemplateGridProps {
-  templates: AuditTemplate[]
+  templates: AuditTemplate[];
 }
 
 export function TemplateGrid({ templates }: TemplateGridProps) {
-  console.log('templates', templates)
+  console.log("templates", templates);
   const formatDate = (date: string) => {
-    if (!date) return 'N/A'
-    return new Date(date).toLocaleDateString()
-  }
+    if (!date) return "N/A";
+    return new Date(date).toLocaleDateString();
+  };
 
   const countQuestionsInTemplate = (template: AuditTemplate): number => {
     return template.pages.reduce((pageTotal, page) => {
       return (
         pageTotal +
         page.sections.reduce((sectionTotal, section) => {
-          return sectionTotal + section.questions.length
+          return sectionTotal + section.questions.length;
         }, 0)
-      )
-    }, 0)
-  }
+      );
+    }, 0);
+  };
 
   const deleteTemplate = (templateId: string) => {
     // Retrieve current templates
-    const savedTemplates = localStorage.getItem('auditTemplates')
-    if (!savedTemplates) return
+    const savedTemplates = localStorage.getItem("auditTemplates");
+    if (!savedTemplates) return;
 
     try {
-      const parsedTemplates = JSON.parse(savedTemplates)
+      const parsedTemplates = JSON.parse(savedTemplates);
       const updatedTemplates = parsedTemplates.filter(
-        (template: AuditTemplate) => template.id !== templateId,
-      )
-      localStorage.setItem('auditTemplates', JSON.stringify(updatedTemplates))
+        (template: AuditTemplate) => template.id !== templateId
+      );
+      localStorage.setItem("auditTemplates", JSON.stringify(updatedTemplates));
 
       // Reload page to reflect changes
-      window.location.reload()
+      window.location.reload();
     } catch (e) {
-      console.error('Error deleting template:', e)
+      console.error("Error deleting template:", e);
     }
-  }
+  };
 
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -62,7 +62,7 @@ export function TemplateGrid({ templates }: TemplateGridProps) {
           <div className="relative h-48 w-full bg-muted">
             {template.photo ? (
               <Image
-                src={template.photo || '/placeholder.svg'}
+                src={template.photo || "/placeholder.svg"}
                 alt={template.title}
                 fill
                 className="object-cover"
@@ -117,8 +117,8 @@ export function TemplateGrid({ templates }: TemplateGridProps) {
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
               <Badge variant="secondary">
-                {template.pages.length}{' '}
-                {template.pages.length === 1 ? 'Page' : 'Pages'}
+                {template.pages.length}{" "}
+                {template.pages.length === 1 ? "Page" : "Pages"}
               </Badge>
               <Badge variant="secondary">
                 {countQuestionsInTemplate(template)} Questions
@@ -128,7 +128,7 @@ export function TemplateGrid({ templates }: TemplateGridProps) {
           <CardFooter className="border-t bg-muted/50 p-3">
             <div className="flex w-full items-center justify-between text-xs text-muted-foreground">
               <span>
-                Created: {formatDate(template.created_at?.toString() || '')}
+                Created: {formatDate(template.created_at?.toString() || "")}
               </span>
               <Button asChild size="sm" variant="ghost">
                 <Link href={`/dashboard/templates/${template.id}/preview`}>
@@ -140,5 +140,5 @@ export function TemplateGrid({ templates }: TemplateGridProps) {
         </Card>
       ))}
     </div>
-  )
+  );
 }

@@ -1,71 +1,73 @@
-'use client'
+"use client";
 
-import { useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import { updateTemplate } from '@/app/dashboard/templates/actions/actions'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { updateTemplate } from "@/app/dashboard/templates/actions/actions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
-} from '@/components/ui/card'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { PagesManager } from '@/app/dashboard/templates/components/pages-manager'
-import { toast } from 'sonner'
-import { TemplatePreview } from '@/app/dashboard/templates/components/template-preview'
-import Image from 'next/image'
-import { Loader2 } from 'lucide-react'
-import type { AuditTemplate } from '@/lib/types/audit-types'
+} from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { PagesManager } from "@/app/dashboard/templates/components/pages-manager";
+import { toast } from "sonner";
+import { TemplatePreview } from "@/app/dashboard/templates/components/template-preview";
+import Image from "next/image";
+import { Loader2 } from "lucide-react";
+import type { AuditTemplate } from "@/lib/types/audit-types";
+import { useAuditTemplates } from "@/hooks/use-audit-templates";
 
 interface EditAuditFormProps {
-  template: AuditTemplate
+  template: AuditTemplate;
 }
 
 export default function EditAuditForm({
   template: initialTemplate,
 }: EditAuditFormProps) {
-  const router = useRouter()
+  const router = useRouter();
+  const { setAuditTemplates } = useAuditTemplates();
   // const { user } = useAuth() // not used
-  const [activeTab, setActiveTab] = useState('details')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [template, setTemplate] = useState<AuditTemplate>(initialTemplate)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [activeTab, setActiveTab] = useState("details");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [template, setTemplate] = useState<AuditTemplate>(initialTemplate);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   function handleInputChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
-    setTemplate((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+    setTemplate((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
     reader.onload = (event) => {
       setTemplate((prev) => ({
         ...prev,
-        photo: (event.target?.result ?? '') as string,
-      }))
-    }
-    reader.readAsDataURL(file)
+        photo: (event.target?.result ?? "") as string,
+      }));
+    };
+    reader.readAsDataURL(file);
   }
 
   function handleRemoveImage() {
-    setTemplate((prev) => ({ ...prev, photo: '' }))
-    if (fileInputRef.current) fileInputRef.current.value = ''
+    setTemplate((prev) => ({ ...prev, photo: "" }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   function handleTriggerFileInput() {
-    fileInputRef.current?.click()
+    fileInputRef.current?.click();
   }
 
   async function handleSubmit(formData: FormData) {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     // For update, keep all IDs
     const updatePages = template.pages.map((page) => ({
       ...page,
@@ -76,30 +78,33 @@ export default function EditAuditForm({
           response_options: question.response_options ?? [],
         })),
       })),
-    }))
+    }));
     try {
-      formData.set('id', template.id)
-      formData.set('title', template.title ?? '')
-      formData.set('description', template.description ?? '')
-      formData.set('photo', template.photo ?? '')
-      formData.set('pages', JSON.stringify(updatePages))
+      formData.set("id", template.id);
+      formData.set("title", template.title ?? "");
+      formData.set("description", template.description ?? "");
+      formData.set("photo", template.photo ?? "");
+      formData.set("pages", JSON.stringify(updatePages));
       const result = await updateTemplate({
         id: template.id,
         title: template.title,
         description: template.description,
         photo: template.photo,
         pages: updatePages,
-      })
+      });
       if (result && result.error) {
-        toast.error(result.error)
-        return
+        toast.error(result.error);
+        return;
       }
-      if (result && 'success' in result) {
-        toast.success('Template updated successfully!')
-        router.push('/dashboard/templates')
+      if (result && "success" in result) {
+        toast.success("Template updated successfully!");
+        if (result.data) {
+          setAuditTemplates(result.data);
+        }
+        router.push("/dashboard/templates");
       }
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
@@ -221,7 +226,7 @@ export default function EditAuditForm({
             <div className="flex justify-end">
               <Button
                 type="button"
-                onClick={() => setActiveTab('pages')}
+                onClick={() => setActiveTab("pages")}
                 disabled={!template.title}
                 aria-label="Continue to Pages"
               >
@@ -246,14 +251,14 @@ export default function EditAuditForm({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setActiveTab('details')}
+                onClick={() => setActiveTab("details")}
                 aria-label="Back to Details"
               >
                 Back
               </Button>
               <Button
                 type="button"
-                onClick={() => setActiveTab('preview')}
+                onClick={() => setActiveTab("preview")}
                 aria-label="Continue to Preview"
                 disabled={template.pages.length === 0}
               >
@@ -278,7 +283,7 @@ export default function EditAuditForm({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setActiveTab('pages')}
+                onClick={() => setActiveTab("pages")}
                 aria-label="Back to Pages"
               >
                 Back
@@ -302,7 +307,7 @@ export default function EditAuditForm({
                       Updating...
                     </>
                   ) : (
-                    'Update Template'
+                    "Update Template"
                   )}
                 </Button>
               </form>
@@ -311,5 +316,5 @@ export default function EditAuditForm({
         </Card>
       </TabsContent>
     </Tabs>
-  )
+  );
 }

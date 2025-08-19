@@ -1,15 +1,15 @@
-'use client'
+"use client";
 
-import { Button } from '@/components/ui/button'
-import { ArrowLeft, Save, Loader2 } from 'lucide-react'
-import Link from 'next/link'
-import { DeleteDialog } from '@/components/ui/delete-dialog'
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { DeleteDialog } from "@/components/ui/delete-dialog";
 
 interface TemplateHeaderProps {
-  title: string
-  isSaving: boolean
-  onSave: () => void
-  onDelete: () => Promise<void>
+  title: string;
+  isSaving: boolean;
+  onSave: () => void;
+  onDelete: () => Promise<void>;
 }
 
 export function TemplateHeader({
@@ -46,10 +46,10 @@ export function TemplateHeader({
         <DeleteDialog
           triggerText="Delete Template"
           title="Delete Template"
-          description="Are you sure you want to delete this template? This action cannot be undone."
+          description="Are you sure you want to delete this template? All the inspections created with this template will also be deleted."
           onDelete={onDelete}
         />
       </div>
     </div>
-  )
+  );
 }

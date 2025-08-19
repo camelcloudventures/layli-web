@@ -1,35 +1,52 @@
 import {
-  Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import type { AuditTemplate, Question } from '@/lib/types/audit-types'
-import { AlertTriangle, FileText } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { ImageUpload } from './image-upload'
-import { DeletePageButton } from './delete-controls/delete-page-button'
-import { DeleteSectionButton } from './delete-controls/delete-section-button'
-import { DeleteQuestionButton } from './delete-controls/delete-question-button'
-import HasPermission from '../../components/has-permission'
-import { Permission } from '@/lib/auth/auth'
-import { Slider } from '@/components/ui/slider'
-import PersonPerviewField from './person-perview-field'
+} from "@/components/ui/card";
+import type { AuditTemplate, Question } from "@/lib/types/audit-types";
+import {
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ImageUpload } from "./image-upload";
+import { DeletePageButton } from "./delete-controls/delete-page-button";
+import { DeleteSectionButton } from "./delete-controls/delete-section-button";
+import { DeleteQuestionButton } from "./delete-controls/delete-question-button";
+import HasPermission from "../../components/has-permission";
+import { Permission } from "@/lib/auth/auth";
+import { Slider } from "@/components/ui/slider";
+import PersonPerviewField from "./person-perview-field";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface TemplatePreviewContentProps {
-  template: AuditTemplate
-  currentPageIndex?: number
+  template: AuditTemplate;
 }
 
 export function TemplatePreviewContent({
   template,
-  currentPageIndex = 0,
 }: TemplatePreviewContentProps) {
+  const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const router = useRouter();
+
+  function handleDeleteSuccess() {
+    if (template.pages.length <= 1) {
+      router.push("/dashboard/templates");
+    } else if (currentPageIndex >= template.pages.length - 1) {
+      setCurrentPageIndex(currentPageIndex - 1);
+    }
+  }
+
+  console.log("template", template);
   if (!template.pages || template.pages.length === 0) {
     return (
       <div className="rounded-xl border p-8 text-center bg-white shadow">
@@ -39,24 +56,57 @@ export function TemplatePreviewContent({
           Add pages, sections, and questions to see a preview of your template
         </p>
       </div>
-    )
+    );
   }
 
-  const currentPage = template.pages[currentPageIndex]
-  const pageCount = template.pages.length
+  const pageCount = template?.pages?.length;
+
+  if (currentPageIndex >= pageCount) {
+    return null;
+  }
+
+  const currentPage = template.pages[currentPageIndex];
+  const goToNextPage = () => {
+    if (currentPageIndex < pageCount - 1)
+      setCurrentPageIndex(currentPageIndex + 1);
+  };
+  const goToPrevPage = () => {
+    if (currentPageIndex > 0) setCurrentPageIndex(currentPageIndex - 1);
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="my-4 flex flex-col gap-6">
+      <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium">
           Template Preview: {template.title}
         </h3>
-        <span className="text-sm text-muted-foreground">
-          Page {currentPageIndex + 1} of {pageCount}
-        </span>
+
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={goToPrevPage}
+            disabled={currentPageIndex === 0}
+            className="rounded-r-none"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={goToNextPage}
+            disabled={currentPageIndex === pageCount - 1}
+            className="rounded-l-none"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Page {currentPageIndex + 1} of {pageCount}
+          </span>
+        </div>
       </div>
 
-      <Card className="overflow-hidden rounded-xl shadow bg-white p-8">
+      <div className=" flex flex-col gap-4 ">
         <CardHeader className="p-0 mb-6">
           <div className="flex items-center justify-between">
             <CardTitle className="text-2xl font-bold mb-1">
@@ -66,6 +116,7 @@ export function TemplatePreviewContent({
               <DeletePageButton
                 pageId={String(currentPage.id)}
                 templateId={String(template.id)}
+                onDeleteSuccess={handleDeleteSuccess}
               />
             </HasPermission>
           </div>
@@ -138,14 +189,14 @@ export function TemplatePreviewContent({
             ))
           )}
         </CardContent>
-      </Card>
+      </div>
     </div>
-  )
+  );
 }
 
 function renderQuestionInput(question: Question) {
   switch (question.field_type) {
-    case 'BOOLEAN':
+    case "BOOLEAN":
       return (
         <div className="flex gap-4">
           <div className="flex items-center gap-2">
@@ -161,21 +212,23 @@ function renderQuestionInput(question: Question) {
             </RadioGroup>
           </div>
         </div>
-      )
-    case 'TEXT':
+      );
+    case "TEXT":
       return (
         <Textarea
           placeholder="Enter your answer here..."
           className="min-h-[100px]"
         />
-      )
-    case 'DATE':
-      return <Input type="date" />
-    case 'PHOTO':
-      return <ImageUpload value={''} onChange={() => {}} label="Upload Image" />
-    case 'NUMBER':
-      return <Input type="number" placeholder="Enter a number" />
-    case 'SELECT':
+      );
+    case "DATE":
+      return <Input type="date" />;
+    case "PHOTO":
+      return (
+        <ImageUpload value={""} onChange={() => {}} label="Upload Image" />
+      );
+    case "NUMBER":
+      return <Input type="number" placeholder="Enter a number" />;
+    case "SELECT":
       if (
         !question.response_options ||
         question.response_options.length === 0
@@ -184,7 +237,7 @@ function renderQuestionInput(question: Question) {
           <p className="text-sm text-muted-foreground">
             No options defined for this question
           </p>
-        )
+        );
       }
       return (
         <RadioGroup>
@@ -200,8 +253,8 @@ function renderQuestionInput(question: Question) {
             </div>
           ))}
         </RadioGroup>
-      )
-    case 'MULTI_SELECT':
+      );
+    case "MULTI_SELECT":
       if (
         !question.response_options ||
         question.response_options.length === 0
@@ -210,7 +263,7 @@ function renderQuestionInput(question: Question) {
           <p className="text-sm text-muted-foreground">
             No options defined for this question
           </p>
-        )
+        );
       }
       return (
         <div className="space-y-2">
@@ -223,8 +276,8 @@ function renderQuestionInput(question: Question) {
             </div>
           ))}
         </div>
-      )
-    case 'SLIDER':
+      );
+    case "SLIDER":
       return (
         <div className="space-y-2">
           <Label htmlFor={`slider-${question.id}`}>Slider (1-5)</Label>
@@ -243,8 +296,8 @@ function renderQuestionInput(question: Question) {
             <span className="ml-2 text-muted-foreground text-xs">Value: 1</span>
           </div>
         </div>
-      )
-    case 'SIGNATURE':
+      );
+    case "SIGNATURE":
       return (
         <div className="space-y-2">
           <Label htmlFor={`signature-${question.id}`}>Signature</Label>
@@ -263,8 +316,8 @@ function renderQuestionInput(question: Question) {
             <span className="text-xs text-muted-foreground">Sign here</span>
           </div>
         </div>
-      )
-    case 'LOCATION':
+      );
+    case "LOCATION":
       return (
         <div className="space-y-2">
           <Label htmlFor={`location-${question.id}`}>Location</Label>
@@ -302,28 +355,28 @@ function renderQuestionInput(question: Question) {
             />
           </div>
         </div>
-      )
+      );
 
-    case 'PERSON':
-      return <PersonPerviewField question={question} />
+    case "PERSON":
+      return <PersonPerviewField question={question} />;
 
-    case 'ASSET':
+    case "ASSET":
       return (
         <div className="space-y-2">
           <Label htmlFor={`asset-${question.id}`}>Asset</Label>
           <ImageUpload
-            value={''}
+            value={""}
             onChange={() => {}}
             label="Upload Asset"
             accept="*/*"
           />
         </div>
-      )
+      );
     default:
       return (
         <p className="text-sm text-muted-foreground">
           Unsupported question type
         </p>
-      )
+      );
   }
 }

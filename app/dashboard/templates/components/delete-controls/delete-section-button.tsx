@@ -1,36 +1,43 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Trash2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { DeleteDialog } from '@/components/ui/delete-dialog'
-import { deleteSection } from '@/app/dashboard/templates/actions/actions'
-import { toast } from 'sonner'
+import { useState } from "react";
+import { Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { DeleteDialog } from "@/components/ui/delete-dialog";
+import { deleteSection } from "@/app/dashboard/templates/actions/actions";
+import { toast } from "sonner";
+import { useAuditTemplates } from "@/hooks/use-audit-templates";
 
 interface DeleteSectionButtonProps {
-  sectionId: string
-  pageId: string
+  sectionId: string;
+  pageId: string;
 }
 
 export function DeleteSectionButton({
   sectionId,
   pageId,
 }: DeleteSectionButtonProps) {
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
+  const { reset } = useAuditTemplates();
 
   async function handleDelete() {
-    setLoading(true)
-    const result = await deleteSection(sectionId, pageId)
+    setLoading(true);
+    const result = await deleteSection(sectionId, pageId);
+
+    console.log("result", result);
+
     // @ts-expect-error --need to fix this
     if (result && result.success) {
       // @ts-expect-error --need to fix this
-      toast.success(result.success)
+      toast.success(result.success);
+      const value = reset();
+      console.log("store", value);
       // @ts-expect-error --need to fix this
     } else if (result && result.error) {
       // @ts-expect-error --need to fix this
-      toast.error(result.error)
+      toast.error(result.error);
     }
-    setLoading(false)
+    setLoading(false);
   }
 
   return (
@@ -50,5 +57,5 @@ export function DeleteSectionButton({
         </Button>
       }
     />
-  )
+  );
 }

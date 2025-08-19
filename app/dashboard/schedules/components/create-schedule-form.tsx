@@ -1,34 +1,36 @@
-'use client'
+"use client";
 
-import type React from 'react'
+import type React from "react";
 
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { toast } from 'sonner'
-import SubmitBtn from '@/components/custom/submit-btn'
-import { createSchedule } from '../actions/actions'
+} from "@/components/ui/select";
+import { toast } from "sonner";
+import SubmitBtn from "@/components/custom/submit-btn";
+import { createSchedule } from "../actions/actions";
 import type {
   UserOption,
   TemplateOption,
   SiteOption,
-} from '../types/schedule-form-types'
-import { useState } from 'react'
-import { MultiSelect } from '@/components/ui/multi-select'
-import clsx from 'clsx'
+} from "../types/schedule-form-types";
+import { useState } from "react";
+import { MultiSelect } from "@/components/ui/multi-select";
+import clsx from "clsx";
+import { useSchedulesStore } from "@/store/schedules";
+import type { Schedule } from "@/lib/types/schedule-types";
 
 interface CreateScheduleFormProps {
-  users: UserOption[]
-  templates: TemplateOption[]
-  sites: SiteOption[]
-  onSubmit: (formData: FormData) => void
-  onCancel: () => void
+  users: UserOption[];
+  templates: TemplateOption[];
+  sites: SiteOption[];
+  onSubmit: (formData: FormData) => void;
+  onCancel: () => void;
 }
 
 export function CreateScheduleForm({
@@ -38,53 +40,63 @@ export function CreateScheduleForm({
   onSubmit,
   onCancel,
 }: CreateScheduleFormProps) {
-  const [selectedAssignees, setSelectedAssignees] = useState<string[]>([])
+  const { setSchedules } = useSchedulesStore();
+  const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<
     string | undefined
-  >(undefined)
-  const [startTime, setStartTime] = useState('09:00')
-  const [endTime, setEndTime] = useState('17:00')
-  const [completionPolicy, setCompletionPolicy] = useState<'any' | 'all'>('any')
+  >(undefined);
+  const [startTime, setStartTime] = useState("09:00");
+  const [endTime, setEndTime] = useState("17:00");
+  const [completionPolicy, setCompletionPolicy] = useState<"any" | "all">(
+    "any"
+  );
 
   // Helper to generate time options in 30-minute intervals
   const timeOptions = Array.from({ length: 48 }, (_, i) => {
-    const hour = Math.floor(i / 2)
-    const minute = i % 2 === 0 ? '00' : '30'
-    const ampm = hour < 12 ? 'AM' : 'PM'
-    const displayHour = hour % 12 === 0 ? 12 : hour % 12
+    const hour = Math.floor(i / 2);
+    const minute = i % 2 === 0 ? "00" : "30";
+    const ampm = hour < 12 ? "AM" : "PM";
+    const displayHour = hour % 12 === 0 ? 12 : hour % 12;
     return {
-      value: `${hour.toString().padStart(2, '0')}:${minute}`,
+      value: `${hour.toString().padStart(2, "0")}:${minute}`,
       label: `${displayHour}:${minute} ${ampm}`,
-    }
-  })
+    };
+  });
 
   async function handleCreate(formData: FormData) {
     // Add selected assignees to form data
-    formData.delete('assignee_ids')
+    formData.delete("assignee_ids");
     selectedAssignees.forEach((id) => {
-      formData.append('assignee_ids', id)
-    })
+      formData.append("assignee_ids", id);
+    });
 
     // Set the title from the selected template
     const selectedTemplate = templates.find(
-      (t) => String(t.id) === selectedTemplateId,
-    )
+      (t) => String(t.id) === selectedTemplateId
+    );
     if (selectedTemplate) {
-      formData.set('title', selectedTemplate.title)
+      formData.set("title", selectedTemplate.title);
     }
 
     // Set start and end time
-    formData.set('start_time', startTime)
-    formData.set('end_time', endTime)
+    formData.set("start_time", startTime);
+    formData.set("end_time", endTime);
 
     // Set completion policy
-    formData.set('completion_policy', completionPolicy)
+    formData.set("completion_policy", completionPolicy);
 
-    const res = await createSchedule(formData)
-    if (res?.error) toast.error(res.error)
+    const res = await createSchedule(formData);
+    if (res?.error) toast.error(res.error);
     else {
-      toast.success(res?.success)
-      onSubmit(formData)
+      toast.success(res?.success);
+      // Add the new schedule to the existing array
+      if (res?.data) {
+        setSchedules((prevSchedules: Schedule[]) => [
+          ...prevSchedules,
+          res.data!,
+        ]);
+      }
+      onSubmit(formData);
     }
   }
 
@@ -139,8 +151,8 @@ export function CreateScheduleForm({
         </div>
         <div
           className={clsx(
-            selectedAssignees.length > 0 ? 'mb-10' : 'mb-0',
-            'transition-all duration-300 ',
+            selectedAssignees.length > 0 ? "mb-10" : "mb-0",
+            "transition-all duration-300 "
           )}
         >
           <Label htmlFor="assignee_ids">
@@ -165,8 +177,8 @@ export function CreateScheduleForm({
               type="radio"
               name="completion_policy"
               value="any"
-              checked={completionPolicy === 'any'}
-              onChange={() => setCompletionPolicy('any')}
+              checked={completionPolicy === "any"}
+              onChange={() => setCompletionPolicy("any")}
               className="accent-primary h-5 w-5 mr-2"
             />
             <span className="text-sm select-none">
@@ -178,8 +190,8 @@ export function CreateScheduleForm({
               type="radio"
               name="completion_policy"
               value="all"
-              checked={completionPolicy === 'all'}
-              onChange={() => setCompletionPolicy('all')}
+              checked={completionPolicy === "all"}
+              onChange={() => setCompletionPolicy("all")}
               className="accent-primary h-5 w-5 mr-2"
             />
             <span className="text-sm select-none">
@@ -278,7 +290,7 @@ export function CreateScheduleForm({
         <SubmitBtn label="Create Schedule" variant="default" className="" />
       </div>
     </form>
-  )
+  );
 }
 
-export type { UserOption, TemplateOption, SiteOption }
+export type { UserOption, TemplateOption, SiteOption };

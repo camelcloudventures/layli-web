@@ -62,7 +62,8 @@ export async function updateSchedule(formData: FormData) {
   const title = formData.get("title") as string;
   const template_id = formData.get("template_id") as string;
   const site_id = formData.get("site_id") as string;
-  const assignee_ids = formData.getAll("assignee_ids") as string[];
+  const assigneesString = formData.get("assignees") as string;
+  const assignees = assigneesString ? JSON.parse(assigneesString) : [];
   const frequency = formData.get("frequency") as string;
   const status = formData.get("status") as string;
   const start_time = formData.get("start_time") as string;
@@ -73,7 +74,7 @@ export async function updateSchedule(formData: FormData) {
     title,
     template_id,
     site_id,
-    assignee_ids,
+    assignees,
     frequency,
     status,
     start_time,

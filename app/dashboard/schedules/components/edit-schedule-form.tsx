@@ -1,35 +1,36 @@
-'use client'
+"use client";
 
-import type React from 'react'
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import type React from "react";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { toast } from 'sonner'
-import SubmitBtn from '@/components/custom/submit-btn'
-import { updateSchedule } from '../actions/actions'
+} from "@/components/ui/select";
+import { toast } from "sonner";
+import SubmitBtn from "@/components/custom/submit-btn";
+import { updateSchedule } from "../actions/actions";
 import type {
   TemplateOption,
   SiteOption,
   UserOption,
-} from '../types/schedule-form-types'
-import type { Schedule } from '@/lib/types/schedule-types'
-import { MultiSelect } from '@/components/ui/multi-select'
+} from "../types/schedule-form-types";
+import type { Schedule, Assignee } from "@/lib/types/schedule-types";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { useSchedulesStore } from "@/store/schedules";
 
 interface EditScheduleFormProps {
-  schedule: Schedule
-  users: UserOption[]
-  templates: TemplateOption[]
-  sites: SiteOption[]
-  onSubmit: (formData: FormData) => void
-  onCancel: () => void
+  schedule: Schedule;
+  users: UserOption[];
+  templates: TemplateOption[];
+  sites: SiteOption[];
+  onSubmit: (formData: FormData) => void;
+  onCancel: () => void;
 }
 
 export function EditScheduleForm({
@@ -40,70 +41,98 @@ export function EditScheduleForm({
   onSubmit,
   onCancel,
 }: EditScheduleFormProps) {
-  const [selectedAssignees, setSelectedAssignees] = useState<string[]>(
-    schedule.assignees?.map((a) => a.assignee.id) || [],
-  )
-  const [completionPolicy, setCompletionPolicy] = useState<'any' | 'all'>(
-    schedule.completion_policy || 'any',
-  )
+  const { setSchedules } = useSchedulesStore();
+  const [selectedAssignees, setSelectedAssignees] = useState<Assignee[]>(
+    schedule.assignees || []
+  );
+  const [completionPolicy, setCompletionPolicy] = useState<"any" | "all">(
+    schedule.completion_policy || "any"
+  );
 
-  const normalizeTime = (t?: string) => (t ? t.slice(0, 5) : undefined)
+  const normalizeTime = (t?: string) => (t ? t.slice(0, 5) : undefined);
   const [startTime, setStartTime] = useState(
-    normalizeTime(schedule.start_time) || '09:00',
-  )
+    normalizeTime(schedule.start_time) || "09:00"
+  );
   const [endTime, setEndTime] = useState(
-    normalizeTime(schedule.end_time) || '17:00',
-  )
+    normalizeTime(schedule.end_time) || "17:00"
+  );
 
   // Helper to generate time options in 30-minute intervals
   const timeOptions = Array.from({ length: 48 }, (_, i) => {
-    const hour = Math.floor(i / 2)
-    const minute = i % 2 === 0 ? '00' : '30'
-    const ampm = hour < 12 ? 'AM' : 'PM'
-    const displayHour = hour % 12 === 0 ? 12 : hour % 12
+    const hour = Math.floor(i / 2);
+    const minute = i % 2 === 0 ? "00" : "30";
+    const ampm = hour < 12 ? "AM" : "PM";
+    const displayHour = hour % 12 === 0 ? 12 : hour % 12;
     return {
-      value: `${hour.toString().padStart(2, '0')}:${minute}`,
+      value: `${hour.toString().padStart(2, "0")}:${minute}`,
       label: `${displayHour}:${minute} ${ampm}`,
-    }
-  })
+    };
+  });
 
   const [selectedTemplateId, setSelectedTemplateId] = useState(
-    String(schedule.template_id),
-  )
+    String(schedule.template_id)
+  );
   const [scheduleTitle, setScheduleTitle] = useState(
     templates.find((t) => String(t.id) === String(schedule.template_id))
-      ?.title || '',
-  )
+      ?.title || ""
+  );
 
   useEffect(() => {
     const newTitle =
-      templates.find((t) => String(t.id) === selectedTemplateId)?.title || ''
-    setScheduleTitle(newTitle)
-  }, [selectedTemplateId, templates])
+      templates.find((t) => String(t.id) === selectedTemplateId)?.title || "";
+    setScheduleTitle(newTitle);
+  }, [selectedTemplateId, templates]);
 
   async function handleEdit(formData: FormData) {
     // Add selected assignees to form data
-    formData.delete('assignee_ids')
-    selectedAssignees.forEach((id) => {
-      formData.append('assignee_ids', id)
-    })
+    // formData.delete("assignee_ids");
+
+    // Flatten the assignee objects to match the expected structure
+    const flattenedAssignees = selectedAssignees.map((a) => ({
+      id: a.assignee.id,
+      role: a.assignee.role || "inspector",
+      full_name: a.assignee.full_name,
+      email: a.assignee.email,
+    }));
+
+    formData.append("assignees", JSON.stringify(flattenedAssignees));
+
+    // Log the actual data being sent
+    console.log("assignees being sent:", selectedAssignees);
+    console.log("flattened assignees:", flattenedAssignees);
+    console.log("assignees JSON:", JSON.stringify(flattenedAssignees));
+
     // Set start and end time
-    formData.set('start_time', startTime)
-    formData.set('end_time', endTime)
+    formData.set("start_time", startTime);
+    formData.set("end_time", endTime);
     // Set completion policy
-    formData.set('completion_policy', completionPolicy)
+    formData.set("completion_policy", completionPolicy);
 
     const res = (await updateSchedule(formData)) as {
-      error?: string
-      success?: string
-    }
-    if (res?.error) toast.error(res.error)
+      error?: string;
+      success?: string;
+      data?: Schedule;
+    };
+
+    console.log("err", res.error);
+
+    console.log("res", res);
+    if (res?.error) toast.error(res.error);
     else {
-      toast.success(res?.success)
-      onSubmit(formData)
+      toast.success(res?.success);
+      // Update the specific schedule in the store
+      if (res?.data) {
+        setSchedules((prevSchedules: Schedule[]) =>
+          prevSchedules.map((s: Schedule) =>
+            s.id === schedule.id ? res.data! : s
+          )
+        );
+      }
+      onSubmit(formData);
     }
   }
 
+  console.log("sched", schedule);
   return (
     <form action={handleEdit} className="space-y-6">
       <input type="hidden" name="id" value={schedule.id} />
@@ -171,8 +200,15 @@ export function EditScheduleForm({
           <MultiSelect
             name="assignee_ids"
             required
-            value={selectedAssignees}
-            onValueChange={setSelectedAssignees}
+            value={selectedAssignees.map((a) => a.assignee.id)}
+            onValueChange={(ids: string[]) => {
+              const selectedUsers = users.filter((u) =>
+                ids.includes(u.user.id)
+              );
+              setSelectedAssignees(
+                selectedUsers.map((u) => ({ assignee: u.user }))
+              );
+            }}
             placeholder="Select assignees"
             options={users.map((user) => ({
               value: user.user.id,
@@ -181,17 +217,14 @@ export function EditScheduleForm({
           />
 
           <div className="flex flex-wrap gap-2 mt-2">
-            {selectedAssignees.map((id) => {
-              const user = users.find((u) => u.user.id === id)
-              return user ? (
-                <span
-                  key={id}
-                  className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs"
-                >
-                  {user.user.full_name}
-                </span>
-              ) : null
-            })}
+            {selectedAssignees.map((assignee) => (
+              <span
+                key={assignee.assignee.id}
+                className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs"
+              >
+                {assignee.assignee.full_name}
+              </span>
+            ))}
           </div>
         </div>
         <div className="flex flex-row gap-8 mt-8 items-center">
@@ -200,8 +233,8 @@ export function EditScheduleForm({
               type="radio"
               name="completion_policy"
               value="any"
-              checked={completionPolicy === 'any'}
-              onChange={() => setCompletionPolicy('any')}
+              checked={completionPolicy === "any"}
+              onChange={() => setCompletionPolicy("any")}
               className="accent-primary h-5 w-5 mr-2"
             />
             <span className="text-base select-none">
@@ -213,8 +246,8 @@ export function EditScheduleForm({
               type="radio"
               name="completion_policy"
               value="all"
-              checked={completionPolicy === 'all'}
-              onChange={() => setCompletionPolicy('all')}
+              checked={completionPolicy === "all"}
+              onChange={() => setCompletionPolicy("all")}
               className="accent-primary h-5 w-5 mr-2"
             />
             <span className="text-base select-none">
@@ -357,5 +390,5 @@ export function EditScheduleForm({
         <SubmitBtn label="Save Changes" variant="default" className="" />
       </div>
     </form>
-  )
+  );
 }

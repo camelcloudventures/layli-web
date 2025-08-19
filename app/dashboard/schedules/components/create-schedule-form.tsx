@@ -23,7 +23,7 @@ import { useState } from "react";
 import { MultiSelect } from "@/components/ui/multi-select";
 import clsx from "clsx";
 import { useSchedulesStore } from "@/store/schedules";
-import type { Schedule } from "@/lib/types/schedule-types";
+import type { Assignee } from "@/lib/types/schedule-types";
 
 interface CreateScheduleFormProps {
   users: UserOption[];
@@ -41,7 +41,7 @@ export function CreateScheduleForm({
   onCancel,
 }: CreateScheduleFormProps) {
   const { setSchedules } = useSchedulesStore();
-  const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
+  const [selectedAssignees, setSelectedAssignees] = useState<Assignee[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<
     string | undefined
   >(undefined);
@@ -66,9 +66,15 @@ export function CreateScheduleForm({
   async function handleCreate(formData: FormData) {
     // Add selected assignees to form data
     formData.delete("assignee_ids");
-    selectedAssignees.forEach((id) => {
-      formData.append("assignee_ids", id);
-    });
+
+    const flattenedAssignees = selectedAssignees.map((a) => ({
+      id: a.assignee.id,
+      role: a.assignee.role || "inspector",
+      full_name: a.assignee.full_name,
+      email: a.assignee.email,
+    }));
+
+    formData.append("assignees", JSON.stringify(flattenedAssignees));
 
     // Set the title from the selected template
     const selectedTemplate = templates.find(
@@ -91,10 +97,7 @@ export function CreateScheduleForm({
       toast.success(res?.success);
       // Add the new schedule to the existing array
       if (res?.data) {
-        setSchedules((prevSchedules: Schedule[]) => [
-          ...prevSchedules,
-          res.data!,
-        ]);
+        setSchedules((prevSchedules) => [res.data, ...prevSchedules]);
       }
       onSubmit(formData);
     }
@@ -162,8 +165,15 @@ export function CreateScheduleForm({
             className=""
             name="assignee_ids"
             required
-            value={selectedAssignees}
-            onValueChange={setSelectedAssignees}
+            value={selectedAssignees.map((a) => a.assignee.id)}
+            onValueChange={(ids: string[]) => {
+              const selectedUsers = users.filter((u) =>
+                ids.includes(u.user.id)
+              );
+              setSelectedAssignees(
+                selectedUsers.map((u) => ({ assignee: u.user }))
+              );
+            }}
             placeholder="Select assignees"
             options={users.map((user) => ({
               value: user.user.id,

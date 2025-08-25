@@ -1,145 +1,240 @@
-'use client'
+"use client";
 
-import { useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import { createTemplate } from '../../actions/actions'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { createTemplate } from "../../actions/actions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
-} from '@/components/ui/card'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { PagesManager } from '../../components/pages-manager'
-import { toast } from 'sonner'
-import { TemplatePreview } from '../../components/template-preview'
-import Image from 'next/image'
-import { useAuth } from '@/lib/context/auth-provider'
-import { AuditTemplate } from '@/lib/types/audit-types'
-import { omit } from 'lodash'
-import SubmitBtn from '@/components/custom/submit-btn'
-import { getPreloadedQuestions } from '@/components/template-cover-page/template-cover-page'
+} from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { PagesManager } from "../../components/pages-manager";
+import { toast } from "sonner";
+import { TemplatePreview } from "../../components/template-preview";
+import Image from "next/image";
+import { useAuth } from "@/lib/context/auth-provider";
+import { AuditTemplate } from "@/lib/types/audit-types";
+import { omit } from "lodash";
+import SubmitBtn from "@/components/custom/submit-btn";
+import { getPreloadedQuestions } from "@/components/template-cover-page/template-cover-page";
+import { Question, Section } from "@/lib/types/audit-types";
+import { useAuditTemplates } from "@/hooks/use-audit-templates";
 
 export default function CreateAuditForm() {
-  const router = useRouter()
-  const { user } = useAuth()
-  const [activeTab, setActiveTab] = useState('details')
+  const router = useRouter();
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState("details");
 
   // Generate unique IDs for the cover page and section
-  const coverPageId = `cover-page-${Date.now()}`
-  const coverSectionId = `cover-section-${Date.now()}`
+  const coverPageId = `cover-page-${Date.now()}`;
+  const coverSectionId = `cover-section-${Date.now()}`;
 
   // Create the cover section
   const coverSection = {
     id: coverSectionId,
     page_id: coverPageId,
-    title: 'Title section',
+    title: "Title section",
     ordinal: 1,
     questions: getPreloadedQuestions(coverPageId, coverSectionId),
-  }
+  };
 
   // Create the first page with the cover section
   const firstPage = {
     id: coverPageId,
     template_id: `temp-${Date.now()}`,
-    title: 'Title page',
-    description: 'Add a description here',
+    title: "Title page",
+    description: "Add a description here",
     ordinal: 1,
     sections: [coverSection],
-  }
+  };
 
-  const [template, setTemplate] = useState<AuditTemplate>({
+  const initialTemplate = {
     id: `temp-${Date.now()}`,
-    title: '',
-    description: '',
-    photo: '',
+    title: "",
+    description: "",
+    photo: "",
     pages: [firstPage],
-  })
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [imageError, setImageError] = useState<string | null>(null)
+  };
+
+  const [template, setTemplate] = useState<AuditTemplate>(initialTemplate);
+  const [previewTemplate, setPreviewTemplate] = useState<AuditTemplate | null>(
+    null
+  );
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
+
+  const reorganizeTemplateForPreview = (
+    originalTemplate: AuditTemplate
+  ): AuditTemplate => {
+    const QUESTIONS_PER_PAGE = 6;
+
+    // Deep copy to avoid modifying the original state during calculations
+    const templateCopy = JSON.parse(
+      JSON.stringify(originalTemplate)
+    ) as AuditTemplate;
+
+    // 1. Gather all questions from the template into a single, ordered list.
+    const allQuestions: { question: Question; originalSection: Section }[] = [];
+    templateCopy.pages.forEach((page) => {
+      page.sections.forEach((section) => {
+        section.questions.forEach((question) => {
+          allQuestions.push({ question, originalSection: section });
+        });
+      });
+    });
+
+    // 2. Create a new, reorganized template.
+    const reorganizedTemplate: AuditTemplate = {
+      ...templateCopy,
+      pages: [],
+    };
+
+    if (allQuestions.length === 0 && templateCopy.pages.length > 0) {
+      // If there are no questions but there are pages with empty sections, preserve them.
+      return templateCopy;
+    }
+
+    // 3. Distribute questions into new pages.
+    for (let i = 0; i < allQuestions.length; i++) {
+      const pageIndex = Math.floor(i / QUESTIONS_PER_PAGE);
+      const { question, originalSection } = allQuestions[i];
+
+      // Create a new page if it doesn't exist yet.
+      if (!reorganizedTemplate.pages[pageIndex]) {
+        reorganizedTemplate.pages[pageIndex] = {
+          id: `preview-page-${pageIndex + 1}`,
+          template_id: templateCopy.id,
+          title: `Page ${pageIndex + 1}`,
+          description: templateCopy.pages[pageIndex]?.description || "", // Carry over original page description if it exists
+          ordinal: pageIndex + 1,
+          sections: [],
+          created_at: new Date().toISOString(),
+        };
+      }
+
+      const currentPage = reorganizedTemplate.pages[pageIndex];
+
+      // Find or create the section on the new page.
+      let targetSection = currentPage.sections.find(
+        (s) => s.id === originalSection.id
+      );
+
+      if (!targetSection) {
+        targetSection = {
+          ...originalSection,
+          questions: [], // Start with an empty question list for this page
+          page_id: currentPage.id,
+        };
+        currentPage.sections.push(targetSection);
+      }
+
+      // Add the question to the section on the correct page.
+      targetSection.questions.push(question);
+    }
+
+    // If there are no questions at all, ensure there is at least one page.
+    if (reorganizedTemplate.pages.length === 0) {
+      reorganizedTemplate.pages.push({
+        id: "preview-page-1",
+        template_id: templateCopy.id,
+        title: "Page 1",
+        description: "",
+        ordinal: 1,
+        sections: [],
+        created_at: new Date().toISOString(),
+      });
+    }
+
+    return reorganizedTemplate;
+  };
 
   function handleInputChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
-    setTemplate((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+    setTemplate((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
+  //@ts-expect-error -e9
+  const { setAuditTemplates } = useAuditTemplates();
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const file = e.target.files?.[0];
+    if (!file) return;
     if (file.size > 2 * 1024 * 1024) {
-      setImageError('Image must be 2MB or less.')
-      if (fileInputRef.current) fileInputRef.current.value = ''
-      return
+      setImageError("Image must be 2MB or less.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
     }
-    setImageError(null)
-    const reader = new FileReader()
+    setImageError(null);
+    const reader = new FileReader();
     reader.onload = (event) => {
       setTemplate((prev) => ({
         ...prev,
-        photo: (event.target?.result ?? '') as string,
-      }))
-    }
-    reader.readAsDataURL(file)
+        photo: (event.target?.result ?? "") as string,
+      }));
+    };
+    reader.readAsDataURL(file);
   }
 
   function handleRemoveImage() {
-    setTemplate((prev) => ({ ...prev, photo: '' }))
-    if (fileInputRef.current) fileInputRef.current.value = ''
+    setTemplate((prev) => ({ ...prev, photo: "" }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   function handleTriggerFileInput() {
-    fileInputRef.current?.click()
+    fileInputRef.current?.click();
   }
 
-  function handleGeneratePlaceholder() {
-    // You can replace this with a real placeholder generator if needed
-    setTemplate((prev) => ({
-      ...prev,
-      photo: 'https://placehold.co/600x400?text=Audit+Template',
-    }))
-  }
+  // function handleGeneratePlaceholder() {
+  //   // You can replace this with a real placeholder generator if needed
+  //   setTemplate((prev) => ({
+  //     ...prev,
+  //     photo: 'https://placehold.co/600x400?text=Audit+Template',
+  //   }))
+  // }
 
   async function handleSubmit(formData: FormData) {
     const updatePages = template.pages.map((page) => ({
-      ...omit(page, ['id', 'template_id']),
+      ...omit(page, ["id", "template_id"]),
       sections: page.sections.map((section) => ({
-        ...omit(section, ['id']),
+        ...omit(section, ["id"]),
         questions: section.questions.map((question) => ({
-          ...omit(question, ['id']),
+          ...omit(question, ["id"]),
           response_options:
             question.response_options?.map((option) =>
-              omit(option, ['id', 'question_id']),
+              omit(option, ["id", "question_id"])
             ) ?? [],
         })),
       })),
-    }))
+    }));
 
     try {
-      formData.set('title', template.title ?? '')
-      formData.set('description', template.description ?? '')
-      formData.set('photo', template.photo ?? '')
-      formData.set('pages', JSON.stringify(updatePages))
+      formData.set("title", template.title ?? "");
+      formData.set("description", template.description ?? "");
+      formData.set("photo", template.photo ?? "");
+      formData.set("pages", JSON.stringify(updatePages));
 
-      const createdBy = user?.id ?? ''
-      const result = await createTemplate(formData, createdBy)
-      console.log('result', result)
+      const createdBy = user?.id ?? "";
+      const result = await createTemplate(formData, createdBy);
+      console.log("result", result);
       if (result && result.error) {
-        toast.error(result.error)
-        return
+        toast.error(result.error);
+        return;
       }
-      if (result && 'success' in result) {
-        toast.success(String(result.success))
-        router.push('/dashboard/templates')
+      if (result && "success" in result) {
+        toast.success(String(result.success));
+        setAuditTemplates(result.data);
+        router.push("/dashboard/templates");
       }
     } catch (error) {
-      console.error('Error creating template:', error)
-      toast.error('Failed to create template')
+      console.error("Error creating template:", error);
+      toast.error("Failed to create template");
     }
   }
 
@@ -214,7 +309,7 @@ export default function CreateAuditForm() {
                       height={100}
                       src={template.photo}
                       alt="Cover Preview"
-                      className="w-full max-w-3xl h-72 object-contain rounded mb-4"
+                      className="w-full  h-96 object-contain rounded mb-4"
                     />
                     <div className="flex gap-2">
                       <Button
@@ -262,14 +357,14 @@ export default function CreateAuditForm() {
                         >
                           <span className="mr-2">&#8682;</span> Upload
                         </Button>
-                        <Button
+                        {/* <Button
                           type="button"
                           variant="outline"
                           onClick={handleGeneratePlaceholder}
                         >
                           <span className="mr-2">&#128444;</span> Generate
                           Placeholder
-                        </Button>
+                        </Button> */}
                       </div>
                     </div>
                   </>
@@ -288,7 +383,7 @@ export default function CreateAuditForm() {
             <div className="flex justify-end">
               <Button
                 type="button"
-                onClick={() => setActiveTab('pages')}
+                onClick={() => setActiveTab("pages")}
                 disabled={!template.title || !template.description}
                 aria-label="Continue to Pages"
               >
@@ -313,14 +408,18 @@ export default function CreateAuditForm() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setActiveTab('details')}
+                onClick={() => setActiveTab("details")}
                 aria-label="Back to Details"
               >
                 Back
               </Button>
               <Button
                 type="button"
-                onClick={() => setActiveTab('preview')}
+                onClick={() => {
+                  const reorganized = reorganizeTemplateForPreview(template);
+                  setPreviewTemplate(reorganized);
+                  setActiveTab("preview");
+                }}
                 aria-label="Continue to Preview"
                 disabled={template.pages.length === 0}
               >
@@ -334,18 +433,22 @@ export default function CreateAuditForm() {
       <TabsContent value="preview">
         <Card>
           <CardHeader>
-            <CardTitle>Preview</CardTitle>
+            <CardTitle>Template Preview</CardTitle>
             <CardDescription>
-              Preview how your audit template will appear to users
+              This is how your audit will look to the user.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <TemplatePreview template={template} />
+            {previewTemplate ? (
+              <TemplatePreview template={previewTemplate} />
+            ) : (
+              <p>Loading preview...</p>
+            )}
             <div className="flex justify-between mt-6">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setActiveTab('pages')}
+                onClick={() => setActiveTab("pages")}
                 aria-label="Back to Pages"
               >
                 Back
@@ -362,5 +465,5 @@ export default function CreateAuditForm() {
         </Card>
       </TabsContent>
     </Tabs>
-  )
+  );
 }

@@ -15,6 +15,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/lib/context/auth-provider";
 import {
+  Action,
   ActionFrequency,
   ActionPriority,
   ActionStatus,
@@ -25,6 +26,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { createAction } from "../actions/actions";
+import { useActionsStore } from "@/store/actions";
 
 interface CreateActionFormProps {
   users: User[];
@@ -38,6 +40,7 @@ export function CreateActionForm({
   onCancel,
 }: CreateActionFormProps) {
   const { user } = useAuth();
+  const { setActions } = useActionsStore();
   const [selectedAssignees, setSelectedAssignees] = useState<Assignee[]>([]);
   const [dueDate, setDueDate] = useState<string>(
     new Date().toISOString().split("T")[0]
@@ -88,11 +91,18 @@ export function CreateActionForm({
       selectedSite!,
       selectedAssignees
     );
-    if (result && !result.error) {
+
+    console.log("result before", result);
+    console.log("result with data", result.data);
+
+    if (result) {
+      console.log("result after", result?.data?.data);
       toast.success("Action created successfully");
+      setActions((prev) => [result.data.data as Action, ...prev]);
       onCancel();
     } else {
-      toast.error(result?.error || "Failed to create action");
+      //@ts-expect-error -e9
+      toast.error(result?.data?.message || "Failed to create action");
     }
   };
 
@@ -149,13 +159,13 @@ export function CreateActionForm({
         <div className="space-y-2">
           <Label>Priority</Label>
           <Select name="priority" defaultValue={ActionPriority.MEDIUM}>
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Select priority" />
             </SelectTrigger>
             <SelectContent>
               {Object.values(ActionPriority).map((priority) => (
                 <SelectItem key={priority} value={priority}>
-                  {priority}
+                  {priority.charAt(0).toUpperCase() + priority.slice(1)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -164,13 +174,13 @@ export function CreateActionForm({
         <div className="space-y-2">
           <Label>Status</Label>
           <Select name="status" defaultValue={ActionStatus.TODO}>
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
             <SelectContent>
               {Object.values(ActionStatus).map((status) => (
                 <SelectItem key={status} value={status}>
-                  {status}
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -190,11 +200,14 @@ export function CreateActionForm({
             <SelectValue placeholder="Select frequency" />
           </SelectTrigger>
           <SelectContent>
-            {Object.values(ActionFrequency).map((frequency) => (
-              <SelectItem key={frequency} value={frequency}>
-                {frequency.replace("_", " ")}
-              </SelectItem>
-            ))}
+            {Object.values(ActionFrequency).map((frequency) => {
+              const formatted = frequency.replace("_", " ");
+              return (
+                <SelectItem key={frequency} value={frequency}>
+                  {formatted.charAt(0).toUpperCase() + formatted.slice(1)}
+                </SelectItem>
+              );
+            })}
           </SelectContent>
         </Select>
       </div>

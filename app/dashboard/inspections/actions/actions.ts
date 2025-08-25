@@ -65,7 +65,11 @@ export async function saveResponse(
     selected_options: response.selected_options || [],
     response_value: response.response_value,
     inspector_notes: response.inspector_notes || "",
-    file_attachments: response.file_attachments || [],
+    // Only include file_attachments if they exist
+    ...(response.file_attachments &&
+      response.file_attachments.length > 0 && {
+        file_attachments: response.file_attachments,
+      }),
     ...(response?.location_data && { location_data: response.location_data }),
   };
 

@@ -13,7 +13,11 @@ export default function InspectionsClient() {
 
       <Card>
         <CardContent className="pt-6">
-          <InspectionList inspections={inspections} loading={isLoading} />
+          <InspectionList
+            //@ts-expect-error -e9
+            inspections={inspections || []}
+            loading={isLoading}
+          />
         </CardContent>
       </Card>
     </div>

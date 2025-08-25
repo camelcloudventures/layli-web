@@ -5,7 +5,6 @@ import type { SchedulesResponse, Schedule } from "@/lib/types/schedule-types";
 import { revalidateTag } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { ActiveUser, Site } from "@/lib/types";
-import { TemplatesResponse } from "./types";
 
 export async function getSchedules(
   page: number
@@ -19,7 +18,8 @@ export async function createSchedule(formData: FormData) {
   const title = formData.get("title") as string;
   const template_id = formData.get("template_id") as string;
   const site_id = formData.get("site_id") as string;
-  const assignee_ids = formData.getAll("assignee_ids") as string[];
+  const assigneesString = formData.get("assignees") as string;
+  const assignees = assigneesString ? JSON.parse(assigneesString) : [];
   const frequency = formData.get("frequency") as string;
   const start_time = formData.get("start_time") as string;
   const end_time = formData.get("end_time") as string;
@@ -28,7 +28,7 @@ export async function createSchedule(formData: FormData) {
     title,
     template_id,
     site_id,
-    assignee_ids,
+    assignees,
     frequency,
     start_time,
     end_time,
@@ -48,11 +48,6 @@ export async function getActiveUsers(): Promise<ActiveUser | null> {
   return await GET(`/invites/organization/active-users`, ["users"]);
 }
 
-export async function getTemplates(): Promise<TemplatesResponse | null> {
-  // Replace with your actual API endpoint or DB query for templates
-  return await GET("/audit-template/get", ["templates"]);
-}
-
 export async function getSites(): Promise<Site[] | null> {
   const client = await createClient(
     process.env.SUPABASE_URL!,
@@ -68,7 +63,8 @@ export async function updateSchedule(formData: FormData) {
   const title = formData.get("title") as string;
   const template_id = formData.get("template_id") as string;
   const site_id = formData.get("site_id") as string;
-  const assignee_ids = formData.getAll("assignee_ids") as string[];
+  const assigneesString = formData.get("assignees") as string;
+  const assignees = assigneesString ? JSON.parse(assigneesString) : [];
   const frequency = formData.get("frequency") as string;
   const status = formData.get("status") as string;
   const start_time = formData.get("start_time") as string;
@@ -79,7 +75,7 @@ export async function updateSchedule(formData: FormData) {
     title,
     template_id,
     site_id,
-    assignee_ids,
+    assignees,
     frequency,
     status,
     start_time,

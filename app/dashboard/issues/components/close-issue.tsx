@@ -1,50 +1,60 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { toast } from 'sonner'
-import { Issue } from '@/lib/types'
-import { closeIssue } from '../actions/actions'
-import SubmitBtn from '@/components/custom/submit-btn'
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { Issue } from "@/lib/types";
+import { closeIssue } from "../actions/actions";
+import SubmitBtn from "@/components/custom/submit-btn";
+import { useIssuesStore } from "@/store/issues";
 
 interface CloseIssueProps {
-  issue: Issue
-  onClose: () => void
+  issue: Issue;
+  onClose: () => void;
 }
 
 export default function CloseIssue({ issue, onClose }: CloseIssueProps) {
-  const [solution, setSolution] = useState('')
-  const [isClosing, setIsClosing] = useState(false)
+  const { setIssues } = useIssuesStore();
+  const [solution, setSolution] = useState("");
+  const [isClosing, setIsClosing] = useState(false);
 
   // Check if issue is already closed
-  const isAlreadyClosed = issue.status === 'closed'
+  const isAlreadyClosed = issue.status === "closed";
 
   const handleCloseIssue = async (formData: FormData) => {
     if (isAlreadyClosed) {
-      toast.error('This issue is already closed')
-      return
+      toast.error("This issue is already closed");
+      return;
     }
 
-    const solutionText = formData.get('solution') as string
+    const solutionText = formData.get("solution") as string;
     if (!solutionText) {
-      toast.error('Please provide a solution before closing the issue')
-      return
+      toast.error("Please provide a solution before closing the issue");
+      return;
     }
 
-    setIsClosing(true)
+    setIsClosing(true);
 
-    const response = await closeIssue(issue.id, solutionText)
-    console.log('response', response)
+    const response = await closeIssue(issue.id, solutionText);
+    console.log("response for an issue", response);
     if (response) {
-      toast.success('Issue closed successfully')
-      onClose()
+      //@ts-expect-error 047
+      toast.success(response.success);
+      //@ts-expect-error 047
+      if (response.data) {
+        setIssues((prevIssues) =>
+          //@ts-expect-error -e9
+          prevIssues.map((i) => (i.id === issue.id ? response.data : i))
+        );
+      }
+      onClose();
     } else {
-      toast.error('Failed to close issue')
+      toast.error("Failed to close issue");
     }
-    setIsClosing(false)
-  }
+    setIsClosing(false);
+  };
 
   if (isAlreadyClosed) {
     return (
@@ -78,7 +88,7 @@ export default function CloseIssue({ issue, onClose }: CloseIssueProps) {
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -112,12 +122,12 @@ export default function CloseIssue({ issue, onClose }: CloseIssueProps) {
           Cancel
         </Button>
         <SubmitBtn
-          label={isClosing ? 'Closing...' : 'Close Issue'}
+          label={isClosing ? "Closing..." : "Close Issue"}
           isDisabled={isClosing || !solution.trim()}
           variant="default"
           className="w-fit"
         />
       </div>
     </form>
-  )
+  );
 }

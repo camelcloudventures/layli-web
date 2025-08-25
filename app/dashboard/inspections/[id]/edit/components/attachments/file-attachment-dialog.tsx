@@ -1,40 +1,40 @@
-'use client'
+"use client";
 
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { useState, useEffect } from 'react'
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 import {
   FileUploader,
   FileWithPreview,
-} from '@/components/custom/file-uploader'
-import { attachInspectionFile } from '@/utils/common'
-import { toast } from 'sonner'
-import { Paperclip, LucideTrash2, PencilIcon } from 'lucide-react'
-import { Progress } from '@/components/ui/progress'
+} from "@/components/custom/file-uploader";
+import { attachInspectionFile } from "@/utils/common";
+import { toast } from "sonner";
+import { Paperclip, LucideTrash2, PencilIcon } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 interface ExtendedFile extends File {
-  file_path?: string
-  fileName?: string
+  file_path?: string;
+  fileName?: string;
 }
 
 interface FileMetaType {
-  filename: string
-  file_path: string
-  file_size: number
-  mime_type: string
+  filename: string;
+  file_path: string;
+  file_size: number;
+  mime_type: string;
 }
 
 interface FileAttachmentDialogProps {
-  isFileDialogOpen: boolean
-  setIsFileDialogOpen: (isOpen: boolean) => void
-  selectedFile: File | null
-  setSelectedFile: (file: File | null) => void
-  handleAttachFile1: (fileMeta: FileMetaType) => void
+  isFileDialogOpen: boolean;
+  setIsFileDialogOpen: (isOpen: boolean) => void;
+  selectedFile: File | null;
+  setSelectedFile: (file: File | null) => void;
+  handleAttachFile1: (fileMeta: FileMetaType) => void;
 }
 
 export function FileAttachmentDialog({
@@ -44,110 +44,118 @@ export function FileAttachmentDialog({
   setSelectedFile,
   handleAttachFile1,
 }: FileAttachmentDialogProps) {
-  const [isUploading, setIsUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [showUploader, setShowUploader] = useState(true)
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [showUploader, setShowUploader] = useState(true);
   const [uploadedFileMeta, setUploadedFileMeta] = useState<FileMetaType | null>(
-    null,
-  )
+    null
+  );
 
-  // When dialog opens with an existing file, hide uploader and show file
+  // When dialog opens, handle file state
   useEffect(() => {
-    if (isFileDialogOpen && selectedFile) {
-      setShowUploader(false)
-      const extendedFile = selectedFile as ExtendedFile
-      if (extendedFile.file_path) {
-        setUploadedFileMeta({
-          filename: selectedFile.name,
-          file_path: extendedFile.file_path,
-          file_size: selectedFile.size,
-          mime_type: selectedFile.type,
-        })
+    if (isFileDialogOpen) {
+      if (selectedFile) {
+        setShowUploader(false);
+        const extendedFile = selectedFile as ExtendedFile;
+        if (extendedFile.file_path) {
+          setUploadedFileMeta({
+            filename: selectedFile.name,
+            file_path: extendedFile.file_path,
+            file_size: selectedFile.size,
+            mime_type: selectedFile.type,
+          });
+        }
+      } else {
+        // Reset dialog state when no file is selected
+        setShowUploader(true);
+        setUploadedFileMeta(null);
+        setUploadProgress(0);
+        setIsUploading(false);
       }
     }
-  }, [isFileDialogOpen, selectedFile])
+  }, [isFileDialogOpen, selectedFile]);
 
   async function handleUpload(file: File) {
     try {
-      setIsUploading(true)
-      setUploadProgress(0)
-      setShowUploader(false)
+      setIsUploading(true);
+      setUploadProgress(0);
+      setShowUploader(false);
       // Simulate upload progress
       const progressInterval = setInterval(() => {
-        setUploadProgress((prev) => (prev >= 90 ? 90 : prev + 10))
-      }, 200)
-      const result = await attachInspectionFile(file, 'inspection-attachments')
-      clearInterval(progressInterval)
-      setUploadProgress(100)
+        setUploadProgress((prev) => (prev >= 90 ? 90 : prev + 10));
+      }, 200);
+      const result = await attachInspectionFile(file, "inspection-attachments");
+      clearInterval(progressInterval);
+      setUploadProgress(100);
       if (result.success && result.fileData) {
-        const fileWithPreview = file as FileWithPreview
-        fileWithPreview.id = crypto.randomUUID()
-        fileWithPreview.file_path = result.fileData.file_path
-        fileWithPreview.fileName = result.fileData.fileName
-        fileWithPreview.file_size = result.fileData.file_size
-        fileWithPreview.mime_type = result.fileData.mime_type
-        setSelectedFile(fileWithPreview)
+        const fileWithPreview = file as FileWithPreview;
+        fileWithPreview.id = crypto.randomUUID();
+        fileWithPreview.file_path = result.fileData.file_path;
+        fileWithPreview.fileName = result.fileData.fileName;
+        fileWithPreview.file_size = result.fileData.file_size;
+        fileWithPreview.mime_type = result.fileData.mime_type;
+        setSelectedFile(fileWithPreview);
         setUploadedFileMeta({
           filename: result.fileData.fileName,
           file_path: result.fileData.file_path,
           file_size: result.fileData.file_size,
           mime_type: result.fileData.mime_type,
-        })
-        toast.success('File uploaded successfully')
+        });
+        toast.success("File uploaded successfully");
       } else if (result.error) {
-        toast.error(result.error)
-        setShowUploader(true)
+        toast.error(result.error);
+        setShowUploader(true);
       }
     } catch {
-      toast.error('Failed to upload file')
-      setShowUploader(true)
+      toast.error("Failed to upload file");
+      setShowUploader(true);
     } finally {
       setTimeout(() => {
-        setIsUploading(false)
-        setUploadProgress(0)
-      }, 500)
+        setIsUploading(false);
+        setUploadProgress(0);
+      }, 500);
     }
   }
 
   function handleAttach() {
     if (uploadedFileMeta) {
-      handleAttachFile1(uploadedFileMeta)
+      handleAttachFile1(uploadedFileMeta);
     }
   }
 
   function handleClose() {
-    setIsFileDialogOpen(false)
-    const extendedFile = selectedFile as ExtendedFile
+    setIsFileDialogOpen(false);
+    const extendedFile = selectedFile as ExtendedFile;
     if (!extendedFile?.file_path) {
-      setSelectedFile(null)
+      setSelectedFile(null);
     }
-    setShowUploader(true)
-    setUploadProgress(0)
-    setIsUploading(false)
-    setUploadedFileMeta(null)
+    setShowUploader(true);
+    setUploadProgress(0);
+    setIsUploading(false);
+    setUploadedFileMeta(null);
   }
 
   function handleRemoveFile() {
-    setSelectedFile(null)
-    setShowUploader(true)
-    setUploadProgress(0)
-    setUploadedFileMeta(null)
+    setSelectedFile(null);
+    setShowUploader(true);
+    setUploadProgress(0);
+    setUploadedFileMeta(null);
   }
 
   function handleEditClick() {
-    setShowUploader(true)
+    setShowUploader(true);
   }
 
   // Convert selectedFile to FileWithPreview for the FileUploader
   const fileWithPreview = selectedFile
     ? (selectedFile as FileWithPreview)
-    : undefined
+    : undefined;
 
-  console.log('setSelectedFile', selectedFile)
+  console.log("setSelectedFile", selectedFile);
 
   return (
     <Dialog open={isFileDialogOpen} onOpenChange={handleClose}>
-      <DialogContent className="">
+      <DialogContent className="p-6">
         <DialogHeader>
           <DialogTitle>Attach File</DialogTitle>
         </DialogHeader>
@@ -183,7 +191,7 @@ export function FileAttachmentDialog({
                   aria-label="Edit file"
                   tabIndex={0}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') handleEditClick()
+                    if (e.key === "Enter" || e.key === " ") handleEditClick();
                   }}
                 >
                   <PencilIcon className="h-4 w-4" />
@@ -196,7 +204,7 @@ export function FileAttachmentDialog({
                   aria-label="Remove file"
                   tabIndex={0}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') handleRemoveFile()
+                    if (e.key === "Enter" || e.key === " ") handleRemoveFile();
                   }}
                 >
                   <LucideTrash2 className="h-4 w-4 text-red-500" />
@@ -225,5 +233,5 @@ export function FileAttachmentDialog({
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

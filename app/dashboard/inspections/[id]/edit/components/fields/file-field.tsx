@@ -1,29 +1,29 @@
-'use client'
+"use client";
 
-import { Label } from '@/components/ui/label'
-import { FileUploader } from '@/components/custom/file-uploader'
-import type { Question } from '@/lib/types/inspection-types'
-import { toast } from 'sonner'
-import { attachInspectionFile, deleteInspectionFile } from '@/utils/common'
-import { Button } from '@/components/ui/button'
-import { LucideTrash2, Paperclip, PencilIcon } from 'lucide-react'
-import { useState } from 'react'
-import { Progress } from '@/components/ui/progress'
+import { Label } from "@/components/ui/label";
+import { FileUploader } from "@/components/custom/file-uploader";
+import type { Question } from "@/lib/types/inspection-types";
+import { toast } from "sonner";
+import { attachInspectionFile, deleteInspectionFile } from "@/utils/common";
+import { Button } from "@/components/ui/button";
+import { LucideTrash2, Paperclip, PencilIcon } from "lucide-react";
+import { useState } from "react";
+import { Progress } from "@/components/ui/progress";
 
 interface ExtendedFile {
-  questionId?: number
-  fileName?: string
-  file_path?: string
-  file_size?: number
-  mime_type?: string
+  questionId?: number;
+  fileName?: string;
+  file_path?: string;
+  file_size?: number;
+  mime_type?: string;
 }
 
 interface FileFieldProps {
-  question: Question
-  onResponse: (value: string, files?: File[]) => void
-  isDisabled?: boolean
-  fileAttachments: ExtendedFile[]
-  setFileAttachments: (files: ExtendedFile[]) => void
+  question: Question;
+  onResponse: (value: string, files?: File[]) => void;
+  isDisabled?: boolean;
+  fileAttachments: ExtendedFile[];
+  setFileAttachments: (files: ExtendedFile[]) => void;
 }
 
 export function FileField({
@@ -33,84 +33,86 @@ export function FileField({
   fileAttachments,
   setFileAttachments,
 }: FileFieldProps) {
-  const [isUploading, setIsUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [showUploader, setShowUploader] = useState(false)
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [showUploader, setShowUploader] = useState(false);
 
   // Find file metadata for this question
-  const questionFile = fileAttachments.find(
-    (file) => file.questionId === question.id,
-  )
+  const questionFile = fileAttachments?.find(
+    (file) => file.questionId === question.id
+  );
 
   async function handleUpload(selectedFile: File) {
     try {
-      setIsUploading(true)
-      setUploadProgress(0)
+      setIsUploading(true);
+      setUploadProgress(0);
 
       // Simulate upload progress
       const progressInterval = setInterval(() => {
-        setUploadProgress((prev) => (prev >= 90 ? 90 : prev + 10))
-      }, 200)
+        setUploadProgress((prev) => (prev >= 90 ? 90 : prev + 10));
+      }, 200);
       const result = await attachInspectionFile(
         selectedFile,
-        'inspection-attachments',
-      )
+        "inspection-attachments"
+      );
 
-      clearInterval(progressInterval)
+      clearInterval(progressInterval);
 
       if (result.success && result.fileData) {
-        setUploadProgress(100)
+        setUploadProgress(100);
 
         const fileWithQuestion: ExtendedFile = Object.assign(selectedFile, {
           ...result.fileData,
           questionId: question.id,
-        })
+        });
 
         // Remove any existing file for this question and add the new one
         setFileAttachments([
           ...fileAttachments.filter((file) => file.questionId !== question.id),
           fileWithQuestion,
-        ])
+        ]);
+
+        console.log("attachemnts", fileAttachments);
 
         onResponse(result.fileData.file_path, [
-          (result.fileData as unknown) as File,
-        ])
-        toast.success('File uploaded successfully')
-        setShowUploader(false)
+          result.fileData as unknown as File,
+        ]);
+        toast.success("File uploaded successfully");
+        setShowUploader(false);
       } else if (result.error) {
-        toast.error(result.error)
+        toast.error(result.error);
       }
     } catch {
-      toast.error('Failed to upload file')
+      toast.error("Failed to upload file");
     } finally {
       setTimeout(() => {
-        setIsUploading(false)
-        setUploadProgress(0)
-      }, 500)
+        setIsUploading(false);
+        setUploadProgress(0);
+      }, 500);
     }
   }
 
   async function handleRemoveFile() {
-    if (!questionFile?.file_path) return
+    if (!questionFile?.file_path) return;
 
     const result = await deleteInspectionFile(
       questionFile.file_path,
-      'inspection-attachments',
-    )
+      "inspection-attachments"
+    );
     if (result.success) {
       setFileAttachments(
-        fileAttachments.filter((file) => file.questionId !== question.id),
-      )
-      onResponse('', [])
-      toast.success('File deleted successfully')
-      setShowUploader(false)
+        fileAttachments.filter((file) => file.questionId !== question.id)
+      );
+      onResponse("", []);
+      toast.success("File deleted successfully");
+      setShowUploader(false);
     } else if (result.error) {
-      toast.error(result.error)
+      toast.error(result.error);
     }
   }
 
   function handleEditClick() {
-    setShowUploader(true)
+    setShowUploader(true);
   }
 
   return (
@@ -163,5 +165,5 @@ export function FileField({
         />
       )}
     </div>
-  )
+  );
 }

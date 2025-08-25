@@ -4,38 +4,32 @@ import { useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 export function useAuditTemplates() {
-  const {
-    auditTemplates,
-    auditTemplatePagination,
-    setAuditTemplates,
-    setAuditTemplatePagination,
-  } = useTemplatesStore(
+  const { templates, reset, setTemplates } = useTemplatesStore(
     useShallow((state) => ({
-      auditTemplates: state.auditTemplates,
-      auditTemplatePagination: state.auditTemplatePagination,
-      setAuditTemplates: state.setAuditTemplates,
-      setAuditTemplatePagination: state.setAuditTemplatePagination,
+      setTemplates: state.setTemplates,
+      templates: state.templates,
+      reset: state.reset,
     }))
   );
 
-  const { data: fetchedAuditTemplates, isLoading } = useGetAuditTemplates(
-    1,
-    !auditTemplates || auditTemplates.length === 0
-  );
+  console.log("store templates", templates);
 
+  const {
+    data: fetchedAuditTemplates,
+    isLoading,
+    isError,
+  } = useGetAuditTemplates(templates.length === 0);
+
+  console.log("error", isError);
   useEffect(() => {
-    if (fetchedAuditTemplates?.data && auditTemplates.length === 0) {
-      setAuditTemplates(fetchedAuditTemplates.data);
+    if (fetchedAuditTemplates?.data) {
+      setTemplates(fetchedAuditTemplates.data);
     }
-    if (fetchedAuditTemplates?.pagination) {
-      setAuditTemplatePagination(fetchedAuditTemplates.pagination);
-    }
-  }, [
-    fetchedAuditTemplates,
-    auditTemplates,
-    setAuditTemplates,
-    setAuditTemplatePagination,
-  ]);
+  }, [fetchedAuditTemplates, setTemplates]);
 
-  return { auditTemplates, auditTemplatePagination, isLoading };
+  return {
+    templates,
+    isLoading,
+    reset,
+  };
 }

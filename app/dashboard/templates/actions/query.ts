@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { getTemplates } from "./actions";
+import { GET } from "@/app/backend/apiMethods";
+import { TemplatesResponse } from "@/lib/types/audit-types";
 
-export function useGetAuditTemplates(pageNumber: number, enabled: boolean) {
+export function useGetAuditTemplates(enabled: boolean) {
   return useQuery({
-    queryKey: ["audit-templates", pageNumber],
+    queryKey: ["audit-templates"],
     queryFn: async () => {
-      return await getTemplates(pageNumber);
+      return await GET<TemplatesResponse>(`/audit-template/get`);
     },
     enabled: enabled ?? true,
   });

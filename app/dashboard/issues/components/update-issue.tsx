@@ -1,17 +1,17 @@
-'use client'
+"use client";
 
-import { Issue } from '@/lib/types'
-import { IssueDetails } from './issue-details'
+import { Issue } from "@/lib/types";
+import { IssueDetails } from "./issue-details";
 
 interface UpdateIssueProps {
-  issue: Issue
-  onClose: () => void
+  issue: Issue;
+  onClose: () => void;
   assignees: Array<{
-    id: string
-    full_name: string
-    email: string
-    role: string
-  }>
+    id: string;
+    full_name: string;
+    email: string;
+    role: string;
+  }>;
 }
 
 export default function UpdateIssue({
@@ -19,5 +19,5 @@ export default function UpdateIssue({
   onClose,
   assignees,
 }: UpdateIssueProps) {
-  return <IssueDetails issue={issue} onClose={onClose} assignees={assignees} />
+  return <IssueDetails issue={issue} onClose={onClose} assignees={assignees} />;
 }

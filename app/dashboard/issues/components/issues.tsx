@@ -1,20 +1,20 @@
-'use client'
+"use client";
 
-import PageHeader from '@/components/custom/page-header'
-import { User } from '@/lib/types'
-import { ReportIssueForm } from './report-issue-form'
-import { Download, Plus } from 'lucide-react'
-import { useState } from 'react'
+import PageHeader from "@/components/custom/page-header";
+import { User } from "@/lib/types";
+import { ReportIssueForm } from "./report-issue-form";
+import { Download, Plus } from "lucide-react";
+import { useState } from "react";
 import {
   Dialog,
   DialogTitle,
   DialogDescription,
   DialogHeader,
   DialogContent,
-} from '@/components/ui/dialog'
+} from "@/components/ui/dialog";
 
 export default function Issues({ users }: { users: User[] }) {
-  const [isReportIssueDialogOpen, setIsReportIssueDialogOpen] = useState(false)
+  const [isReportIssueDialogOpen, setIsReportIssueDialogOpen] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -24,16 +24,16 @@ export default function Issues({ users }: { users: User[] }) {
           description="Track and manage audit issues"
           actions={[
             {
-              label: 'Export CSV',
+              label: "Export CSV",
               onClick: () => {},
               icon: <Download className="mr-2 h-4 w-4" />,
-              variant: 'outline',
+              variant: "outline",
             },
             {
-              label: 'Report Issue',
+              label: "Report Issue",
               onClick: () => setIsReportIssueDialogOpen(true),
               icon: <Plus className="mr-2 h-4 w-4" />,
-              variant: 'default',
+              variant: "default",
             },
           ]}
         />
@@ -43,8 +43,8 @@ export default function Issues({ users }: { users: User[] }) {
         open={isReportIssueDialogOpen}
         onOpenChange={setIsReportIssueDialogOpen}
       >
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
+        <DialogContent className="w-[95vw] sm:max-w-[600px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+          <DialogHeader className="">
             <DialogTitle>Report Issue</DialogTitle>
             <DialogDescription>
               Report a new issue that requires attention or action.
@@ -57,5 +57,5 @@ export default function Issues({ users }: { users: User[] }) {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

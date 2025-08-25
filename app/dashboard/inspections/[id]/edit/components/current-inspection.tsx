@@ -1,54 +1,54 @@
-'use client'
+"use client";
 
-import { Card, CardContent } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { FieldMapper } from './fields/field-mapper'
-import { Button } from '@/components/ui/button'
-import { FileText, Save } from 'lucide-react'
-import { Paperclip } from 'lucide-react'
-import { NoteDisplay } from '@/components/custom/note-with-attachments'
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FieldMapper } from "./fields/field-mapper";
+import { Button } from "@/components/ui/button";
+import { FileText, Save } from "lucide-react";
+import { Paperclip } from "lucide-react";
+import { NoteDisplay } from "@/components/custom/note-with-attachments";
 import {
   Inspection,
   LocationResponse,
   Response,
   Question,
-} from '@/lib/types/inspection-types'
-import { User } from '@/lib/types'
+} from "@/lib/types/inspection-types";
+import { User } from "@/lib/types";
 
 type CurrentInspectionProps = {
-  currentInspection: Inspection
-  responses: Record<number, Response>
-  unsavedChanges: Record<number, boolean>
-  savingFields: Record<number, boolean>
+  currentInspection: Inspection;
+  responses: Record<number, Response>;
+  unsavedChanges: Record<number, boolean>;
+  savingFields: Record<number, boolean>;
   handleResponse: (
     question: Question,
     value: string | string[] | LocationResponse,
-    files?: File[],
-  ) => void
-  handleFieldSave: (questionId: number) => Promise<void>
-  setActiveQuestionId: (questionId: number) => void
-  setNote: (note: string) => void
-  setIsNoteDialogOpen: (isOpen: boolean) => void
-  setIsFileDialogOpen: (isOpen: boolean) => void
+    files?: File[]
+  ) => void;
+  handleFieldSave: (questionId: number) => Promise<void>;
+  setActiveQuestionId: (questionId: number) => void;
+  setNote: (note: string) => void;
+  setIsNoteDialogOpen: (isOpen: boolean) => void;
+  setIsFileDialogOpen: (isOpen: boolean) => void;
   fileAttachments: {
-    questionId?: number
-    fileName?: string
-    file_path?: string
-    file_size?: number
-    mime_type?: string
-  }[]
+    questionId?: number;
+    fileName?: string;
+    file_path?: string;
+    file_size?: number;
+    mime_type?: string;
+  }[];
   setFileAttachments: (
     files: {
-      questionId?: number
-      fileName?: string
-      file_path?: string
-      file_size?: number
-      mime_type?: string
-    }[],
-  ) => void
-  setSelectedFile: (file: File | null) => void
-  users: User[]
-}
+      questionId?: number;
+      fileName?: string;
+      file_path?: string;
+      file_size?: number;
+      mime_type?: string;
+    }[]
+  ) => void;
+  setSelectedFile: (file: File | null) => void;
+  users: User[];
+};
 export function CurrentInspection({
   currentInspection,
   responses,
@@ -92,14 +92,14 @@ export function CurrentInspection({
                   <div key={section.id} className="space-y-4">
                     <h3 className="text-lg font-semibold">{section.title}</h3>
                     {section.questions.map((question) => {
-                      const response = responses[question.id]
+                      const response = responses[question.id];
                       const hasUnsavedChange =
-                        unsavedChanges[question.id] !== undefined
-                      const isSaving = savingFields[question.id]
+                        unsavedChanges[question.id] !== undefined;
+                      const isSaving = savingFields[question.id];
 
                       // Only disable fields after they've been saved (have a response ID)
                       // For all field types, check if there's a response ID
-                      const isAnswered = !!response?.id
+                      const isAnswered = !!response?.id;
 
                       return (
                         <Card className=" shadow-none" key={question.id}>
@@ -123,48 +123,51 @@ export function CurrentInspection({
                                     variant="outline"
                                     size="sm"
                                     onClick={() => {
-                                      setActiveQuestionId(question.id)
-                                      setNote(response?.inspector_notes || '')
-                                      setIsNoteDialogOpen(true)
+                                      setActiveQuestionId(question.id);
+                                      setNote(response?.inspector_notes || "");
+                                      setIsNoteDialogOpen(true);
                                     }}
                                     disabled={isAnswered}
                                   >
                                     <FileText className="mr-2 h-4 w-4" />
                                     {response?.inspector_notes
-                                      ? 'Edit Note'
-                                      : 'Add Note'}
+                                      ? "Edit Note"
+                                      : "Add Note"}
                                   </Button>
 
                                   <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => {
-                                      setActiveQuestionId(question.id)
+                                      setActiveQuestionId(question.id);
 
+                                      // Always reset selectedFile first
+                                      setSelectedFile(null);
+
+                                      // Then set it only if this question has existing attachments
                                       if (response?.file_attachments?.length) {
                                         const attachment =
-                                          response.file_attachments[0]
+                                          response.file_attachments[0];
                                         const fileLikeObject = {
                                           name: attachment.filename,
                                           size: attachment.file_size,
                                           type: attachment.mime_type,
                                           file_path: attachment.file_path,
                                           fileName: attachment.filename,
-                                        }
+                                        };
                                         setSelectedFile(
-                                          (fileLikeObject as unknown) as File,
-                                        )
-                                      } else {
-                                        setSelectedFile(null)
+                                          fileLikeObject as unknown as File
+                                        );
                                       }
-                                      setIsFileDialogOpen(true)
+
+                                      setIsFileDialogOpen(true);
                                     }}
                                     disabled={isAnswered}
                                   >
                                     <Paperclip className="mr-2 h-4 w-4" />
                                     {response?.file_attachments?.length
-                                      ? 'Edit Attachment'
-                                      : 'Attach File'}
+                                      ? "Edit Attachment"
+                                      : "Attach File"}
                                   </Button>
                                 </div>
 
@@ -182,7 +185,7 @@ export function CurrentInspection({
                                           className="h-7 px-2 text-xs"
                                         >
                                           <Save className="mr-1 h-3 w-3" />
-                                          {isSaving ? 'Saving...' : 'Save'}
+                                          {isSaving ? "Saving..." : "Save"}
                                         </Button>
                                       </div>
                                     )}
@@ -228,7 +231,7 @@ export function CurrentInspection({
                             </div>
                           </CardContent>
                         </Card>
-                      )
+                      );
                     })}
                   </div>
                 ))}
@@ -238,5 +241,5 @@ export function CurrentInspection({
         </Tabs>
       </CardContent>
     </Card>
-  )
+  );
 }

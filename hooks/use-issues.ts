@@ -4,24 +4,24 @@ import { useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 export function useIssues() {
-  const { issues, success, setIssues, setSuccess } = useIssuesStore(
+  const { issues, setIssues } = useIssuesStore(
     useShallow((state) => ({
       issues: state.issues,
-      success: state.success,
       setIssues: state.setIssues,
-      setSuccess: state.setSuccess,
     }))
   );
 
+  console.log("isue", issues);
   const { data: fetchedIssues, isLoading } = useGetIssues(
     !issues || issues.length === 0
   );
   useEffect(() => {
-    if (fetchedIssues?.data && issues.length === 0) {
+    // This effect syncs the server state from React Query to the Zustand store.
+    // It runs whenever new data is fetched, preventing race conditions.
+    if (fetchedIssues?.data) {
       setIssues(fetchedIssues.data);
-      setSuccess(fetchedIssues.success);
     }
-  }, [fetchedIssues, setIssues, issues, setSuccess]);
+  }, [fetchedIssues, setIssues]);
 
-  return { issues, isLoading, success };
+  return { issues, isLoading };
 }

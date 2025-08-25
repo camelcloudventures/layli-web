@@ -1,7 +1,7 @@
 "use server";
 
 import { DELETE, GET, POST, UPDATE } from "@/app/backend/apiMethods";
-import { Assignee, Issue } from "@/lib/types";
+import { Assignee } from "@/lib/types";
 import { revalidateTag } from "next/cache";
 import { IssuesResponse } from "./types";
 
@@ -17,11 +17,12 @@ export async function createIssue(
   const title = formData.get("title");
   const images = JSON.parse(formData.get("images") as string);
 
-  const attachments = images?.map((image: { uploadedUrl: string }) => {
-    return {
-      attachments: image.uploadedUrl,
-    };
-  });
+  const attachments = images?.map(
+    (image: { uploadedUrl: string; originalFileName: string }) => ({
+      fileName: image.originalFileName,
+      fileUrl: image.uploadedUrl,
+    })
+  );
   console.log("attachments", attachments);
 
   const data = {
@@ -36,6 +37,7 @@ export async function createIssue(
   };
 
   console.log("data for submission", data);
+  // return;
   const response = await POST("/issues/create", data, true);
   revalidateTag("issues");
   return response;
@@ -46,7 +48,18 @@ export async function getIssues(): Promise<IssuesResponse | null> {
 }
 
 export async function updateIssue(issueId: string, formData: FormData) {
-  const payload = {
+  // Get basic issue data
+  const payload: {
+    title: string;
+    cause: string;
+    solution: string;
+    status: string;
+    priority: string;
+    assignees: FormDataEntryValue[];
+    due_at: string | null;
+    attachmentsToAdd?: Array<{ fileName: string; fileUrl: string }>;
+    attachmentIdsToDelete?: string[];
+  } = {
     title: formData.get("title") as string,
     cause: formData.get("cause") as string,
     solution: formData.get("solution") as string,
@@ -58,7 +71,43 @@ export async function updateIssue(issueId: string, formData: FormData) {
       : null,
   };
 
-  const res = await UPDATE(`/issues/${issueId}`, payload, ["issues"]);
+  // Handle attachments if provided
+  const attachmentsToAdd = formData.get("attachmentsToAdd");
+  const attachmentIdsToDelete = formData.get("attachmentIdsToDelete");
+
+  if (attachmentsToAdd) {
+    payload.attachmentsToAdd = JSON.parse(attachmentsToAdd as string);
+  }
+
+  if (attachmentIdsToDelete) {
+    payload.attachmentIdsToDelete = JSON.parse(attachmentIdsToDelete as string);
+  }
+
+  const res = await UPDATE(`/issues/${issueId}/update`, payload, ["issues"]);
+  revalidateTag("issues");
+  return res;
+}
+
+export async function updateAttachments(
+  issueId: string,
+  attachmentsToAdd?: Array<{ fileName: string; fileUrl: string }>,
+  attachmentIdsToDelete?: string[]
+) {
+  const payload: {
+    attachmentsToAdd?: Array<{ fileName: string; fileUrl: string }>;
+    attachmentIdsToDelete?: string[];
+  } = {};
+
+  if (attachmentsToAdd && attachmentsToAdd.length > 0) {
+    payload.attachmentsToAdd = attachmentsToAdd;
+  }
+
+  if (attachmentIdsToDelete && attachmentIdsToDelete.length > 0) {
+    payload.attachmentIdsToDelete = attachmentIdsToDelete;
+  }
+
+  const res = await UPDATE(`/issues/${issueId}/update`, payload, ["issues"]);
+  console.log("res is this from the server", res);
   revalidateTag("issues");
   return res;
 }

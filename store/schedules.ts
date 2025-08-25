@@ -1,20 +1,22 @@
 import { Schedule } from "@/lib/types/schedule-types";
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
 interface SchedulesStore {
   schedules: Schedule[];
-  setSchedules: (schedules: Schedule[]) => void;
+  setSchedules: (
+    schedules: Schedule[] | ((prev: Schedule[]) => Schedule[])
+  ) => void;
+  clearSchedules: () => void;
 }
 
-export const useSchedulesStore = create<SchedulesStore>()(
-  persist(
-    (set) => ({
-      schedules: [],
-      setSchedules: (schedules) => set({ schedules }),
-    }),
-    {
-      name: "schedules-storage",
-    }
-  )
-);
+export const useSchedulesStore = create<SchedulesStore>()((set) => ({
+  schedules: [],
+  setSchedules: (schedules) =>
+    set((state) => ({
+      schedules:
+        typeof schedules === "function"
+          ? schedules(state.schedules)
+          : schedules,
+    })),
+  clearSchedules: () => set({ schedules: [] }),
+}));

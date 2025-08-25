@@ -1,25 +1,25 @@
-'use client'
+"use client";
 
-import * as React from 'react'
+import * as React from "react";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from "@/components/ui/select";
 
 interface MultiSelectProps {
-  name: string
-  required?: boolean
-  value: string[]
-  onValueChange: (value: string[]) => void
-  placeholder?: string
+  name: string;
+  required?: boolean;
+  value: string[];
+  onValueChange: (value: string[]) => void;
+  placeholder?: string;
   options: Array<{
-    value: string
-    label: string
-  }>
-  className?: string
+    value: string;
+    label: string;
+  }>;
+  className?: string;
 }
 
 export function MultiSelect({
@@ -36,19 +36,19 @@ export function MultiSelect({
       <Select
         name={name}
         required={required}
-        value={value[0] || ''} // Use first value for the select
+        value={value[0] || ""} // Use first value for the select
         onValueChange={(newValue) => {
-          if (!newValue) return
+          if (!newValue) return;
           const newValues = value.includes(newValue)
             ? value.filter((v) => v !== newValue)
-            : [...value, newValue]
-          onValueChange(newValues)
+            : [...value, newValue];
+          onValueChange(newValues);
         }}
       >
         <SelectTrigger className="w-full">
           <SelectValue placeholder={placeholder}>
             {value.length > 0
-              ? `${value.length} item${value.length > 1 ? 's' : ''} selected`
+              ? `${value.length} User${value.length > 1 ? "s" : ""} selected`
               : placeholder}
           </SelectValue>
         </SelectTrigger>
@@ -58,7 +58,7 @@ export function MultiSelect({
               key={option.value}
               value={option.value}
               className={`hover:bg-gray-100 cursor-pointer ${
-                value.includes(option.value) ? 'bg-gray-100' : ''
+                value.includes(option.value) ? "bg-gray-100" : ""
               }`}
             >
               {option.label}
@@ -70,7 +70,7 @@ export function MultiSelect({
         <div className="absolute top-full left-0 right-0 mt-1 p-2 bg-white border rounded-md shadow-sm z-10">
           <div className="flex flex-wrap gap-1">
             {value.map((val, index) => {
-              const option = options.find((o) => o.value === val)
+              const option = options.find((o) => o.value === val);
               return (
                 option && (
                   <div
@@ -89,11 +89,11 @@ export function MultiSelect({
                     </button>
                   </div>
                 )
-              )
+              );
             })}
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }

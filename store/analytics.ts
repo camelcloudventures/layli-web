@@ -6,7 +6,6 @@ import {
   SchedulesAnalytics,
 } from "@/app/dashboard/analytics/actions/actions";
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
 interface AnalyticsStore {
   analyticsSummary: AnalyticsSummary | null;
@@ -21,24 +20,16 @@ interface AnalyticsStore {
   setInspectionsAnalytics: (inspection: InspectionsAnalytics) => void;
 }
 
-export const useAnalyticsStore = create<AnalyticsStore>()(
-  persist(
-    (set) => ({
-      analyticsSummary: null,
-      issuesAnalytics: null,
-      actionsAnalytics: null,
-      schedulesAnalytics: null,
-      inspectionsAnalytics: null,
-      setAnalyticsSummary: (summary) => set({ analyticsSummary: summary }),
-      setIssuesAnalytics: (issue) => set({ issuesAnalytics: issue }),
-      setActionsAnalytics: (action) => set({ actionsAnalytics: action }),
-      setSchedulesAnalytics: (schedule) =>
-        set({ schedulesAnalytics: schedule }),
-      setInspectionsAnalytics: (inspection) =>
-        set({ inspectionsAnalytics: inspection }),
-    }),
-    {
-      name: "analytics-summary-storage",
-    }
-  )
-);
+export const useAnalyticsStore = create<AnalyticsStore>()((set) => ({
+  analyticsSummary: null,
+  issuesAnalytics: null,
+  actionsAnalytics: null,
+  schedulesAnalytics: null,
+  inspectionsAnalytics: null,
+  setAnalyticsSummary: (summary) => set({ analyticsSummary: summary }),
+  setIssuesAnalytics: (issue) => set({ issuesAnalytics: issue }),
+  setActionsAnalytics: (action) => set({ actionsAnalytics: action }),
+  setSchedulesAnalytics: (schedule) => set({ schedulesAnalytics: schedule }),
+  setInspectionsAnalytics: (inspection) =>
+    set({ inspectionsAnalytics: inspection }),
+}));

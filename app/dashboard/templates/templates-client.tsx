@@ -4,8 +4,8 @@ import { useAuditTemplates } from "@/hooks/use-audit-templates";
 import { Permission } from "@/lib/auth/auth";
 import HasPermission from "../components/has-permission";
 import CreateAuditBtn from "./components/create-audit-btn";
-import { EmptyTemplatesState } from "./components/empty-templates-state";
 import { TemplateSearch } from "./components/template-search";
+import { EmptyTemplatesState } from "./components/empty-templates-state";
 
 interface TemplatesClientProps {
   resolvedParams: { search?: string; page?: string };
@@ -14,13 +14,7 @@ interface TemplatesClientProps {
 export function TemplatesClient({ resolvedParams }: TemplatesClientProps) {
   const pageNumber = Number(resolvedParams.page) || 1;
 
-  const {
-    auditTemplates,
-    auditTemplatePagination,
-    isLoading: isAuditTemplatesLoading,
-  } = useAuditTemplates();
-
-  const hasTemplates = auditTemplates.length > 0;
+  const { isLoading, templates } = useAuditTemplates();
 
   return (
     <div className="space-y-6">
@@ -40,13 +34,12 @@ export function TemplatesClient({ resolvedParams }: TemplatesClientProps) {
         </HasPermission>
       </div>
 
-      {hasTemplates ? (
+      {templates ? (
         <TemplateSearch
-          templates={auditTemplates}
+          templates={templates}
           searchParams={resolvedParams}
           page={pageNumber}
-          totalPages={auditTemplatePagination.totalPages}
-          isLoading={isAuditTemplatesLoading}
+          isLoading={isLoading}
         />
       ) : (
         <HasPermission permission={Permission.EDIT_TEMPLATES}>

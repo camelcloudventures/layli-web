@@ -32,6 +32,7 @@ import { ScheduleCard } from "./schedule-card";
 import HasPermission from "../../components/has-permission";
 import { Permission } from "@/lib/auth/auth";
 import SchedulesLoadingSkeleton from "./schedules-loading-skeleton";
+import { useSchedulesStore } from "@/store/schedules";
 
 interface SchedulesListProps {
   schedules: Schedule[];
@@ -46,6 +47,7 @@ export function SchedulesList({
   templates,
   sites,
 }: SchedulesListProps) {
+  const { clearSchedules, setSchedules } = useSchedulesStore();
   console.log("schedules", schedules);
   const [searchQuery, setSearchQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -78,6 +80,7 @@ export function SchedulesList({
     try {
       await deleteSchedule(String(schedule.id));
       toast.success("Schedule deleted successfully");
+      clearSchedules(); // Clear store to trigger refetch
       router.refresh();
     } catch (error) {
       console.error("Failed to delete schedule:", error);
@@ -95,6 +98,13 @@ export function SchedulesList({
     if (res?.success) {
       toast.success(res.success);
       if (res.data) setSelectedSchedule(res.data);
+      // Update the schedules list with the updated data
+      if (res.data) {
+        const updatedSchedules = schedules.map((schedule) =>
+          schedule.id === selectedSchedule.id ? res.data! : schedule
+        );
+        setSchedules(updatedSchedules);
+      }
     } else if (res?.error) {
       toast.error(res.error);
     }

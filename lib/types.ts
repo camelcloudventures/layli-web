@@ -1,5 +1,3 @@
-type UserRole = "admin" | "auditor" | "supervisor";
-
 // export interface Invite {
 //   data: {
 //     id: string

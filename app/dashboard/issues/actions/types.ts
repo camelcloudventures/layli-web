@@ -1,7 +1,7 @@
 import { Issue } from "@/lib/types";
 
 // Interface for issue data
-interface IssueDashboardType {
+export interface IssueDashboardType {
   id: string;
   title: string;
   category: string;

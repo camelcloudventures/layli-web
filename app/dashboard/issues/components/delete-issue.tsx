@@ -1,35 +1,41 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { toast } from 'sonner'
-import { Issue } from '@/lib/types'
-import { deleteIssue } from '../actions/actions'
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Issue } from "@/lib/types";
+import { deleteIssue } from "../actions/actions";
+import { useIssuesStore } from "@/store/issues";
 
 interface DeleteIssueProps {
-  issue: Issue
-  onClose: () => void
+  issue: Issue;
+  onClose: () => void;
 }
 
 export default function DeleteIssue({ issue, onClose }: DeleteIssueProps) {
-  const [isDeleting, setIsDeleting] = useState(false)
+  const { setIssues } = useIssuesStore();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDeleteIssue = async () => {
-    setIsDeleting(true)
+    setIsDeleting(true);
 
-    const response = await deleteIssue(issue.id)
+    const response = await deleteIssue(issue.id);
+    console.log("respone from delete", response);
 
     //@ts-expect-error --need to fix this
     if (response?.success) {
-      toast.success('Issue deleted successfully')
-      onClose()
+      //@ts-expect-error -e9
+      toast.success(response?.success || "Issue deleted successfully");
+      // Optimistically remove the issue from the store
+      setIssues((prevIssues) => prevIssues.filter((i) => i.id !== issue.id));
+      onClose();
     } else {
       //@ts-expect-error --need to fix this
-      toast.error(response?.error)
+      toast.error(response?.error || "Failed to delete issue");
     }
 
-    setIsDeleting(false)
-  }
+    setIsDeleting(false);
+  };
 
   return (
     <div className="space-y-4">
@@ -53,9 +59,9 @@ export default function DeleteIssue({ issue, onClose }: DeleteIssueProps) {
           onClick={handleDeleteIssue}
           disabled={isDeleting}
         >
-          {isDeleting ? 'Deleting...' : 'Delete Issue'}
+          {isDeleting ? "Deleting..." : "Delete Issue"}
         </Button>
       </div>
     </div>
-  )
+  );
 }

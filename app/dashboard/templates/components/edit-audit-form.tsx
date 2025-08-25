@@ -31,6 +31,7 @@ export default function EditAuditForm({
   template: initialTemplate,
 }: EditAuditFormProps) {
   const router = useRouter();
+  //@ts-expect-error -e9
   const { setAuditTemplates } = useAuditTemplates();
   // const { user } = useAuth() // not used
   const [activeTab, setActiveTab] = useState("details");

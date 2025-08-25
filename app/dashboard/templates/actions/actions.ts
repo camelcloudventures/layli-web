@@ -11,7 +11,7 @@ export type AuditTemplateApiResponse =
   | null;
 
 export async function getTemplates(): Promise<TemplatesResponse | null> {
-  return await GET<TemplatesResponse>(`/audit-template/get}`, ["templates"]);
+  return await GET<TemplatesResponse>(`/audit-template/get`, ["templates"]);
 }
 
 export async function getTemplate(

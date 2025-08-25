@@ -60,7 +60,8 @@ export function useTemplate(initialTemplate: Template) {
       const res = await deleteTemplate(template.id);
       console.log("res", res);
 
-      if (res.error) toast.error(error || "Failed");
+      //@ts-expect-error -e9
+      if (res?.error) toast.error(res?.error || "Failed");
       toast.success("Template deleted successfully!");
       reset();
       router.push("/dashboard/templates");

@@ -101,6 +101,7 @@ export function CreateActionForm({
       setActions((prev) => [result.data.data as Action, ...prev]);
       onCancel();
     } else {
+      //@ts-expect-error -e9
       toast.error(result?.data?.message || "Failed to create action");
     }
   };

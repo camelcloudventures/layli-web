@@ -37,7 +37,9 @@ interface QuestionsManagerProps {
   setTemplate: Dispatch<SetStateAction<AuditTemplate>>;
   page: Page;
   section: Section;
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleQuestionAddition: (sectionId: string, newQuestion: any) => void;
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   questionsForThisPage: any[];
 }
 

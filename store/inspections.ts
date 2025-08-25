@@ -3,23 +3,22 @@ import { create } from "zustand";
 
 interface InspectionsStore {
   inspections: InspectionDashboardType[];
-  success: boolean;
-  error?: string | null;
-  addInspections: (inspections: InspectionDashboardType[]) => void;
-  setInspections: (inspections: InspectionDashboardType[]) => void;
-  setSuccess: (success: boolean) => void;
-  setError: (message: string) => void;
+  setInspections: (
+    inspections:
+      | InspectionDashboardType[]
+      | ((prev: InspectionDashboardType[]) => InspectionDashboardType[])
+  ) => void;
+  clearInspections: () => void;
 }
 
 export const useInspectionStore = create<InspectionsStore>()((set) => ({
   inspections: [],
-  success: false,
-  error: null,
-  addInspections: (inspections) =>
+  setInspections: (inspections) =>
     set((state) => ({
-      inspections: [...state.inspections, ...inspections],
+      inspections:
+        typeof inspections === "function"
+          ? inspections(state.inspections)
+          : inspections,
     })),
-  setInspections: (inspections) => set({ inspections }),
-  setSuccess: (success) => set({ success }),
-  setError: (message) => set({ error: message }),
+  clearInspections: () => set({ inspections: [] }),
 }));

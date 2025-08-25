@@ -43,10 +43,6 @@ export interface Invite {
   used: boolean;
 }
 
-interface InvitesResponse {
-  data: Invite[];
-}
-
 export function UserManagement({ invites }: { invites: Invite[] }) {
   const { user, activeOrg } = useAuth();
 

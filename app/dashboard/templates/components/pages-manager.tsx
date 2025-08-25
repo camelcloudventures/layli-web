@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { GripVertical, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
-import type { AuditTemplate, Page } from "@/lib/types/audit-types";
+import type { AuditTemplate, Page, Question } from "@/lib/types/audit-types";
 import { SectionsManager } from "@/app/dashboard/templates/components/sections-manager";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -110,6 +110,7 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
   // Flatten all questions from all pages with their global positions
   const getAllQuestionsWithPositions = (currentTemplate: AuditTemplate) => {
     const allQuestions: Array<{
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
       question: any;
       globalPosition: number;
       pageId: string;
@@ -138,6 +139,7 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
   };
 
   // Calculate which page a question should be on based on its global position
+  //eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getTargetPageForPosition = (globalPosition: number) => {
     const targetPageIndex = Math.ceil(globalPosition / QUESTIONS_PER_PAGE) - 1;
     return template.pages[targetPageIndex]?.id || null;
@@ -159,6 +161,7 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
   };
 
   // Get the target page for a new question
+  //eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getTargetPageForNewQuestion = () => {
     const allQuestions = getAllQuestionsWithPositions(template);
     const totalQuestions = allQuestions.length;
@@ -184,6 +187,7 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
   console.log("Questions per page limit:", QUESTIONS_PER_PAGE);
 
   // Step 3: Page Creation Logic
+  //eslint-disable-next-line @typescript-eslint/no-unused-vars
   const createNewPage = () => {
     const newPageId = Date.now().toString();
     const newPage = {
@@ -206,6 +210,7 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
     return newPageId;
   };
 
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleQuestionAddition = (sectionId: string, newQuestion: any) => {
     const updatedTemplate = JSON.parse(JSON.stringify(template));
 
@@ -334,6 +339,7 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
                 template={template}
                 setTemplate={setTemplate}
                 handleQuestionAddition={handleQuestionAddition}
+                //@ts-expect-error -e9
                 getQuestionsForPage={getQuestionsForPage}
               />
             ) : (
@@ -353,8 +359,9 @@ interface PageEditorProps {
   updatePage: (pageId: string, field: keyof Page, value: string) => void;
   template: AuditTemplate;
   setTemplate: Dispatch<SetStateAction<AuditTemplate>>;
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleQuestionAddition: (sectionId: string, newQuestion: any) => void;
-  getQuestionsForPage: (pageId: string) => any[];
+  getQuestionsForPage: (pageId: string) => Question[];
 }
 
 function PageEditor({

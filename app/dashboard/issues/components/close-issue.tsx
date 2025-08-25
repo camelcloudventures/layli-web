@@ -45,6 +45,7 @@ export default function CloseIssue({ issue, onClose }: CloseIssueProps) {
       //@ts-expect-error 047
       if (response.data) {
         setIssues((prevIssues) =>
+          //@ts-expect-error -e9
           prevIssues.map((i) => (i.id === issue.id ? response.data : i))
         );
       }

@@ -41,7 +41,7 @@ export function DashboardClient() {
   const { actionsAnalytics: actions } = useActionsAnalytics();
   const { inspectionsAnalytics: inspections } = useInspectionsAnalytics();
   const { inspections: inspectionsData } = useInspections();
-  const { issues: issuesData, success: issuesDataSuccess } = useIssues();
+  const { issues: issuesData, isLoading: issuesDataLoading } = useIssues();
 
   console.log("notifications are", notifications);
 
@@ -248,23 +248,23 @@ export function DashboardClient() {
       totalInspections: summary?.total_inspections || 0,
       completedInspections: inspections?.byStatus?.completed || 0,
       pendingInspections: inspections?.byStatus?.pending || 0,
-      totalIssues: issuesDataSuccess ? issuesData.length : 0,
-      resolvedIssues: issuesDataSuccess
+      totalIssues: issuesDataLoading ? issuesData.length : 0,
+      resolvedIssues: issuesDataLoading
         ? issuesData.filter((issue) => issue.status === "closed").length
         : 0,
       recentInspections: recentInspections,
     },
     // Issues Report Data
     issues: {
-      totalIssues: issuesDataSuccess ? issuesData.length : 0,
-      resolvedIssues: issuesDataSuccess
+      totalIssues: issuesDataLoading ? issuesData.length : 0,
+      resolvedIssues: issuesDataLoading
         ? issuesData.filter((issue) => issue.status === "closed").length
         : 0,
-      openIssues: issuesDataSuccess
+      openIssues: issuesDataLoading
         ? issuesData.filter((issue) => issue.status === "open").length
         : 0,
       issuesByCategory: issues?.issuesByCategory || {},
-      criticalIssues: issuesDataSuccess
+      criticalIssues: issuesDataLoading
         ? issuesData
             .filter(
               (issue) => issue.priority === "high" && issue.status === "open"

@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   Dialog,
@@ -6,18 +6,18 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Button } from '@/components/ui/button'
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 type NoteAttachmentDialogProps = {
-  isNoteDialogOpen: boolean
-  setIsNoteDialogOpen: (isOpen: boolean) => void
-  note: string
-  setNote: (note: string) => void
-  handleAddNote: () => void
-}
+  isNoteDialogOpen: boolean;
+  setIsNoteDialogOpen: (isOpen: boolean) => void;
+  note: string;
+  setNote: (note: string) => void;
+  handleAddNote: () => void;
+};
 export function NoteAttachmentDialog({
   isNoteDialogOpen,
   setIsNoteDialogOpen,
@@ -27,7 +27,7 @@ export function NoteAttachmentDialog({
 }: NoteAttachmentDialogProps) {
   return (
     <Dialog open={isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
-      <DialogContent>
+      <DialogContent className="p-6">
         <DialogHeader>
           <DialogTitle>Add Note</DialogTitle>
         </DialogHeader>
@@ -51,5 +51,5 @@ export function NoteAttachmentDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

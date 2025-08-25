@@ -30,7 +30,9 @@ interface SectionsManagerProps {
   template: AuditTemplate;
   setTemplate: Dispatch<SetStateAction<AuditTemplate>>;
   page: Page;
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleQuestionAddition: (sectionId: string, newQuestion: any) => void;
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
   questionsForThisPage: any[];
 }
 

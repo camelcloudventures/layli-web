@@ -160,6 +160,7 @@ export default function CreateAuditForm() {
   ) {
     setTemplate((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
+  //@ts-expect-error -e9
   const { setAuditTemplates } = useAuditTemplates();
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {

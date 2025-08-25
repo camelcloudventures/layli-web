@@ -104,6 +104,11 @@ export default function ActionsClient() {
     // Store original state for rollback
     const originalActions = [...actions];
 
+    // Optimistic UI update
+    setActions(
+      actions.map((a) => (a.id === action.id ? { ...a, status: newStatus } : a))
+    );
+
     // Send API request in background
     try {
       console.log("Moving action", action.id, "to status", newStatus);
@@ -117,6 +122,12 @@ export default function ActionsClient() {
       } else {
         // API failed - rollback to original state
         setActions(originalActions);
+        //Put it back incase of an error
+        setActions(
+          actions.map((a) =>
+            a.id === action.id ? { ...a, status: newStatus } : a
+          )
+        );
         toast.error(res?.error || "Failed to update action");
       }
     } catch (error) {
@@ -190,7 +201,7 @@ export default function ActionsClient() {
         open={isCreateActionDialogOpen}
         onOpenChange={setIsCreateActionDialogOpen}
       >
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] p-6 overflow-auto">
           <DialogHeader>
             <DialogTitle>Create Action</DialogTitle>
             <DialogDescription>
@@ -213,7 +224,7 @@ export default function ActionsClient() {
           }
         }}
       >
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] p-6">
           <DialogHeader>
             <DialogTitle>Edit Action</DialogTitle>
             <DialogDescription>

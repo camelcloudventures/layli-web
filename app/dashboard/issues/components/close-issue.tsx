@@ -43,7 +43,6 @@ export default function CloseIssue({ issue, onClose }: CloseIssueProps) {
       //@ts-expect-error 047
       toast.success(response.success);
       //@ts-expect-error 047
-
       if (response.data) {
         setIssues((prevIssues) =>
           prevIssues.map((i) => (i.id === issue.id ? response.data : i))

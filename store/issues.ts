@@ -3,14 +3,15 @@ import { create } from "zustand";
 
 interface IssuesStore {
   issues: Issue[];
-  success: boolean;
-  setIssues: (issues: Issue[]) => void;
-  setSuccess: (success: boolean) => void;
+  setIssues: (issues: Issue[] | ((prev: Issue[]) => Issue[])) => void;
+  clearIssues: () => void;
 }
 
 export const useIssuesStore = create<IssuesStore>()((set) => ({
   issues: [],
-  success: false,
-  setIssues: (issues) => set({ issues }),
-  setSuccess: (success) => set({ success }),
+  setIssues: (issues) =>
+    set((state) => ({
+      issues: typeof issues === "function" ? issues(state.issues) : issues,
+    })),
+  clearIssues: () => set({ issues: [] }),
 }));

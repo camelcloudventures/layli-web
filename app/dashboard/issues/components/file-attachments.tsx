@@ -1,40 +1,62 @@
-'use client'
+"use client";
 
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Download, Loader2, Upload, X } from 'lucide-react'
-import React, { useRef } from 'react'
-import { Issue } from '@/lib/types'
-import Image from 'next/image'
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Download, Loader2, Upload, X } from "lucide-react";
+import React, { useRef } from "react";
+import { Issue } from "@/lib/types";
+import Image from "next/image";
 
 interface UploadedImage {
-  id: string
-  file: File
-  preview: string
-  uploadedUrl?: string
-  isUploading?: boolean
+  id: string;
+  file: File;
+  preview: string;
+  uploadedUrl?: string;
+  isUploading?: boolean;
 }
 
 interface FileAttachmentsProps {
-  issue: Issue
-  uploadedImages: UploadedImage[]
-  pending: boolean
-  handleFileUpload: (file: File) => void
-  removeImage: (id: string) => void
+  issue: Issue;
+  uploadedImages: UploadedImage[];
+  pending: boolean;
+  handleFileUpload: (file: File) => void;
+  removeImage: (id: string) => void;
+  removeExistingAttachment: (attachmentId: string) => void;
+  isRemovingAttachment: boolean;
+  removingAttachmentVariables:
+    | {
+        issue_id: string;
+        attachmentsToAdd?: { fileName: string; fileUrl: string }[];
+        attachmentIdsToDelete?: string[];
+      }
+    | undefined;
 }
+
 export default function FileAttachments({
   issue,
   uploadedImages,
   pending,
   handleFileUpload,
   removeImage,
+  removeExistingAttachment,
+  isRemovingAttachment,
+  removingAttachmentVariables,
 }: FileAttachmentsProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <>
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Files & Attachments</h3>
+    <div className="flex flex-col gap-8">
+      {issue.attachments.length === 0 ? (
+        <h3 className="text-muted-foreground font-medium">
+          No files attached or images
+        </h3>
+      ) : (
+        <h3 className="text-muted-foreground font-medium">
+          Files & Attachments
+        </h3>
+      )}
+
+      <div className="flex gap-2 items-center">
         <Button
           type="button"
           variant="outline"
@@ -53,6 +75,7 @@ export default function FileAttachments({
             </>
           )}
         </Button>
+
         <Input
           ref={fileInputRef}
           type="file"
@@ -72,24 +95,51 @@ export default function FileAttachments({
           >
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted">
-                <span className="text-xl">{'📁'}</span>
+                <span className="text-xl">{"📁"}</span>
               </div>
               <div>
                 <p className="font-medium">
-                  {file.file_url.split('/').pop()?.slice(0, -2) || ''}
+                  {file.file_url.split("/").pop()?.slice(0, -2) || ""}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   Uploaded {new Date(file.created_at).toLocaleDateString()}
                 </p>
               </div>
             </div>
-            <Button type="button" variant="ghost" size="icon" asChild>
-              <a href={file.file_url} download>
-                <Download className="h-4 w-4" />
-              </a>
-            </Button>
+
+            <div className="flex gap-2">
+              <Button type="button" variant="ghost" size="icon" asChild>
+                <a href={file.file_url} download>
+                  <Download className="h-4 w-4" />
+                </a>
+              </Button>
+
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => removeExistingAttachment(file.id)}
+                disabled={
+                  pending ||
+                  (isRemovingAttachment &&
+                    removingAttachmentVariables?.attachmentIdsToDelete?.includes(
+                      file.id
+                    ))
+                }
+              >
+                {isRemovingAttachment &&
+                removingAttachmentVariables?.attachmentIdsToDelete?.includes(
+                  file.id
+                ) ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <X className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
           </div>
         ))}
+
         {uploadedImages.map((image) => (
           <div key={image.id} className="relative group">
             <div className="aspect-square rounded-lg overflow-hidden border bg-muted">
@@ -107,17 +157,16 @@ export default function FileAttachments({
                 />
               )}
             </div>
-            <button
-              type="button"
+            <Button
               onClick={() => removeImage(image.id)}
               className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
               aria-label="Remove image"
             >
               <X className="h-3 w-3" />
-            </button>
+            </Button>
           </div>
         ))}
       </div>
-    </>
-  )
+    </div>
+  );
 }

@@ -1,11 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { getActiveUsers, getSchedules, getSites } from "./actions";
+import { getSchedules, getSites } from "./actions";
+import { GET } from "@/app/backend/apiMethods";
+import { ActiveUser } from "@/lib/types";
 
 export function useGetActiveUsers(enabled: boolean) {
   return useQuery({
     queryKey: ["active-users"],
     queryFn: async () => {
-      return await getActiveUsers();
+      return await GET<ActiveUser>(`/invites/organization/active-users`, [
+        "users",
+      ]);
     },
     enabled: enabled ?? true,
   });

@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,60 +6,20 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
-import { MoreHorizontal, Trash2, Pencil, CheckCircle } from 'lucide-react'
-import { Issue } from '@/lib/types'
-import { useState } from 'react'
-import UpdateIssue from './update-issue'
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogHeader,
-} from '@/components/ui/dialog'
-import CloseIssue from './close-issue'
-import DeleteIssue from './delete-issue'
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { MoreHorizontal, Trash2, Pencil, CheckCircle } from "lucide-react";
+import { Issue } from "@/lib/types";
 
-type DialogType = 'update' | 'close' | 'delete' | null
+type DialogType = "update" | "close" | "delete" | null;
 
 interface IssueActionsProps {
-  issue: Issue
-  assignees: Array<{
-    id: string
-    full_name: string
-    email: string
-    role: string
-  }>
+  issue: Issue;
+
+  onOpenDialog: (dialog: DialogType, issue: Issue) => void;
 }
 
-export function IssueActions({ issue, assignees }: IssueActionsProps) {
-  const [activeDialog, setActiveDialog] = useState<DialogType>(null)
-
-  const renderDialogContent = () => {
-    if (!activeDialog) return null
-
-    switch (activeDialog) {
-      case 'update':
-        return (
-          <UpdateIssue
-            issue={issue}
-            onClose={() => setActiveDialog(null)}
-            assignees={assignees}
-          />
-        )
-      case 'close':
-        return (
-          <CloseIssue issue={issue} onClose={() => setActiveDialog(null)} />
-        )
-      case 'delete':
-        return (
-          <DeleteIssue issue={issue} onClose={() => setActiveDialog(null)} />
-        )
-      default:
-        return null
-    }
-  }
+export function IssueActions({ issue, onOpenDialog }: IssueActionsProps) {
   return (
     <>
       <DropdownMenu modal={false}>
@@ -73,42 +33,27 @@ export function IssueActions({ issue, assignees }: IssueActionsProps) {
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuSeparator />
 
-          {issue.status !== 'closed' && (
-            <DropdownMenuItem onClick={() => setActiveDialog('update')}>
+          {issue.status !== "closed" && (
+            <DropdownMenuItem onClick={() => onOpenDialog("update", issue)}>
               <Pencil className="mr-2 h-4 w-4" />
               Update issue
             </DropdownMenuItem>
           )}
-          {issue.status !== 'closed' && (
-            <DropdownMenuItem onClick={() => setActiveDialog('close')}>
+          {issue.status !== "closed" && (
+            <DropdownMenuItem onClick={() => onOpenDialog("close", issue)}>
               <CheckCircle className="mr-2 h-4 w-4" />
               Close issue
             </DropdownMenuItem>
           )}
           <DropdownMenuItem
             className="text-red-500"
-            onClick={() => setActiveDialog('delete')}
+            onClick={() => onOpenDialog("delete", issue)}
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Delete issue
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <Dialog
-        open={activeDialog !== null}
-        onOpenChange={() => setActiveDialog(null)}
-      >
-        <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {activeDialog === 'update' && 'Issue Details'}
-              {activeDialog === 'close' && 'Close Issue'}
-              {activeDialog === 'delete' && 'Delete Issue'}
-            </DialogTitle>
-          </DialogHeader>
-          {renderDialogContent()}
-        </DialogContent>
-      </Dialog>
     </>
-  )
+  );
 }

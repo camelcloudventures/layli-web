@@ -4,6 +4,18 @@ import { DataTable } from "@/components/custom/data-table";
 import { createColumns } from "./columns";
 import { Issue } from "@/lib/types";
 import { IssuesTableLoadingSkeleton } from "./issues-table-loading-skeleton";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import UpdateIssue from "./update-issue";
+import CloseIssue from "./close-issue";
+import DeleteIssue from "./delete-issue";
+
+type DialogType = "update" | "close" | "delete" | null;
 
 interface IssuesTableProps {
   issues: Issue[];
@@ -21,7 +33,20 @@ export default function IssuesTable({
   assignees,
   isLoading,
 }: IssuesTableProps) {
-  const columns = createColumns(assignees);
+  const [activeDialog, setActiveDialog] = useState<DialogType>(null);
+  const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+
+  const handleOpenDialog = (dialog: DialogType, issue: Issue) => {
+    setSelectedIssue(issue);
+    setActiveDialog(dialog);
+  };
+
+  const handleCloseDialog = () => {
+    setSelectedIssue(null);
+    setActiveDialog(null);
+  };
+
+  const columns = createColumns(assignees, handleOpenDialog);
 
   if (isLoading) {
     return <IssuesTableLoadingSkeleton />;
@@ -33,5 +58,40 @@ export default function IssuesTable({
       </div>
     );
   }
-  return <DataTable columns={columns} data={issues} border />;
+  return (
+    <>
+      <DataTable columns={columns} data={issues} border />
+      <Dialog open={activeDialog !== null} onOpenChange={handleCloseDialog}>
+        <DialogContent className=" sm:max-w-[700px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+          <DialogHeader className="pb-4">
+            <DialogTitle>
+              {activeDialog === "update" && "Issue Details"}
+              {activeDialog === "close" && "Close Issue"}
+              {activeDialog === "delete" && "Delete Issue"}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedIssue && (
+            <>
+              {activeDialog === "update" && (
+                <UpdateIssue
+                  issue={selectedIssue}
+                  onClose={handleCloseDialog}
+                  assignees={assignees}
+                />
+              )}
+              {activeDialog === "close" && (
+                <CloseIssue issue={selectedIssue} onClose={handleCloseDialog} />
+              )}
+              {activeDialog === "delete" && (
+                <DeleteIssue
+                  issue={selectedIssue}
+                  onClose={handleCloseDialog}
+                />
+              )}
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 }

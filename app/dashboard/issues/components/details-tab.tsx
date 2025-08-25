@@ -1,39 +1,35 @@
-'use client'
+"use client";
 
-import Comments from '@/components/custom/comments'
-import CustomSelect from '@/components/custom/custom-select'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { MultiSelect } from '@/components/ui/multi-select'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Issue, IssuePriority, IssueStatus } from '@/lib/types'
-import { Loader2, Send } from 'lucide-react'
-import React from 'react'
+import Comments from "@/components/custom/comments";
+import CustomSelect from "@/components/custom/custom-select";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Issue, IssuePriority, IssueStatus } from "@/lib/types";
+import { Loader2, Send } from "lucide-react";
+import React from "react";
+import { Badge } from "@/components/ui/badge";
 
 type DetailsTabProps = {
-  issue: Issue
-  status: IssueStatus
-  priority: IssuePriority
-  assigneeIds: string[]
-  setStatus: (status: IssueStatus) => void
-  setPriority: (priority: IssuePriority) => void
-  setAssigneeIds: (assigneeIds: string[]) => void
-  addComment: (comment: string) => void
-  comment: string
-  setComment: (comment: string) => void
-  pending: boolean
-  isSendingComment: boolean
-}
+  issue: Issue;
+  status: IssueStatus;
+  priority: IssuePriority;
+  setStatus: (status: IssueStatus) => void;
+  setPriority: (priority: IssuePriority) => void;
+  addComment: (comment: string) => void;
+  comment: string;
+  setComment: (comment: string) => void;
+  pending: boolean;
+  isSendingComment: boolean;
+};
 
 export default function DetailsTab({
   issue,
   status,
   priority,
-  assigneeIds,
   setStatus,
   setPriority,
-  setAssigneeIds,
   comment,
   setComment,
   pending,
@@ -46,12 +42,7 @@ export default function DetailsTab({
         <Label htmlFor="cause" className="text-lg font-medium mb-2">
           Cause
         </Label>
-        <Textarea
-          id="cause"
-          name="cause"
-          defaultValue={issue?.cause || ''}
-          className="text-muted-foreground"
-        />
+        <Textarea id="cause" name="cause" defaultValue={issue?.cause || ""} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -60,10 +51,10 @@ export default function DetailsTab({
           <input type="hidden" name="status" value={status} />
           <CustomSelect
             options={[
-              { label: 'Open', value: 'open' },
-              { label: 'In Progress', value: 'in_progress' },
-              { label: 'Resolved', value: 'resolved' },
-              { label: 'Closed', value: 'closed' },
+              { label: "Open", value: "open" },
+              { label: "In Progress", value: "in_progress" },
+              { label: "Resolved", value: "resolved" },
+              { label: "Closed", value: "closed" },
             ]}
             value={status}
             onValueChange={(value) => setStatus(value as IssueStatus)}
@@ -75,10 +66,10 @@ export default function DetailsTab({
           <input type="hidden" name="priority" value={priority} />
           <CustomSelect
             options={[
-              { label: 'Low', value: 'low' },
-              { label: 'Medium', value: 'medium' },
-              { label: 'High', value: 'high' },
-              { label: 'Critical', value: 'critical' },
+              { label: "Low", value: "low" },
+              { label: "Medium", value: "medium" },
+              { label: "High", value: "high" },
+              { label: "Critical", value: "critical" },
             ]}
             value={priority}
             onValueChange={(value) => setPriority(value as IssuePriority)}
@@ -86,35 +77,50 @@ export default function DetailsTab({
         </div>
 
         <div className="space-y-2">
-          <h3 className="text-sm font-medium">Assignee</h3>
-          <MultiSelect
-            name="assignee_ids"
-            className="mb-8"
-            required
-            value={assigneeIds}
-            onValueChange={setAssigneeIds}
-            placeholder="Select assignees"
-            options={issue.assignees.map((a) => ({
-              value: a.id,
-              label: a.full_name,
-            }))}
-          />
+          <h3 className="text-sm font-medium">Current Assignees</h3>
+          <div className="flex flex-wrap gap-2 min-h-[40px] items-center">
+            {issue.assignees && issue.assignees.length > 0 ? (
+              issue.assignees
+                .filter(
+                  (assignee) =>
+                    assignee &&
+                    assignee.full_name &&
+                    assignee.full_name.trim() !== ""
+                )
+                .map((assignee) => (
+                  <Badge
+                    key={assignee.id}
+                    variant="secondary"
+                    className="bg-blue-100 text-blue-800 hover:bg-blue-100"
+                  >
+                    {assignee.full_name}
+                  </Badge>
+                ))
+            ) : (
+              <span className="text-sm text-muted-foreground">
+                No assignees selected
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Use the Share button to manage assignees
+          </p>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 ">
           <Label htmlFor="due-date">Due Date</Label>
           <Input
             id="due-date"
             name="due_at"
             type="date"
-            defaultValue={issue.due_at?.split('T')[0]}
+            defaultValue={issue.due_at?.split("T")[0]}
           />
         </div>
       </div>
 
       <Comments comments={issue.comments} />
 
-      <div className="space-y-2">
+      <div className="space-y-2 mb-6">
         <h3 className="text-sm font-medium">Add Comment</h3>
         <div className="flex gap-2">
           <Textarea
@@ -138,10 +144,10 @@ export default function DetailsTab({
             ) : (
               <Send className="mr-2 h-4 w-4" />
             )}
-            {isSendingComment ? 'Sending...' : 'Send Comment'}
+            {isSendingComment ? "Sending..." : "Send Comment"}
           </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }

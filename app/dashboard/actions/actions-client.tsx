@@ -201,7 +201,7 @@ export default function ActionsClient() {
         open={isCreateActionDialogOpen}
         onOpenChange={setIsCreateActionDialogOpen}
       >
-        <DialogContent className="sm:max-w-[600px] p-6 overflow-auto">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px] p-6 overflow-hidden hover:overflow-y-auto scrollbar-none">
           <DialogHeader>
             <DialogTitle>Create Action</DialogTitle>
             <DialogDescription>
@@ -224,7 +224,7 @@ export default function ActionsClient() {
           }
         }}
       >
-        <DialogContent className="sm:max-w-[600px] p-6">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px] overflow-hidden hover:overflow-y-auto scrollbar-none p-6">
           <DialogHeader>
             <DialogTitle>Edit Action</DialogTitle>
             <DialogDescription>

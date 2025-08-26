@@ -1,29 +1,30 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { UserAccountNav } from '@/components/layout/user-account-nav'
-import { Menu } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { SidebarNav } from '@/components/layout/sidebar-nav'
-import { dashboardNavItems } from '@/lib/config/dashboard-nav'
-import { useEffect, useState } from 'react'
-import { useMobile } from '@/hooks/use-mobile'
-import { useAuth } from '@/lib/context/auth-provider'
+import Link from "next/link";
+import { UserAccountNav } from "@/components/layout/user-account-nav";
+import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { SidebarNav } from "@/components/layout/sidebar-nav";
+import { dashboardNavItems } from "@/lib/config/dashboard-nav";
+import { useEffect, useState } from "react";
+import { useMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/lib/context/auth-provider";
+import Image from "next/image";
 
 export function DashboardHeader() {
-  const { activeOrg } = useAuth()
-  const [open, setOpen] = useState(false)
-  const isMobile = useMobile()
+  const { activeOrg } = useAuth();
+  const [open, setOpen] = useState(false);
+  const isMobile = useMobile();
 
-  console.log('activeOrg', activeOrg)
+  console.log("activeOrg", activeOrg);
 
   // Close mobile nav when screen size changes
   useEffect(() => {
     if (!isMobile) {
-      setOpen(false)
+      setOpen(false);
     }
-  }, [isMobile])
+  }, [isMobile]);
 
   return (
     <header className="sticky mx-10 top-0 border-b bg-white z-50">
@@ -48,6 +49,13 @@ export function DashboardHeader() {
             </Sheet>
           )}
           <Link href="/dashboard" className="flex items-center gap-2">
+            <Image
+              src={"/audLogo.png"}
+              alt={"Audit Management"}
+              width={40}
+              height={40}
+              className="rounded-full"
+            />
             <h1 className="text-xl font-bold">{activeOrg?.name}</h1>
           </Link>
         </div>
@@ -56,5 +64,5 @@ export function DashboardHeader() {
         </div>
       </div>
     </header>
-  )
+  );
 }

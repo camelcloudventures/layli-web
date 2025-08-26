@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { Search, Plus } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import type { Inspection } from "@/lib/types/inspection-types";
-import { columns } from "./columns";
 import { DataTable } from "@/components/custom/data-table";
-import Loading from "./loading";
-import { useRouter } from "next/navigation";
-import HasPermission from "../../components/has-permission";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Permission } from "@/lib/auth/auth";
+import type { Inspection } from "@/lib/types/inspection-types";
+import { Plus, Search } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import HasPermission from "../../components/has-permission";
+import { columns } from "./columns";
+import Loading from "./loading";
 
 interface InspectionListProps {
   inspections: Inspection[];
@@ -22,7 +22,6 @@ export function InspectionList({
   loading = false,
 }: InspectionListProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const router = useRouter();
 
   // Ensure inspections is an array
   const inspectionsArray = Array.isArray(inspections) ? inspections : [];
@@ -38,10 +37,6 @@ export function InspectionList({
         .includes(searchQuery.toLowerCase())
     );
   });
-
-  const handleCreateInspection = () => {
-    router.push("/dashboard/inspections/create");
-  };
 
   if (loading) {
     return <Loading />;
@@ -61,9 +56,11 @@ export function InspectionList({
           />
         </div>
         <HasPermission permission={Permission.CREATE_INSPECTION}>
-          <Button onClick={handleCreateInspection}>
-            <Plus className="mr-2 h-4 w-4" />
-            Create Inspection
+          <Button asChild>
+            <Link href="/dashboard/inspections/create">
+              <Plus className="mr-2 h-4 w-4" />
+              Create Inspection
+            </Link>
           </Button>
         </HasPermission>
       </div>

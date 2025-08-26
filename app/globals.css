@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -31,6 +31,7 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-text-primary: var(--text-primary);
   --color-primary: var(--primary);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
@@ -50,14 +51,15 @@
   --card-foreground: #252525;
   --popover: #ffffff;
   --popover-foreground: #252525;
-  --primary: #343434;
-  --primary-foreground: #fbfbfb;
-  --secondary: #f7f7f7;
-  --secondary-foreground: #343434;
-  --muted: #f7f7f7;
-  --muted-foreground: #8e8e8e;
-  --accent: #f7f7f7;
-  --accent-foreground: #343434;
+  --primary: #47bfbb;
+  --text-primary: #0b1c2f;
+  --primary-foreground: #fefefe;
+  --secondary: #f4f4f4;
+  --secondary-foreground: #171717;
+  --muted: #f4f4f4;
+  --muted-foreground: #737373;
+  --accent: #f4f4f4;
+  --accent-foreground: #171717;
   --destructive: #ef4444;
   --border: #ebebeb;
   --input: #ebebeb;
@@ -118,4 +120,12 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none; /* Firefox */
 }

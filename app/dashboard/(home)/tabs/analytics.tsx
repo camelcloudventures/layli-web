@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   Card,
@@ -6,13 +6,13 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Cell } from 'recharts'
-import { PieChart, Pie } from 'recharts'
-import { LineChart, Line } from 'recharts'
-import { ResponsiveContainer } from 'recharts'
-import Link from 'next/link'
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Cell } from "recharts";
+import { PieChart, Pie } from "recharts";
+import { LineChart, Line } from "recharts";
+import { ResponsiveContainer } from "recharts";
+import Link from "next/link";
 
 import {
   BarChart,
@@ -22,54 +22,54 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-} from 'recharts'
+} from "recharts";
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
 // Fallback data for when real data is not available
 const fallbackInspectionTrends = [
-  { month: 'Jan', completed: 0, passed: 0, failed: 0 },
-  { month: 'Feb', completed: 0, passed: 0, failed: 0 },
-  { month: 'Mar', completed: 0, passed: 0, failed: 0 },
-  { month: 'Apr', completed: 0, passed: 0, failed: 0 },
-  { month: 'May', completed: 0, passed: 0, failed: 0 },
-  { month: 'Jun', completed: 0, passed: 0, failed: 0 },
-]
+  { month: "Jan", completed: 0, passed: 0, failed: 0 },
+  { month: "Feb", completed: 0, passed: 0, failed: 0 },
+  { month: "Mar", completed: 0, passed: 0, failed: 0 },
+  { month: "Apr", completed: 0, passed: 0, failed: 0 },
+  { month: "May", completed: 0, passed: 0, failed: 0 },
+  { month: "Jun", completed: 0, passed: 0, failed: 0 },
+];
 
-const fallbackIssuesByCategory = [{ name: 'No Data', value: 1 }]
+const fallbackIssuesByCategory = [{ name: "No Data", value: 1 }];
 
 const fallbackActionCompletionRate = [
-  { month: 'Jan', rate: 0 },
-  { month: 'Feb', rate: 0 },
-  { month: 'Mar', rate: 0 },
-  { month: 'Apr', rate: 0 },
-  { month: 'May', rate: 0 },
-  { month: 'Jun', rate: 0 },
-]
+  { month: "Jan", rate: 0 },
+  { month: "Feb", rate: 0 },
+  { month: "Mar", rate: 0 },
+  { month: "Apr", rate: 0 },
+  { month: "May", rate: 0 },
+  { month: "Jun", rate: 0 },
+];
 
 type IProps = {
   inspectionTrends?: {
-    month: string
-    completed: number
-    passed: number
-    failed: number
-  }[]
+    month: string;
+    completed: number;
+    passed: number;
+    failed: number;
+  }[];
   issuesByCategory?: {
-    name: string
-    value: number
-  }[]
+    name: string;
+    value: number;
+  }[];
   actionCompletionRate?: {
-    month: string
-    rate: number
-  }[]
+    month: string;
+    rate: number;
+  }[];
   summary?: {
-    total_inspections: number
-    total_sites: number
-    average_score: number
-    failed_inspections: number
-    passed_inspections: number
-  } | null
-}
+    total_inspections: number;
+    total_sites: number;
+    average_score: number;
+    failed_inspections: number;
+    passed_inspections: number;
+  } | null;
+};
 
 export default function Analytics({
   inspectionTrends = fallbackInspectionTrends,
@@ -78,24 +78,24 @@ export default function Analytics({
   summary,
 }: IProps) {
   // Use backend data if available, otherwise use fallback data
-  const totalInspections = summary?.total_inspections || 0
-  const averageScore = summary?.average_score || 0
-  const openIssues = summary?.failed_inspections || 0
+  const totalInspections = summary?.total_inspections || 0;
+  const averageScore = summary?.average_score || 0;
+  const openIssues = summary?.failed_inspections || 0;
   const actionCompletion =
     summary?.passed_inspections && summary?.total_inspections
       ? Math.round(
-          (summary.passed_inspections / summary.total_inspections) * 100,
+          (summary.passed_inspections / summary.total_inspections) * 100
         )
-      : 0
+      : 0;
 
   // Check if we have real data
-  const hasRealData = summary && summary.total_inspections > 0
+  const hasRealData = summary && summary.total_inspections > 0;
   const hasIssuesData =
     issuesByCategory &&
     issuesByCategory.length > 0 &&
-    issuesByCategory[0].name !== 'No Data'
+    issuesByCategory[0].name !== "No Data";
   const hasTrendsData =
-    inspectionTrends && inspectionTrends.some((trend) => trend.completed > 0)
+    inspectionTrends && inspectionTrends.some((trend) => trend.completed > 0);
 
   return (
     <Card>
@@ -103,47 +103,53 @@ export default function Analytics({
         <CardTitle>Analytics</CardTitle>
         <CardDescription>
           {hasRealData
-            ? 'View detailed analytics about your audit activities'
-            : 'No analytics data available yet. Start conducting inspections to see insights here.'}
+            ? "View detailed analytics about your audit activities"
+            : "No analytics data available yet. Start conducting inspections to see insights here."}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
         {/* Key Metrics */}
         <div className="grid gap-4 md:grid-cols-4">
           <div className="flex flex-col items-center justify-center rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-primary">
               Total Inspections
             </span>
-            <span className="text-3xl font-bold">{totalInspections}</span>
+            <span className="text-3xl font-bold text-text-primary">
+              {totalInspections}
+            </span>
             <span className="text-xs text-muted-foreground">
-              {hasRealData ? 'All time inspections' : 'No inspections yet'}
+              {hasRealData ? "All time inspections" : "No inspections yet"}
             </span>
           </div>
           <div className="flex flex-col items-center justify-center rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-primary">
               Average Score
             </span>
-            <span className="text-3xl font-bold">{averageScore}%</span>
+            <span className="text-3xl font-bold text-text-primary">
+              {averageScore}%
+            </span>
             <span className="text-xs text-muted-foreground">
-              {hasRealData ? 'Across all inspections' : 'No scores yet'}
+              {hasRealData ? "Across all inspections" : "No scores yet"}
             </span>
           </div>
           <div className="flex flex-col items-center justify-center rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-primary">
               Failed Inspections
             </span>
-            <span className="text-3xl font-bold">{openIssues}</span>
+            <span className="text-3xl font-bold text-text-primary">
+              {openIssues}
+            </span>
             <span className="text-xs text-muted-foreground">
-              {hasRealData ? 'Requiring attention' : 'No issues yet'}
+              {hasRealData ? "Requiring attention" : "No issues yet"}
             </span>
           </div>
           <div className="flex flex-col items-center justify-center rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
-            <span className="text-sm font-medium text-muted-foreground">
-              Pass Rate
+            <span className="text-sm font-medium text-primary">Pass Rate</span>
+            <span className="text-3xl font-bold text-text-primary">
+              {actionCompletion}%
             </span>
-            <span className="text-3xl font-bold">{actionCompletion}%</span>
             <span className="text-xs text-muted-foreground">
-              {hasRealData ? 'Success rate' : 'No data yet'}
+              {hasRealData ? "Success rate" : "No data yet"}
             </span>
           </div>
         </div>
@@ -152,7 +158,9 @@ export default function Analytics({
         <div className="grid gap-6 md:grid-cols-2">
           {/* Inspection Trends Chart */}
           <div className="space-y-2">
-            <h3 className="text-lg font-medium">Inspection Trends</h3>
+            <h3 className="text-lg font-medium text-primary">
+              Inspection Trends
+            </h3>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={inspectionTrends}>
@@ -176,7 +184,9 @@ export default function Analytics({
 
           {/* Issues by Category Chart */}
           <div className="space-y-2">
-            <h3 className="text-lg font-medium">Issues by Category</h3>
+            <h3 className="text-lg font-medium text-primary">
+              Issues by Category
+            </h3>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -214,7 +224,9 @@ export default function Analytics({
 
         {/* Action Completion Rate Chart */}
         <div className="space-y-2">
-          <h3 className="text-lg font-medium">Action Completion Rate</h3>
+          <h3 className="text-lg font-medium text-primary">
+            Action Completion Rate
+          </h3>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={actionCompletionRate}>
@@ -248,5 +260,5 @@ export default function Analytics({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

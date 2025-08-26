@@ -62,7 +62,7 @@ export default function IssuesTable({
     <>
       <DataTable columns={columns} data={issues} border />
       <Dialog open={activeDialog !== null} onOpenChange={handleCloseDialog}>
-        <DialogContent className=" sm:max-w-[700px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+        <DialogContent className=" sm:max-w-[700px] max-h-[90vh] overflow-y-auto p-4 sm:p-6overflow-hidden hover:overflow-y-auto scrollbar-none ">
           <DialogHeader className="pb-4">
             <DialogTitle>
               {activeDialog === "update" && "Issue Details"}

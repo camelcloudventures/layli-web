@@ -1,13 +1,13 @@
-import { TabsList, TabsTrigger } from '@/components/ui/tabs'
-import React from 'react'
+import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import React from "react";
 
 type IProps = {
   tabs: {
-    label: string
-    value: string
-  }[]
-  notificationCount: number
-}
+    label: string;
+    value: string;
+  }[];
+  notificationCount: number;
+};
 
 export default function TabSelector({ tabs, notificationCount }: IProps) {
   return (
@@ -21,7 +21,7 @@ export default function TabSelector({ tabs, notificationCount }: IProps) {
           >
             <span className="relative inline-flex items-center">
               {tab.label}
-              {tab.value === 'notifications' && notificationCount > 0 && (
+              {tab.value === "notifications" && notificationCount > 0 && (
                 <span
                   className="absolute -top-2 -right-5 w-5 h-5 flex items-center justify-center rounded-full bg-black text-white text-xs font-bold shadow"
                   aria-label={`You have ${notificationCount} unread notifications`}
@@ -35,5 +35,5 @@ export default function TabSelector({ tabs, notificationCount }: IProps) {
         ))}
       </TabsList>
     </div>
-  )
+  );
 }

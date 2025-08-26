@@ -1,26 +1,28 @@
-'use client'
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
-import { type SchedulesAnalytics } from '../actions/actions'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { type SchedulesAnalytics } from "../actions/actions";
 
 interface SchedulesAnalyticsProps {
-  data: SchedulesAnalytics
+  data: SchedulesAnalytics;
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
 export default function SchedulesAnalytics({ data }: SchedulesAnalyticsProps) {
   // Prepare data for frequency chart
-  const frequencyData = Object.entries(data.byFrequency).map(([frequency, count]) => ({
-    name: frequency.charAt(0).toUpperCase() + frequency.slice(1),
-    value: count,
-  }))
+  const frequencyData = Object.entries(data.byFrequency).map(
+    ([frequency, count]) => ({
+      name: frequency.charAt(0).toUpperCase() + frequency.slice(1),
+      value: count,
+    })
+  );
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Schedules by Frequency</CardTitle>
+        <CardTitle className="text-primary">Schedules by Frequency</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
@@ -51,5 +53,5 @@ export default function SchedulesAnalytics({ data }: SchedulesAnalyticsProps) {
         </div>
       </CardContent>
     </Card>
-  )
-} 
+  );
+}

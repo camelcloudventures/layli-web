@@ -3,10 +3,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { ScheduleDetails } from './schedule-details'
-import type { Schedule } from '@/lib/types/schedule-types'
-import { Button } from '@/components/ui/button'
+} from "@/components/ui/dialog";
+import { ScheduleDetails } from "./schedule-details";
+import type { Schedule } from "@/lib/types/schedule-types";
+import { Button } from "@/components/ui/button";
 
 export function ScheduleDetailsDialog({
   open,
@@ -14,14 +14,14 @@ export function ScheduleDetailsDialog({
   schedule,
   onStatusUpdate,
 }: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  schedule: Schedule | null
-  onStatusUpdate?: (status: string) => Promise<void>
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  schedule: Schedule | null;
+  onStatusUpdate?: (status: string) => Promise<void>;
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[700px] overflow-hidden hover:overflow-y-auto scrollbar-none p-6">
         <DialogHeader>
           <DialogTitle>Schedule Details</DialogTitle>
         </DialogHeader>
@@ -38,5 +38,5 @@ export function ScheduleDetailsDialog({
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

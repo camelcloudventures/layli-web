@@ -1,16 +1,13 @@
+"use client";
+import { useAuditTemplates } from "@/hooks/use-audit-templates";
+import { useSites } from "@/hooks/use-sites";
+import { useUsers } from "@/hooks/use-users";
 import { CreateInspectionForm } from "./components/create-inspection-form";
-import {
-  getActiveUsers,
-  getSites,
-} from "@/app/dashboard/schedules/actions/actions";
-import { getTemplates } from "@/app/dashboard/templates/actions/actions";
 
-export const dynamic = "force-dynamic";
-
-export default async function CreateInspectionPage() {
-  const sites = await getSites();
-  const users = await getActiveUsers();
-  const templates = await getTemplates();
+export default function CreateInspectionPage() {
+  const { sites } = useSites();
+  const { users } = useUsers();
+  const { templates } = useAuditTemplates();
 
   console.log("templates", templates);
 
@@ -18,8 +15,8 @@ export default async function CreateInspectionPage() {
     <div className="container mx-auto py-6">
       <CreateInspectionForm
         sites={sites || []}
-        users={users?.data || []}
-        templates={templates?.data || []}
+        users={users || []}
+        templates={templates || []}
       />
     </div>
   );

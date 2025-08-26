@@ -1,33 +1,50 @@
-'use client'
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { type IssuesAnalytics } from '../actions/actions'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import { type IssuesAnalytics } from "../actions/actions";
 
 interface IssuesAnalyticsProps {
-  data: IssuesAnalytics
+  data: IssuesAnalytics;
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
 export default function IssuesAnalytics({ data }: IssuesAnalyticsProps) {
   // Prepare data for category chart
-  const categoryData = Object.entries(data.issuesByCategory).map(([category, count]) => ({
-    name: category.charAt(0).toUpperCase() + category.slice(1),
-    value: count,
-  }))
+  const categoryData = Object.entries(data.issuesByCategory).map(
+    ([category, count]) => ({
+      name: category.charAt(0).toUpperCase() + category.slice(1),
+      value: count,
+    })
+  );
 
   // Prepare data for recurring issues chart
-  const recurringData = data.topRecurringIssues.map(issue => ({
-    name: issue.title.length > 30 ? issue.title.substring(0, 30) + '...' : issue.title,
+  const recurringData = data.topRecurringIssues.map((issue) => ({
+    name:
+      issue.title.length > 30
+        ? issue.title.substring(0, 30) + "..."
+        : issue.title,
     occurrences: issue.occurrences,
-  }))
+  }));
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>Issues by Category</CardTitle>
+          <CardTitle className="text-primary">Issues by Category</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
@@ -61,7 +78,7 @@ export default function IssuesAnalytics({ data }: IssuesAnalyticsProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Top Recurring Issues</CardTitle>
+          <CardTitle className="text-primary">Top Recurring Issues</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
@@ -79,5 +96,5 @@ export default function IssuesAnalytics({ data }: IssuesAnalyticsProps) {
         </CardContent>
       </Card>
     </div>
-  )
-} 
+  );
+}

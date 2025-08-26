@@ -1,38 +1,38 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { Trash2Icon } from "lucide-react";
-import type { Schedule } from "@/lib/types/schedule-types";
-import type {
-  UserOption,
-  TemplateOption,
-  SiteOption,
-} from "../types/schedule-form-types";
+import { Button } from "@/components/ui/button";
+import { DeleteDialog } from "@/components/ui/delete-dialog";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { CreateScheduleForm } from "./create-schedule-form";
-import { EditScheduleForm } from "./edit-schedule-form";
-import { ScheduleDetailsDialog } from "./schedule-details-dialog";
+import { Permission } from "@/lib/auth/auth";
+import type { Schedule } from "@/lib/types/schedule-types";
+import { useSchedulesStore } from "@/store/schedules";
+import { Trash2Icon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import HasPermission from "../../components/has-permission";
 import {
   deleteSchedule,
   updateScheduleStatus,
   UpdateScheduleStatusResponse,
 } from "../actions/actions";
-import { DeleteDialog } from "@/components/ui/delete-dialog";
+import type {
+  SiteOption,
+  TemplateOption,
+  UserOption,
+} from "../types/schedule-form-types";
+import { CreateScheduleForm } from "./create-schedule-form";
+import { EditScheduleForm } from "./edit-schedule-form";
+import { ScheduleCard } from "./schedule-card";
+import { ScheduleDetailsDialog } from "./schedule-details-dialog";
 import { ScheduleHeader } from "./schedule-header";
 import { ScheduleSearch } from "./schedule-search";
-import { ScheduleCard } from "./schedule-card";
-import HasPermission from "../../components/has-permission";
-import { Permission } from "@/lib/auth/auth";
 import SchedulesLoadingSkeleton from "./schedules-loading-skeleton";
-import { useSchedulesStore } from "@/store/schedules";
 
 interface SchedulesListProps {
   schedules: Schedule[];
@@ -115,7 +115,7 @@ export function SchedulesList({
       <ScheduleHeader onCreateClick={() => setOpen(true)} />
       <HasPermission permission={Permission.MANAGE_SCHEDULES}>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[700px] overflow-hidden hover:overflow-y-auto scrollbar-none p-6">
             <DialogHeader>
               <DialogTitle>Create New Schedule</DialogTitle>
             </DialogHeader>
@@ -129,7 +129,7 @@ export function SchedulesList({
           </DialogContent>
         </Dialog>
         <Dialog open={editOpen} onOpenChange={setEditOpen}>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[700px] overflow-hidden hover:overflow-y-auto scrollbar-none p-6">
             <DialogHeader>
               <DialogTitle>Edit Schedule</DialogTitle>
             </DialogHeader>

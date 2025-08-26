@@ -1,33 +1,35 @@
-'use client'
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
-import { type ActionsAnalytics } from '../actions/actions'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { type ActionsAnalytics } from "../actions/actions";
 
 interface ActionsAnalyticsProps {
-  data: ActionsAnalytics
+  data: ActionsAnalytics;
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
 export default function ActionsAnalytics({ data }: ActionsAnalyticsProps) {
   // Prepare data for status chart
   const statusData = Object.entries(data.byStatus).map(([status, count]) => ({
     name: status.charAt(0).toUpperCase() + status.slice(1),
     value: count,
-  }))
+  }));
 
   // Prepare data for priority chart
-  const priorityData = Object.entries(data.byPriority).map(([priority, count]) => ({
-    name: priority.charAt(0).toUpperCase() + priority.slice(1),
-    value: count,
-  }))
+  const priorityData = Object.entries(data.byPriority).map(
+    ([priority, count]) => ({
+      name: priority.charAt(0).toUpperCase() + priority.slice(1),
+      value: count,
+    })
+  );
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>Actions by Status</CardTitle>
+          <CardTitle className="text-primary">Actions by Status</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
@@ -61,7 +63,7 @@ export default function ActionsAnalytics({ data }: ActionsAnalyticsProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Actions by Priority</CardTitle>
+          <CardTitle className="text-primary">Actions by Priority</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-[300px]">
@@ -93,5 +95,5 @@ export default function ActionsAnalytics({ data }: ActionsAnalyticsProps) {
         </CardContent>
       </Card>
     </div>
-  )
-} 
+  );
+}

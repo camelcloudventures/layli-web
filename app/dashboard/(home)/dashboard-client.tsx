@@ -23,6 +23,7 @@ import { useIssuesAnalytics } from "@/hooks/use-issues-analytics";
 import { useNotifications } from "@/hooks/use-notifications";
 import TopBar from "./components/top-bar";
 import HomeTabs from "./tabs/home-tabs";
+import { InspectionCardSkeleton } from "./components/inspection-card-skeleton";
 
 export const dynamic = "force-dynamic";
 
@@ -297,7 +298,7 @@ export function DashboardClient() {
             <CardDescription>
               {recentInspections.length > 0
                 ? "A list of your recent inspections and their status"
-                : "No inspections available yet. Start conducting inspections to see them here."}
+                : ""}
             </CardDescription>
           </div>
           <Button variant="outline" size="sm" asChild>
@@ -319,9 +320,7 @@ export function DashboardClient() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">No inspections found</p>
-            </div>
+            <InspectionCardSkeleton />
           )}
         </CardContent>
         <CardFooter>

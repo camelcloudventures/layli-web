@@ -51,7 +51,6 @@ export function CreateActionForm({
   );
 
   const handleSubmit = async (formData: FormData) => {
-    // Validate required fields
     if (!selectedSite) {
       toast.error("Please select a site");
       return;
@@ -92,9 +91,6 @@ export function CreateActionForm({
       selectedAssignees
     );
 
-    console.log("result before", result);
-    console.log("result with data", result.data);
-
     if (result) {
       console.log("result after", result?.data?.data);
       toast.success("Action created successfully");
@@ -106,9 +102,9 @@ export function CreateActionForm({
     }
   };
 
-  const userOptions = users.map((user) => ({
-    value: user.user.id,
-    label: user.user.full_name,
+  const userOptions = users?.map((user) => ({
+    value: user.user?.id,
+    label: user.user?.full_name,
   }));
 
   return (

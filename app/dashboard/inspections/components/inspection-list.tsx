@@ -38,10 +38,6 @@ export function InspectionList({
     );
   });
 
-  if (loading) {
-    return <Loading />;
-  }
-
   return (
     <div>
       <div className="flex items-center justify-end space-x-2 mb-4">
@@ -65,13 +61,17 @@ export function InspectionList({
         </HasPermission>
       </div>
 
-      <div>
-        <DataTable
-          columns={columns}
-          data={filteredInspections}
-          className="[&_table]:border-collapse [&_th]:!border-b-gray-200 [&_th]:!text-gray-600 [&_th]:!font-medium [&_td]:!py-4 [&_tr]:!border-b [&_tr]:border-gray-100 [&_tr:last-child]:!border-0 [&_tr:first-child]:!border-t-0 [&_tr]:!border-x-0"
-        />
-      </div>
+      {loading ? (
+        <Loading />
+      ) : (
+        <div>
+          <DataTable
+            columns={columns}
+            data={filteredInspections}
+            className="[&_table]:border-collapse [&_th]:!border-b-gray-200 [&_th]:!text-gray-600 [&_th]:!font-medium [&_td]:!py-4 [&_tr]:!border-b [&_tr]:border-gray-100 [&_tr:last-child]:!border-0 [&_tr:first-child]:!border-t-0 [&_tr]:!border-x-0"
+          />
+        </div>
+      )}
     </div>
   );
 }

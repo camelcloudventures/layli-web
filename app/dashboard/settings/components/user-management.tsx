@@ -86,7 +86,7 @@ export function UserManagement({ invites }: { invites: Invite[] }) {
               Invite User
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="p-6 max-h-[90vh] overflow-y-auto sm:max-w-[600px] overflow-hidden hover:overflow-y-auto scrollbar-none">
             <DialogHeader>
               <DialogTitle>Invite a new user</DialogTitle>
               <DialogDescription>

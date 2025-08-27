@@ -15,6 +15,7 @@ interface ActionColumnProps {
   actions: Action[];
   onEditAction: (action: Action) => void;
   droppable?: boolean;
+  isLoading: boolean;
 }
 
 function ActionColumn({
@@ -23,20 +24,29 @@ function ActionColumn({
   actions,
   onEditAction,
   droppable = true,
+  isLoading,
 }: ActionColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id });
 
   const content = (
     <div className="space-y-3">
-      {actions.map((action) => (
-        <ActionCard
-          key={action.id}
-          action={action}
-          onClick={onEditAction}
-          isDraggable={droppable}
-        />
-      ))}
-      {actions.length === 0 && <CardLoadingSkeleton />}
+      {isLoading ? (
+        <CardLoadingSkeleton />
+      ) : (
+        actions.map((action) => (
+          <ActionCard
+            key={action.id}
+            action={action}
+            onClick={onEditAction}
+            isDraggable={droppable}
+          />
+        ))
+      )}
+      {actions.length === 0 && (
+        <div className="text-muted-foreground text-center">
+          No actions found
+        </div>
+      )}
     </div>
   );
 
@@ -71,10 +81,11 @@ function ActionColumn({
 
 interface ActionBoardProps {
   actions: Action[];
+  isLoading: boolean;
   onEdit: (action: Action) => void;
 }
 
-export function ActionBoard({ actions, onEdit }: ActionBoardProps) {
+export function ActionBoard({ actions, isLoading, onEdit }: ActionBoardProps) {
   const todoActions = useMemo(
     () => actions.filter((a) => a.status === ActionStatus.TODO),
     [actions]
@@ -99,18 +110,21 @@ export function ActionBoard({ actions, onEdit }: ActionBoardProps) {
         title="To Do"
         actions={todoActions}
         onEditAction={onEdit}
+        isLoading={isLoading}
       />
       <ActionColumn
         id={ActionStatus.IN_PROGRESS}
         title="In Progress"
         actions={inProgressActions}
         onEditAction={onEdit}
+        isLoading={isLoading}
       />
       <ActionColumn
         id={ActionStatus.COMPLETED}
         title="Completed"
         actions={completedActions}
         onEditAction={onEdit}
+        isLoading={isLoading}
       />
       <ActionColumn
         id={ActionStatus.DONE}
@@ -118,6 +132,7 @@ export function ActionBoard({ actions, onEdit }: ActionBoardProps) {
         actions={doneActions}
         onEditAction={() => {}}
         droppable={false}
+        isLoading={isLoading}
       />
     </div>
   );

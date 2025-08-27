@@ -41,7 +41,8 @@ export function DashboardClient() {
   const { issuesAnalytics: issues } = useIssuesAnalytics();
   const { actionsAnalytics: actions } = useActionsAnalytics();
   const { inspectionsAnalytics: inspections } = useInspectionsAnalytics();
-  const { inspections: inspectionsData } = useInspections();
+  const { inspections: inspectionsData, isLoading: inspectionsDataLoading } =
+    useInspections();
   const { issues: issuesData, isLoading: issuesDataLoading } = useIssues();
 
   console.log("notifications are", notifications);
@@ -276,7 +277,6 @@ export function DashboardClient() {
     },
   };
 
-  console.log(notifications);
   return (
     <div className="flex flex-col gap-6 w-full">
       <TopBar user={mockUser} />
@@ -306,7 +306,9 @@ export function DashboardClient() {
           </Button>
         </CardHeader>
         <CardContent>
-          {recentInspections.length > 0 ? (
+          {inspectionsDataLoading ? (
+            <InspectionCardSkeleton />
+          ) : recentInspections.length > 0 ? (
             <div className="space-y-4">
               {recentInspections.map((inspection) => (
                 <AuditItem
@@ -320,7 +322,9 @@ export function DashboardClient() {
               ))}
             </div>
           ) : (
-            <InspectionCardSkeleton />
+            <div className="text-center py-12">
+              <p className="text-gray-500">No recent inspections found</p>
+            </div>
           )}
         </CardContent>
         <CardFooter>

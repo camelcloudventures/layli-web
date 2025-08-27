@@ -42,7 +42,7 @@ export default function ActionsClient() {
   const [selectedAction, setSelectedAction] = useState<Action | null>(null);
   const [activeAction, setActiveAction] = useState<Action | null>(null);
 
-  const { actions, setActions } = useActions();
+  const { actions, setActions, isLoading: isActionsLoading } = useActions();
 
   const { users } = useUsers();
 
@@ -177,7 +177,11 @@ export default function ActionsClient() {
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
             >
-              <ActionBoard actions={actions} onEdit={handleEditAction} />
+              <ActionBoard
+                actions={actions}
+                onEdit={handleEditAction}
+                isLoading={isActionsLoading}
+              />
               <DragOverlay>
                 {activeAction ? (
                   <div className="w-[calc(100%-2rem)] max-w-sm">
@@ -193,7 +197,11 @@ export default function ActionsClient() {
           </TabsContent>
 
           <TabsContent value="list" className="mt-6">
-            <ActionList actions={actions} columns={memoizedColumns} />
+            <ActionList
+              actions={actions}
+              columns={memoizedColumns}
+              isLoading={isActionsLoading}
+            />
           </TabsContent>
         </Tabs>
       </div>

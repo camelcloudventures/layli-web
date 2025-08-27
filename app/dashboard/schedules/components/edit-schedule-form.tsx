@@ -203,7 +203,7 @@ export function EditScheduleForm({
             value={selectedAssignees.map((a) => a.assignee.id)}
             onValueChange={(ids: string[]) => {
               const selectedUsers = users.filter((u) =>
-                ids.includes(u.user.id)
+                ids.includes(u.user?.id)
               );
               setSelectedAssignees(
                 selectedUsers.map((u) => ({ assignee: u.user }))
@@ -211,8 +211,8 @@ export function EditScheduleForm({
             }}
             placeholder="Select assignees"
             options={users.map((user) => ({
-              value: user.user.id,
-              label: user.user.full_name,
+              value: user.user?.id,
+              label: user.user?.full_name,
             }))}
           />
 

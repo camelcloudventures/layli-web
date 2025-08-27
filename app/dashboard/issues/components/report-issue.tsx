@@ -228,14 +228,14 @@ export default function ReportIssue({
           onValueChange={(value) =>
             setSelectedAssignees(
               users
-                .filter((user) => value.includes(user.user.id))
-                .map((user) => user.user)
+                .filter((user) => value.includes(user.user?.id))
+                .map((user) => user?.user)
             )
           }
           placeholder="Select assignees"
           options={users.map((user) => ({
-            value: user.user.id,
-            label: user.user.full_name,
+            value: user.user?.id,
+            label: user.user?.full_name,
           }))}
         />
       </div>

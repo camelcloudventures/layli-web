@@ -213,15 +213,15 @@ export function CreateActionForm({
         <MultiSelect
           name="assignees"
           options={userOptions}
-          value={selectedAssignees.map((a) => a.id)}
+          value={selectedAssignees.map((a) => a?.id)}
           onValueChange={(ids) => {
             const assignees = users
-              .filter((u) => ids.includes(u.user.id))
+              .filter((u) => ids.includes(u.user?.id))
               .map((u) => ({
-                id: u.user.id,
-                full_name: u.user.full_name,
-                email: u.user.email,
-                role: u.user.role,
+                id: u.user?.id,
+                full_name: u.user?.full_name,
+                email: u.user?.email,
+                role: u.user?.role,
               }));
             setSelectedAssignees(assignees);
           }}

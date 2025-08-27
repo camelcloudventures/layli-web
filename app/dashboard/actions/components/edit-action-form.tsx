@@ -119,14 +119,14 @@ export function EditActionForm({
 
   // Create user options from users array
   const userOptions = users.map((user) => ({
-    value: user.user.id,
-    label: user.user.full_name,
+    value: user.user?.id,
+    label: user.user?.full_name,
   }));
 
   // Add assignees that might not be in the users array
   const assigneeOptions = action.assignees.map((assignee) => ({
-    value: assignee.id,
-    label: assignee.full_name,
+    value: assignee?.id,
+    label: assignee?.full_name,
   }));
 
   // Combine and deduplicate options

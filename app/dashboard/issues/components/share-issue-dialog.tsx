@@ -43,7 +43,7 @@ export default function ShareIssueDialog({
 
   // Initialize selectedUsers with the current assignees (users already assigned to this issue)
   const [selectedUsers, setSelectedUsers] = useState<string[]>(
-    currentAssignees.map((user) => user.id)
+    currentAssignees.map((user) => user?.id)
   );
   const [isSharing, setIsSharing] = useState(false);
 
@@ -54,14 +54,14 @@ export default function ShareIssueDialog({
 
   // Update selectedUsers when currentAssignees change
   useEffect(() => {
-    setSelectedUsers(currentAssignees.map((user) => user.id));
+    setSelectedUsers(currentAssignees.map((user) => user?.id));
   }, [currentAssignees]);
 
   const handleSelectAll = () => {
     if (selectedUsers.length === assignees.length) {
       setSelectedUsers([]);
     } else {
-      setSelectedUsers(assignees.map((user) => user.id));
+      setSelectedUsers(assignees.map((user) => user?.id));
     }
   };
 
@@ -75,7 +75,7 @@ export default function ShareIssueDialog({
 
   // Determine what action is being performed
   const getActionType = () => {
-    const currentAssigneeIds = currentAssignees.map((user) => user.id);
+    const currentAssigneeIds = currentAssignees.map((user) => user?.id);
     const usersToRemove = currentAssigneeIds.filter(
       (userId) => !selectedUsers.includes(userId)
     );
@@ -167,7 +167,7 @@ export default function ShareIssueDialog({
 
     try {
       // Get current assignee IDs
-      const currentAssigneeIds = currentAssignees.map((user) => user.id);
+      const currentAssigneeIds = currentAssignees.map((user) => user?.id);
 
       // Find users to remove (currently assigned but deselected)
       const usersToRemove = currentAssigneeIds.filter(
@@ -188,12 +188,12 @@ export default function ShareIssueDialog({
       if (newlySelectedUserIds.length > 0) {
         // Convert newly selected user IDs to Assignee objects
         const newlySelectedAssignees = assignees
-          .filter((user) => newlySelectedUserIds.includes(user.id))
+          .filter((user) => newlySelectedUserIds.includes(user?.id))
           .map((user) => ({
-            id: user.id,
-            full_name: user.full_name,
-            email: user.email,
-            role: user.role,
+            id: user?.id,
+            full_name: user?.full_name,
+            email: user?.email,
+            role: user?.role,
           }));
 
         const response = await shareIssue(issueId, newlySelectedAssignees);
@@ -255,21 +255,21 @@ export default function ShareIssueDialog({
 
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {assignees?.map((user) => (
-                <div key={user.id} className="flex items-center space-x-2">
+                <div key={user?.id} className="flex items-center space-x-2">
                   <Checkbox
-                    id={user.id}
-                    checked={selectedUsers?.includes(user.id)}
-                    onCheckedChange={() => handleUserToggle(user.id)}
+                    id={user?.id}
+                    checked={selectedUsers?.includes(user?.id)}
+                    onCheckedChange={() => handleUserToggle(user?.id)}
                   />
                   <Label
-                    htmlFor={user.id}
+                    htmlFor={user?.id}
                     className="flex flex-col cursor-pointer"
                   >
                     <span className="text-sm font-medium">
-                      {user.full_name}
+                      {user?.full_name}
                     </span>
                     <span className="text-xs text-muted-foreground capitalize">
-                      {user.role}
+                      {user?.role}
                     </span>
                   </Label>
                 </div>

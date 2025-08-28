@@ -14,7 +14,6 @@ import {
   pauseInspection,
   saveResponse,
 } from "../../../actions/actions";
-import { ResponseData } from "@/app/dashboard/inspections/types/types";
 import { getActiveUsers } from "@/app/dashboard/schedules/actions/actions";
 import { Action, User } from "@/lib/types";
 import { useInspectionStore } from "@/store/inspections";
@@ -53,7 +52,8 @@ export function usePerformInspection(inspection: Inspection) {
   );
 
   const [unsavedChanges, setUnsavedChanges] = useState<
-    Record<number, ResponseData>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Record<number, any>
   >(() => {
     if (typeof window === "undefined") {
       return {};
@@ -258,7 +258,8 @@ export function usePerformInspection(inspection: Inspection) {
       value: string | string[] | LocationResponse,
       files?: File[]
     ) => {
-      let responseData: ResponseData;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let responseData: any;
 
       if (
         typeof value === "object" &&

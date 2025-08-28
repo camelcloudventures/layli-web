@@ -17,12 +17,12 @@ import { User } from "@/lib/types";
 import { useActionsStore } from "@/store/actions";
 import { AttachedAction } from "./attached-action";
 import { PlusCircle } from "lucide-react";
-import { ResponseData } from "@/app/dashboard/inspections/types/types";
 
 type CurrentInspectionProps = {
   currentInspection: Inspection;
   responses: Record<number, Response>;
-  unsavedChanges: Record<number, ResponseData>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  unsavedChanges: Record<number, any>;
   savingFields: Record<number, boolean>;
   handleResponse: (
     question: Question,

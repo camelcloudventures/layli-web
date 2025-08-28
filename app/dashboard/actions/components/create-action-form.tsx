@@ -109,7 +109,6 @@ export function CreateActionForm({
       }
       onCancel();
     } else {
-      //@ts-expect-error -e9
       toast.error(result?.data?.message || "Failed to create action");
     }
   };

@@ -24,7 +24,7 @@ export function TemplateSearch({
 }: TemplateSearchProps) {
   const searchQuery = searchParams.search || "";
 
-  const filteredTemplates = templates.filter(
+  const filteredTemplates = templates?.filter(
     (template) =>
       template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       template.description.toLowerCase().includes(searchQuery.toLowerCase())

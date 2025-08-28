@@ -56,7 +56,7 @@ export function CreateActionForm({
       return;
     }
 
-    if (selectedAssignees.length === 0) {
+    if (selectedAssignees?.length === 0) {
       toast.error("Please select at least one assignee");
       return;
     }
@@ -103,8 +103,8 @@ export function CreateActionForm({
   };
 
   const userOptions = users?.map((user) => ({
-    value: user.user?.id,
-    label: user.user?.full_name,
+    value: user?.user?.id,
+    label: user?.user?.full_name,
   }));
 
   return (
@@ -213,15 +213,15 @@ export function CreateActionForm({
         <MultiSelect
           name="assignees"
           options={userOptions}
-          value={selectedAssignees.map((a) => a?.id)}
+          value={selectedAssignees?.map((a) => a?.id)}
           onValueChange={(ids) => {
             const assignees = users
-              .filter((u) => ids.includes(u.user?.id))
+              ?.filter((u) => ids.includes(u?.user?.id))
               .map((u) => ({
-                id: u.user?.id,
-                full_name: u.user?.full_name,
-                email: u.user?.email,
-                role: u.user?.role,
+                id: u?.user?.id,
+                full_name: u?.user?.full_name,
+                email: u?.user?.email,
+                role: u?.user?.role,
               }));
             setSelectedAssignees(assignees);
           }}

@@ -75,11 +75,11 @@ export default function ShareIssueDialog({
 
   // Determine what action is being performed
   const getActionType = () => {
-    const currentAssigneeIds = currentAssignees.map((user) => user?.id);
-    const usersToRemove = currentAssigneeIds.filter(
+    const currentAssigneeIds = currentAssignees?.map((user) => user?.id);
+    const usersToRemove = currentAssigneeIds?.filter(
       (userId) => !selectedUsers.includes(userId)
     );
-    const newlySelectedUserIds = selectedUsers.filter(
+    const newlySelectedUserIds = selectedUsers?.filter(
       (userId) => !currentAssigneeIds.includes(userId)
     );
 
@@ -175,7 +175,7 @@ export default function ShareIssueDialog({
       );
 
       // Find newly selected users (users that are selected but not currently assigned)
-      const newlySelectedUserIds = selectedUsers.filter(
+      const newlySelectedUserIds = selectedUsers?.filter(
         (userId) => !currentAssigneeIds.includes(userId)
       );
 
@@ -188,7 +188,7 @@ export default function ShareIssueDialog({
       if (newlySelectedUserIds.length > 0) {
         // Convert newly selected user IDs to Assignee objects
         const newlySelectedAssignees = assignees
-          .filter((user) => newlySelectedUserIds.includes(user?.id))
+          ?.filter((user) => newlySelectedUserIds.includes(user?.id))
           .map((user) => ({
             id: user?.id,
             full_name: user?.full_name,

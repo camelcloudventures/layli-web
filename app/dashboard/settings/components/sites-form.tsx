@@ -10,8 +10,8 @@ export function SitesForm({ onSubmit }: SitesFormProps) {
   const [form, setForm] = useState<SiteFormData>({
     name: "",
     address: "",
-    longitude: "",
-    latitude: "",
+    longitude: 0,
+    latitude: 0,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,14 +31,14 @@ export function SitesForm({ onSubmit }: SitesFormProps) {
       <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8">
         <div>
           <label
-            htmlFor="site-name"
+            htmlFor="name"
             className="block text-sm font-medium text-gray-700"
           >
             Site Name
           </label>
           <input
             type="text"
-            id="site-name"
+            id="name"
             name="name"
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
             placeholder="Enter site name"
@@ -74,7 +74,7 @@ export function SitesForm({ onSubmit }: SitesFormProps) {
             Longitude
           </label>
           <input
-            type="text"
+            type="number"
             id="longitude"
             name="longitude"
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
@@ -91,7 +91,7 @@ export function SitesForm({ onSubmit }: SitesFormProps) {
             Latitude
           </label>
           <input
-            type="text"
+            type="number"
             id="latitude"
             name="latitude"
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"

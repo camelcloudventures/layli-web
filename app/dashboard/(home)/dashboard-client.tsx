@@ -301,9 +301,11 @@ export function DashboardClient() {
                 : ""}
             </CardDescription>
           </div>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/dashboard/inspections">View all</Link>
-          </Button>
+          {recentInspections.length > 0 && (
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/dashboard/inspections">View all</Link>
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {inspectionsDataLoading ? (
@@ -328,9 +330,11 @@ export function DashboardClient() {
           )}
         </CardContent>
         <CardFooter>
-          <Button variant="ghost" size="sm" className="w-full" asChild>
-            <Link href="/dashboard/inspections">View all inspections</Link>
-          </Button>
+          {recentInspections.length > 0 && (
+            <Button variant="ghost" size="sm" className="w-full" asChild>
+              <Link href="/dashboard/inspections">View all inspections</Link>
+            </Button>
+          )}
         </CardFooter>
       </Card>
     </div>

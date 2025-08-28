@@ -3,15 +3,13 @@ import { useState } from "react";
 import { SiteFormData } from "../actions/types";
 
 interface SitesFormProps {
+  isLoading?: boolean;
   onSubmit: (data: SiteFormData) => void;
 }
 
-export function SitesForm({ onSubmit }: SitesFormProps) {
+export function SitesForm({ onSubmit, isLoading }: SitesFormProps) {
   const [form, setForm] = useState<SiteFormData>({
     name: "",
-    address: "",
-    longitude: 0,
-    latitude: 0,
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,11 +22,11 @@ export function SitesForm({ onSubmit }: SitesFormProps) {
     onSubmit(form);
   };
 
-  const isDisabled = !form.name || !form.address;
+  const isDisabled = !form.name;
 
   return (
     <form className="space-y-6 flex flex-col" onSubmit={handleSubmit}>
-      <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-8">
+      <div className="grid grid-cols-1 gap-y-6">
         <div>
           <label
             htmlFor="name"
@@ -47,66 +45,13 @@ export function SitesForm({ onSubmit }: SitesFormProps) {
             required
           />
         </div>
-
-        <div>
-          <label
-            htmlFor="address"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Address
-          </label>
-          <input
-            type="text"
-            id="address"
-            name="address"
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            placeholder="Enter site URL"
-            value={form.address}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="longitude"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Longitude
-          </label>
-          <input
-            type="number"
-            id="longitude"
-            name="longitude"
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            placeholder="Enter longitude"
-            value={form.longitude}
-            onChange={handleChange}
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="latitude"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Latitude
-          </label>
-          <input
-            type="number"
-            id="latitude"
-            name="latitude"
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            placeholder="Enter latitude"
-            value={form.latitude}
-            onChange={handleChange}
-          />
-        </div>
       </div>
       <Button
         type="submit"
-        disabled={isDisabled}
+        disabled={isDisabled || isLoading}
         className="w-fit ml-auto self-end"
       >
-        Save
+        {isLoading ? "Creating..." : "Create"}
       </Button>
     </form>
   );

@@ -13,6 +13,7 @@ import HasPermission from "../components/has-permission";
 import { UserManagement } from "./components/user-management";
 import { UserPreferences } from "./components/user-preferences";
 import { UserProfileForm } from "./components/user-profile-form";
+import { SiteManagement } from "./components/site-management";
 
 export function SettingsClient() {
   const { invites } = useInvites();
@@ -72,8 +73,9 @@ export function SettingsClient() {
               <CardTitle>User Management</CardTitle>
               <CardDescription>Invite users and manage roles</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-10">
               <UserManagement invites={invites} />
+              <SiteManagement />
             </CardContent>
           </Card>
         </TabsContent>

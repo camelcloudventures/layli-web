@@ -11,6 +11,8 @@ export function SchedulesClient() {
   const { templates, isLoading: isLoadingTemplates } = useAuditTemplates();
   const { sites, isLoading: isLoadingSites } = useSites();
 
+  console.log("I CAN SEE THE LOGGGGGS--------------------");
+  console.log("sites are", sites);
   const isLoading =
     isLoadingSchedules ||
     isLoadingUsers ||
@@ -22,7 +24,7 @@ export function SchedulesClient() {
       schedules={schedules}
       users={users || []}
       templates={templates || []}
-      sites={sites || []}
+      sites={sites}
       isLoading={isLoading}
     />
   );

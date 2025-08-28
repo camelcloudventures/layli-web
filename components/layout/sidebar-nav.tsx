@@ -40,16 +40,25 @@ export function SidebarNav({ items }: SidebarNavProps) {
   const renderNavItems = (items: NavItem[]) => {
     return items.map((item) => {
       const Icon = iconMap[item.icon as keyof typeof iconMap];
+      const isActive = pathname === item.href;
+
       return (
         <Link
           key={item.href}
           href={item.href}
           className={cn(
-            "group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-            pathname === item.href ? "bg-primary text-white" : "transparent"
+            "group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200",
+            isActive ? "text-tertiary bg-[#F3F4F7]" : "text-tertiary"
           )}
         >
-          <Icon className="h-4 w-4" />
+          <Icon
+            className={cn(
+              "h-4 w-4 transition-colors duration-200",
+              isActive
+                ? "text-primary"
+                : "text-tertiary group-hover:text-primary"
+            )}
+          />
           <p className="ml-2">{item.title}</p>
         </Link>
       );
@@ -57,7 +66,7 @@ export function SidebarNav({ items }: SidebarNavProps) {
   };
 
   return (
-    <nav className="flex flex-col h-full py-6 w-56 justify-between ">
+    <nav className="flex flex-col h-full   px-3  py-6 justify-between">
       <div className="space-y-1">{renderNavItems(items.top)}</div>
       <div className="flex-1 py-6">{renderNavItems(items.middle)}</div>
       <div className="space-y-1">{renderNavItems(items.bottom)}</div>

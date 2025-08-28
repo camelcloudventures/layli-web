@@ -13,6 +13,9 @@ export interface TemplateOption {
 }
 
 export interface SiteOption {
-  id: number | string;
+  id: string;
   name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
 }

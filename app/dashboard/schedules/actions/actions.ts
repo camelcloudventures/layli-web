@@ -3,8 +3,7 @@
 import { DELETE, GET, POST, UPDATE } from "@/app/backend/apiMethods";
 import type { SchedulesResponse, Schedule } from "@/lib/types/schedule-types";
 import { revalidateTag } from "next/cache";
-import { createClient } from "@supabase/supabase-js";
-import { ActiveUser, Site } from "@/lib/types";
+import { ActiveUser } from "@/lib/types";
 
 export async function getSchedules(
   page: number
@@ -46,16 +45,6 @@ export async function createSchedule(formData: FormData) {
 
 export async function getActiveUsers(): Promise<ActiveUser | null> {
   return await GET(`/invites/organization/active-users`, ["users"]);
-}
-
-export async function getSites(): Promise<Site[] | null> {
-  const client = await createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-  const { data, error } = await client.from("sites").select("*");
-  if (error) throw error;
-  return data || [];
 }
 
 export async function updateSchedule(formData: FormData) {

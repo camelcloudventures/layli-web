@@ -1,24 +1,33 @@
-import { getInspection } from '../../actions/actions'
-import { DoInspectionForm } from './components/do-inspection-form'
-import { notFound } from 'next/navigation'
+import { getInspection } from "../../actions/actions";
+import { DoInspectionForm } from "./components/do-inspection-form";
+import { notFound } from "next/navigation";
+import { getSites } from "@/app/dashboard/sites/actions/actions";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 export default async function EditInspectionPage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }) {
-  const { id } = await params
+  const { id } = await params;
 
-  const result = await getInspection(id)
+  const inspectionPromise = getInspection(id);
+  const sitesPromise = getSites();
 
-  if (!result) {
-    notFound()
+  const [inspectionResult, sitesResult] = await Promise.all([
+    inspectionPromise,
+    sitesPromise,
+  ]);
+
+  if (!inspectionResult) {
+    notFound();
   }
 
-  console.log('result', result)
-
-  //@ts-expect-error - result is not typed
-  return <DoInspectionForm inspection={result.data} />
+  return (
+    <DoInspectionForm
+      inspection={inspectionResult.data}
+      sites={sitesResult.data}
+    />
+  );
 }

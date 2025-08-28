@@ -1,36 +1,36 @@
-import { Suspense } from 'react'
-import { getInspection } from '@/app/dashboard/inspections/actions/actions'
-import { InspectionReport } from '@/app/dashboard/inspections/[id]/report/components/inspection-report'
-import { Loading } from '@/app/dashboard/inspections/[id]/report/components/loading'
-import { notFound } from 'next/navigation'
-import { Inspection } from '@/app/dashboard/inspections/[id]/report/types/inspection-types'
+import { Suspense } from "react";
+import { getInspection } from "@/app/dashboard/inspections/actions/actions";
+import { InspectionReport } from "@/app/dashboard/inspections/[id]/report/components/inspection-report";
+import { Loading } from "@/app/dashboard/inspections/[id]/report/components/loading";
+import { notFound } from "next/navigation";
+import { Inspection } from "@/app/dashboard/inspections/[id]/report/types/inspection-types";
 
 interface InspectionReportPageProps {
   params: Promise<{
-    id: string
-  }>
+    id: string;
+  }>;
 }
 
 interface GetInspectionResponse {
-  success?: string
-  error?: string
-  data?: Inspection
+  success?: string;
+  error?: string;
+  data?: Inspection;
 }
 
 export default async function InspectionReportPage({
   params,
 }: InspectionReportPageProps) {
-  const { id } = await params
-  const inspectionData = (await getInspection(id)) as GetInspectionResponse
+  const { id } = await params;
+  const inspectionData = (await getInspection(id)) as GetInspectionResponse;
 
   if (!inspectionData?.data) {
-    notFound()
+    notFound();
   }
 
-  const inspection = inspectionData.data
+  const inspection = inspectionData.data;
 
   // Only show completed inspections
-  if (inspection.status !== 'completed') {
+  if (inspection.status !== "completed") {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
@@ -43,12 +43,15 @@ export default async function InspectionReportPage({
           </p>
         </div>
       </div>
-    )
+    );
   }
+
+  console.log("-------------THIS WAS CALLED----------");
+  console.log("inspection", inspection);
 
   return (
     <Suspense fallback={<Loading />}>
       <InspectionReport inspection={inspection} />
     </Suspense>
-  )
+  );
 }

@@ -1,20 +1,23 @@
-'use client'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import { ArrowLeft, ClipboardCheck, Save } from 'lucide-react'
-import { type Inspection } from '@/lib/types/inspection-types'
-import { FileAttachmentDialog } from './attachments/file-attachment-dialog'
-import { NoteAttachmentDialog } from './attachments/note-attachment-dialog'
-import { CurrentInspection } from './current-inspection'
-import { EmptyState } from './empty-state'
-import { usePerformInspection } from '../hooks/usePerformInspection'
+"use client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { ArrowLeft, ClipboardCheck, Save } from "lucide-react";
+import { type Inspection } from "@/lib/types/inspection-types";
+import { FileAttachmentDialog } from "./attachments/file-attachment-dialog";
+import { NoteAttachmentDialog } from "./attachments/note-attachment-dialog";
+import { CurrentInspection } from "./current-inspection";
+import { EmptyState } from "./empty-state";
+import { usePerformInspection } from "../hooks/usePerformInspection";
+import { CreateActionDialog } from "@/app/dashboard/actions/components/create-action-dialog";
+import { Site } from "@/lib/types";
 
 interface Props {
-  inspection: Inspection
+  inspection: Inspection;
+  sites: Site[];
 }
 
-export function DoInspectionForm({ inspection }: Props) {
+export function DoInspectionForm({ inspection, sites }: Props) {
   const {
     currentInspection,
     isSubmitting,
@@ -43,11 +46,14 @@ export function DoInspectionForm({ inspection }: Props) {
     fileAttachments,
     setFileAttachments,
     users,
-  } = usePerformInspection(inspection)
-  
+    activeQuestionId,
+    isCreateActionDialogOpen,
+    setIsCreateActionDialogOpen,
+    handleActionCreated,
+  } = usePerformInspection(inspection);
 
   if (!currentInspection.pages || currentInspection.pages.length === 0) {
-    return <EmptyState currentInspection={currentInspection} />
+    return <EmptyState currentInspection={currentInspection} />;
   }
 
   return (
@@ -56,7 +62,7 @@ export function DoInspectionForm({ inspection }: Props) {
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
-            onClick={() => router.push('/dashboard/inspections')}
+            onClick={() => router.push("/dashboard/inspections")}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
@@ -78,7 +84,7 @@ export function DoInspectionForm({ inspection }: Props) {
             disabled={pause}
           >
             <Save className="mr-2 h-4 w-4" />
-            {pause ? 'Pausing...' : 'Pause Inspection'}
+            {pause ? "Pausing..." : "Pause Inspection"}
           </Button>
 
           <Button
@@ -101,10 +107,10 @@ export function DoInspectionForm({ inspection }: Props) {
               <span>Completion: {completionPercentage}%</span>
               {hasUnsavedChanges && (
                 <span className="text-yellow-500">
-                  {Object.keys(unsavedChanges).length} unsaved{' '}
+                  {Object.keys(unsavedChanges).length} unsaved{" "}
                   {Object.keys(unsavedChanges).length === 1
-                    ? 'change'
-                    : 'changes'}
+                    ? "change"
+                    : "changes"}
                 </span>
               )}
             </div>
@@ -116,14 +122,15 @@ export function DoInspectionForm({ inspection }: Props) {
       <CurrentInspection
         currentInspection={currentInspection}
         responses={responses}
-        unsavedChanges={(unsavedChanges as unknown) as Record<number, boolean>}
+        unsavedChanges={unsavedChanges}
         savingFields={savingFields}
         handleResponse={handleResponse}
         handleFieldSave={handleFieldSave}
         setActiveQuestionId={setActiveQuestionId}
-        setNote={setNote} 
+        setNote={setNote}
         setIsNoteDialogOpen={setIsNoteDialogOpen}
         setIsFileDialogOpen={setIsFileDialogOpen}
+        setIsCreateActionDialogOpen={setIsCreateActionDialogOpen}
         fileAttachments={fileAttachments}
         setFileAttachments={setFileAttachments}
         setSelectedFile={setSelectedFile}
@@ -144,6 +151,16 @@ export function DoInspectionForm({ inspection }: Props) {
         setSelectedFile={setSelectedFile}
         handleAttachFile1={handleAttachFile}
       />
+
+      <CreateActionDialog
+        isOpen={isCreateActionDialogOpen}
+        onOpenChange={setIsCreateActionDialogOpen}
+        users={users}
+        sites={sites}
+        questionId={activeQuestionId}
+        inspectionId={inspection.id}
+        onActionCreated={handleActionCreated}
+      />
     </div>
-  )
+  );
 }

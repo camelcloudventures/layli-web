@@ -12,12 +12,12 @@ type IProps = {
 export default function TabSelector({ tabs, notificationCount }: IProps) {
   return (
     <div>
-      <TabsList className="overflow-x-auto overflow-visible rounded-md">
+      <TabsList className="overflow-x-auto  bg-[#FBFCFD] flex gap-4 overflow-visible rounded-md">
         {tabs.map((tab) => (
           <TabsTrigger
             key={tab.value}
             value={tab.value}
-            className="p-3 text-base font-medium"
+            className="px-6 text-base font-medium data-[state=active]:bg-[#F3F4F7]  data-[state=active]:text-tertiary"
           >
             <span className="relative inline-flex items-center">
               {tab.label}

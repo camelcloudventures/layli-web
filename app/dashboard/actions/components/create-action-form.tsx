@@ -32,12 +32,18 @@ interface CreateActionFormProps {
   users: User[];
   sites: Site[];
   onCancel: () => void;
+  onActionCreated?: (newAction: Action) => void;
+  questionId?: number | null;
+  inspectionId?: string;
 }
 
 export function CreateActionForm({
   users,
   sites,
   onCancel,
+  onActionCreated,
+  questionId,
+  inspectionId,
 }: CreateActionFormProps) {
   const { user } = useAuth();
   const { setActions } = useActionsStore();
@@ -66,6 +72,8 @@ export function CreateActionForm({
     formData.append("status", ActionStatus.TODO);
     formData.append("frequency", selectedFrequency);
     formData.append("due_at", dueDate);
+    formData.append("question_id", String(questionId));
+    formData.append("inspection_id", String(inspectionId));
 
     // Add assignees and created_by data
     formData.append("assignees", JSON.stringify(selectedAssignees));
@@ -91,10 +99,14 @@ export function CreateActionForm({
       selectedAssignees
     );
 
-    if (result) {
-      console.log("result after", result?.data?.data);
+    if (result?.data?.data) {
       toast.success("Action created successfully");
-      setActions((prev) => [result.data.data as Action, ...prev]);
+      const newAction = result.data.data as Action;
+      setActions((prev) => [newAction, ...prev]);
+
+      if (onActionCreated) {
+        onActionCreated(newAction);
+      }
       onCancel();
     } else {
       //@ts-expect-error -e9

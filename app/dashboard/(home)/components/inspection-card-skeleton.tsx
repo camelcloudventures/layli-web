@@ -6,7 +6,7 @@ export function InspectionCardSkeleton() {
       {Array.from({ length: 5 }).map((_, index) => (
         <div
           key={index}
-          className="flex items-center gap-3 p-4 border rounded-lg bg-card"
+          className="flex items-center gap-3 p-4 border rounded-lg"
         >
           <Skeleton className="h-5 w-5 rounded-full flex-shrink-0" />
 

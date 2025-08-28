@@ -28,7 +28,7 @@ import { ActionBoard } from "./components/action-board";
 import { ActionCard } from "./components/action-card";
 import { ActionList } from "./components/action-list";
 import { columns } from "./components/columns";
-import { CreateActionForm } from "./components/create-action-form";
+import { CreateActionDialog } from "./components/create-action-dialog";
 import { EditActionForm } from "./components/edit-action-form";
 
 type View = "board" | "list";
@@ -205,24 +205,12 @@ export default function ActionsClient() {
           </TabsContent>
         </Tabs>
       </div>
-      <Dialog
-        open={isCreateActionDialogOpen}
+      <CreateActionDialog
+        isOpen={isCreateActionDialogOpen}
         onOpenChange={setIsCreateActionDialogOpen}
-      >
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px] p-6 overflow-hidden hover:overflow-y-auto scrollbar-none">
-          <DialogHeader>
-            <DialogTitle>Create Action</DialogTitle>
-            <DialogDescription>
-              Create a new action to assign and track.
-            </DialogDescription>
-          </DialogHeader>
-          <CreateActionForm
-            users={users}
-            sites={sites}
-            onCancel={() => setIsCreateActionDialogOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
+        users={users}
+        sites={sites}
+      />
       <Dialog
         open={isEditActionDialogOpen}
         onOpenChange={(open) => {

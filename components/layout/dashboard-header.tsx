@@ -27,8 +27,8 @@ export function DashboardHeader() {
   }, [isMobile]);
 
   return (
-    <header className="sticky mx-10 top-0 border-b bg-white z-50">
-      <div className="flex w-full justify-between items-center  py-6">
+    <header className="sticky top-0 border-b bg-[#FBFCFD] z-50 w-full">
+      <div className="flex w-full justify-between items-center py-6 px-4">
         <div className="flex items-center gap-2">
           {isMobile && (
             <Sheet open={open} onOpenChange={setOpen}>

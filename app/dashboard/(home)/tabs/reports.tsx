@@ -1,65 +1,58 @@
-'use client'
+"use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { FileText, Layers, Flag } from 'lucide-react'
-import { ReportDialog } from '../components/report-dialog'
+import { Button } from "@/components/ui/button";
+import { FileText, Layers, Flag } from "lucide-react";
+import { ReportDialog } from "../components/report-dialog";
 
 type IProps = {
   setReportDialogState: (state: {
-    open: boolean
-    type: 'auditSummary' | 'compliance' | 'issues'
-  }) => void
+    open: boolean;
+    type: "auditSummary" | "compliance" | "issues";
+  }) => void;
   reportDialogState: {
-    open: boolean
-    type: 'auditSummary' | 'compliance' | 'issues'
-  }
+    open: boolean;
+    type: "auditSummary" | "compliance" | "issues";
+  };
   reportData?: {
     auditSummary: {
-      totalInspections: number
-      completedInspections: number
-      pendingInspections: number
-      totalIssues: number
-      resolvedIssues: number
+      totalInspections: number;
+      completedInspections: number;
+      pendingInspections: number;
+      totalIssues: number;
+      resolvedIssues: number;
       recentInspections: Array<{
-        id: number
-        title: string
-        status: string
-        date: string
-        assignedTo: string
-      }>
-    }
+        id: number;
+        title: string;
+        status: string;
+        date: string;
+        assignedTo: string;
+      }>;
+    };
     issues: {
-      totalIssues: number
-      resolvedIssues: number
-      openIssues: number
-      issuesByCategory: Record<string, number>
+      totalIssues: number;
+      resolvedIssues: number;
+      openIssues: number;
+      issuesByCategory: Record<string, number>;
       criticalIssues: Array<{
-        id: string
-        title: string
-        category: string
-        priority: string
-        due_at: string
+        id: string;
+        title: string;
+        category: string;
+        priority: string;
+        due_at: string;
         assignees: Array<{
-          id: string
-          full_name: string
-          email: string
-          role: string
-        }>
-      }>
+          id: string;
+          full_name: string;
+          email: string;
+          role: string;
+        }>;
+      }>;
       topRecurringIssues: Array<{
-        title: string
-        occurrences: number
-      }>
-    }
-  }
-}
+        title: string;
+        occurrences: number;
+      }>;
+    };
+  };
+};
 
 export default function Reports({
   setReportDialogState,
@@ -68,16 +61,18 @@ export default function Reports({
 }: IProps) {
   return (
     <div className="w-full">
-      <Card>
-        <CardHeader>
-          <CardTitle>Reports</CardTitle>
-          <CardDescription>
+      <div className="rounded-lg border text-card-foreground">
+        <div className="p-6">
+          <h3 className="text-lg font-semibold leading-none tracking-tight">
+            Reports
+          </h3>
+          <p className="text-sm text-muted-foreground">
             Generate and view reports for your audits
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className="p-6 pt-0">
           <div className="grid gap-4 md:grid-cols-3">
-            <Card className="flex flex-col items-center p-4 text-center">
+            <div className="rounded-lg border text-card-foreground flex flex-col items-center p-4 text-center">
               <FileText className="h-10 w-10 text-primary mb-2" />
               <h3 className="font-medium">Audit Summary</h3>
               <p className="text-sm text-muted-foreground mb-4">
@@ -88,13 +83,13 @@ export default function Reports({
                 size="sm"
                 className="mt-auto"
                 onClick={() =>
-                  setReportDialogState({ open: true, type: 'auditSummary' })
+                  setReportDialogState({ open: true, type: "auditSummary" })
                 }
               >
                 Generate
               </Button>
-            </Card>
-            <Card className="flex flex-col items-center p-4 text-center">
+            </div>
+            <div className="rounded-lg border text-card-foreground flex flex-col items-center p-4 text-center">
               <Layers className="h-10 w-10 text-primary mb-2" />
               <h3 className="font-medium">Compliance Report</h3>
               <p className="text-sm text-muted-foreground mb-4">
@@ -105,13 +100,13 @@ export default function Reports({
                 size="sm"
                 className="mt-auto"
                 onClick={() =>
-                  setReportDialogState({ open: true, type: 'compliance' })
+                  setReportDialogState({ open: true, type: "compliance" })
                 }
               >
                 Generate
               </Button>
-            </Card>
-            <Card className="flex flex-col items-center p-4 text-center">
+            </div>
+            <div className="rounded-lg border text-card-foreground flex flex-col items-center p-4 text-center">
               <Flag className="h-10 w-10 text-primary mb-2" />
               <h3 className="font-medium">Issues Report</h3>
               <p className="text-sm text-muted-foreground mb-4">
@@ -122,15 +117,15 @@ export default function Reports({
                 size="sm"
                 className="mt-auto"
                 onClick={() =>
-                  setReportDialogState({ open: true, type: 'issues' })
+                  setReportDialogState({ open: true, type: "issues" })
                 }
               >
                 Generate
               </Button>
-            </Card>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
       <ReportDialog
         open={reportDialogState.open}
         onOpenChange={(open) =>
@@ -140,5 +135,5 @@ export default function Reports({
         reportData={reportData}
       />
     </div>
-  )
+  );
 }

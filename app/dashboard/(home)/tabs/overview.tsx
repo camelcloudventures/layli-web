@@ -1,7 +1,6 @@
 "use client";
 import { TabsContent } from "@/components/ui/tabs";
 import { StatCard } from "../components/stat-card";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -75,15 +74,15 @@ export default function Overview({ stats }: IProps) {
 
       {/* Additional metrics */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-primary">
+        <div className="rounded-lg border text-card-foreground">
+          <div className="pb-2 p-6">
+            <h3 className="text-sm font-medium text-tertiary">
               Compliance Score
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+            </h3>
+          </div>
+          <div className="space-y-2 p-6 pt-0">
             <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold text-text-primary">
+              <span className="text-2xl font-bold text-tertiary">
                 {complianceScore}%
               </span>
               <Badge
@@ -109,18 +108,16 @@ export default function Overview({ stats }: IProps) {
                 ? "Based on completed inspections and resolved issues"
                 : "No data available yet"}
             </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-primary">
-              Issues
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+          </div>
+        </div>
+        <div className="rounded-lg border text-card-foreground">
+          <div className="pb-2 p-6">
+            <h3 className="text-sm font-medium text-tertiary">Issues</h3>
+          </div>
+          <div className="space-y-2 p-6 pt-0">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-2xl font-bold text-text-primary">
+                <div className="text-2xl font-bold text-tertiary">
                   {issuesIdentified}
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -149,17 +146,17 @@ export default function Overview({ stats }: IProps) {
                   )}% resolution rate`
                 : "No issues data available"}
             </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-primary">
+          </div>
+        </div>
+        <div className="rounded-lg border text-card-foreground">
+          <div className="pb-2 p-6">
+            <h3 className="text-sm font-medium text-tertiary">
               Inspection Progress
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
+            </h3>
+          </div>
+          <div className="space-y-2 p-6 pt-0">
             <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold text-text-primary">
+              <span className="text-2xl font-bold text-tertiary">
                 {auditProgress}%
               </span>
               <Badge
@@ -185,22 +182,22 @@ export default function Overview({ stats }: IProps) {
                 ? "Overall completion of inspections"
                 : "No inspections data available"}
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Data availability notice */}
       {!hasRealData && (
-        <Card className="border-dashed">
-          <CardContent className="pt-6">
+        <div className="rounded-lg border border-dashed text-card-foreground">
+          <div className="pt-6 p-6">
             <div className="text-center">
               <p className="text-sm text-muted-foreground">
                 No inspection data available yet. Start conducting inspections
                 to see insights here.
               </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </TabsContent>
   );

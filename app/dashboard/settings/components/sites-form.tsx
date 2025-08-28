@@ -18,6 +18,9 @@ export function SitesForm({ onSubmit, isLoading }: SitesFormProps) {
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    console.log(
+      "============THIS FUNCTION WAS CALLED FROM SITES FROM============-"
+    );
     e.preventDefault();
     onSubmit(form);
   };

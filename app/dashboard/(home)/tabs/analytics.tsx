@@ -1,30 +1,14 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Cell } from "recharts";
 import { PieChart, Pie } from "recharts";
-import { LineChart, Line } from "recharts";
+import { Area, AreaChart } from "recharts";
 import { ResponsiveContainer } from "recharts";
 import Link from "next/link";
 
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-} from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from "recharts";
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+const COLORS = ["#3B82F6", "#60A5FA", "#93C5FD", "#DBEAFE"];
 
 // Fallback data for when real data is not available
 const fallbackInspectionTrends = [
@@ -98,20 +82,22 @@ export default function Analytics({
     inspectionTrends && inspectionTrends.some((trend) => trend.completed > 0);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Analytics</CardTitle>
-        <CardDescription>
+    <div className="rounded-lg border text-card-foreground">
+      <div className="p-6">
+        <h3 className="text-lg font-semibold leading-none tracking-tight">
+          Analytics
+        </h3>
+        <p className="text-sm text-muted-foreground">
           {hasRealData
             ? "View detailed analytics about your audit activities"
             : "No analytics data available yet. Start conducting inspections to see insights here."}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-8">
+        </p>
+      </div>
+      <div className="space-y-8 p-6 pt-0">
         {/* Key Metrics */}
         <div className="grid gap-4 md:grid-cols-4">
-          <div className="flex flex-col items-center justify-center rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
-            <span className="text-sm font-medium text-primary">
+          <div className="flex flex-col items-center justify-center rounded-lg border p-4 text-card-foreground ">
+            <span className="text-sm font-medium text-tertiary">
               Total Inspections
             </span>
             <span className="text-3xl font-bold text-text-primary">
@@ -121,8 +107,8 @@ export default function Analytics({
               {hasRealData ? "All time inspections" : "No inspections yet"}
             </span>
           </div>
-          <div className="flex flex-col items-center justify-center rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
-            <span className="text-sm font-medium text-primary">
+          <div className="flex flex-col items-center justify-center rounded-lg border  p-4 text-card-foreground  ">
+            <span className="text-sm font-medium text-tertiary">
               Average Score
             </span>
             <span className="text-3xl font-bold text-text-primary">
@@ -132,8 +118,8 @@ export default function Analytics({
               {hasRealData ? "Across all inspections" : "No scores yet"}
             </span>
           </div>
-          <div className="flex flex-col items-center justify-center rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
-            <span className="text-sm font-medium text-primary">
+          <div className="flex flex-col items-center justify-center rounded-lg border p-4 text-card-foreground">
+            <span className="text-sm font-medium text-tertiary">
               Failed Inspections
             </span>
             <span className="text-3xl font-bold text-text-primary">
@@ -143,8 +129,8 @@ export default function Analytics({
               {hasRealData ? "Requiring attention" : "No issues yet"}
             </span>
           </div>
-          <div className="flex flex-col items-center justify-center rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
-            <span className="text-sm font-medium text-primary">Pass Rate</span>
+          <div className="flex flex-col items-center justify-center rounded-lg border p-4 text-card-foreground">
+            <span className="text-sm font-medium text-tertiary">Pass Rate</span>
             <span className="text-3xl font-bold text-text-primary">
               {actionCompletion}%
             </span>
@@ -158,20 +144,30 @@ export default function Analytics({
         <div className="grid gap-6 md:grid-cols-2">
           {/* Inspection Trends Chart */}
           <div className="space-y-2">
-            <h3 className="text-lg font-medium text-primary">
+            <h3 className="text-lg font-medium text-tertiary">
               Inspection Trends
             </h3>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={inspectionTrends}>
-                  <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
+                  <YAxis stroke="#6B7280" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "white",
+                      border: "1px solid #E5E7EB",
+                      borderRadius: "8px",
+                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                    }}
+                  />
                   <Legend />
-                  <Bar dataKey="completed" fill="#8884d8" />
-                  <Bar dataKey="passed" fill="#82ca9d" />
-                  <Bar dataKey="failed" fill="#ff8042" />
+                  <Bar
+                    dataKey="completed"
+                    fill="#5266EB"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar dataKey="passed" fill="#10B981" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="failed" fill="#EF4444" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -184,7 +180,7 @@ export default function Analytics({
 
           {/* Issues by Category Chart */}
           <div className="space-y-2">
-            <h3 className="text-lg font-medium text-primary">
+            <h3 className="text-lg font-medium text-tertiary">
               Issues by Category
             </h3>
             <div className="h-[300px]">
@@ -196,7 +192,7 @@ export default function Analytics({
                     cy="50%"
                     labelLine={false}
                     outerRadius={80}
-                    fill="#8884d8"
+                    fill="#3B82F6"
                     dataKey="value"
                     label={({ name, percent }) =>
                       `${name}: ${(percent! * 100).toFixed(0)}%`
@@ -209,7 +205,14 @@ export default function Analytics({
                       />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "white",
+                      border: "1px solid #E5E7EB",
+                      borderRadius: "8px",
+                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -224,26 +227,31 @@ export default function Analytics({
 
         {/* Action Completion Rate Chart */}
         <div className="space-y-2">
-          <h3 className="text-lg font-medium text-primary">
+          <h3 className="text-lg font-medium text-tertiary">
             Action Completion Rate
           </h3>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={actionCompletionRate}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis domain={[0, 100]} />
-                <Tooltip />
-                <Legend />
-                <Line
+              <AreaChart data={actionCompletionRate}>
+                <XAxis dataKey="month" stroke="#6B7280" />
+                <YAxis domain={[0, 100]} stroke="#6B7280" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "white",
+                    border: "1px solid #E5E7EB",
+                    borderRadius: "8px",
+                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                  }}
+                />
+                <Area
                   type="monotone"
                   dataKey="rate"
-                  stroke="#8884d8"
+                  stroke="#3B82F6"
                   strokeWidth={2}
-                  dot={{ r: 4 }}
-                  activeDot={{ r: 6 }}
+                  fill="#DBEAFE"
+                  fillOpacity={0.6}
                 />
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
           {!hasRealData && (
@@ -253,12 +261,13 @@ export default function Analytics({
           )}
         </div>
 
-        <div className="flex justify-center">
-          <Button asChild>
-            <Link href="/dashboard/analytics">View Full Analytics</Link>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+        <Link
+          className="text-[#5266EB] w-full text-center"
+          href="/dashboard/analytics"
+        >
+          View Full Analytics
+        </Link>
+      </div>
+    </div>
   );
 }

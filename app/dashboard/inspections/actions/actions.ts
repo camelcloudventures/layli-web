@@ -71,6 +71,7 @@ export async function saveResponse(
         file_attachments: response.file_attachments,
       }),
     ...(response?.location_data && { location_data: response.location_data }),
+    ...(response?.action_id && { action_id: response.action_id }),
   };
 
   console.log("formattedResponse", formattedResponse);

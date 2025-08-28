@@ -5,9 +5,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import Link from 'next/link'
-import ResetPasswordForm from './components/reset-password-form'
+} from "@/components/ui/card";
+import Link from "next/link";
+import ResetPasswordForm from "./components/reset-password-form";
 
 export default function ResetPasswordPage() {
   return (
@@ -22,10 +22,10 @@ export default function ResetPasswordPage() {
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
-            Remember your password?{' '}
+            Remember your password?{" "}
             <Link
               href="/auth/login"
-              className="font-medium text-primary hover:underline"
+              className="font-medium text-[#5266EB] hover:underline"
             >
               Back to login
             </Link>
@@ -33,5 +33,5 @@ export default function ResetPasswordPage() {
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }

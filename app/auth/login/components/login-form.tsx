@@ -1,36 +1,36 @@
-'use client'
-import SubmitBtn from '@/components/custom/submit-btn'
-import React from 'react'
+"use client";
+import SubmitBtn from "@/components/custom/submit-btn";
+import React from "react";
 
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import Link from 'next/link'
-import { signIn } from '../../actions/actions'
-import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/lib/context/auth-provider'
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import Link from "next/link";
+import { signIn } from "../../actions/actions";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/context/auth-provider";
 
 export default function LoginForm() {
-  const router = useRouter()
-  const { refreshUser } = useAuth()
+  const router = useRouter();
+  const { refreshUser } = useAuth();
 
   async function handleSubmit(formData: FormData) {
-    const res = await signIn(formData)
+    const res = await signIn(formData);
 
     if (res.error) {
-      toast.error(res.error)
-      return
+      toast.error(res.error);
+      return;
     }
 
     if (res.success) {
-      toast.success(res.success)
-      await refreshUser()
-      router.push('/dashboard/settings')
+      toast.success(res.success);
+      await refreshUser();
+      router.push("/dashboard/settings");
     }
   }
 
   return (
-    <form action={handleSubmit} className="space-y-4">
+    <form action={handleSubmit} className="flex flex-col gap-8">
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input
@@ -43,10 +43,12 @@ export default function LoginForm() {
       </div>
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="password">Password</Label>
+          <Label className="" htmlFor="password">
+            Password
+          </Label>
           <Link
             href="/auth/reset-email"
-            className="text-sm font-medium text-primary hover:underline"
+            className="text-sm font-medium text-[#0000FF] hover:underline"
           >
             Forgot password?
           </Link>
@@ -62,5 +64,5 @@ export default function LoginForm() {
 
       <SubmitBtn label="Login" variant="default" className="w-full" />
     </form>
-  )
+  );
 }

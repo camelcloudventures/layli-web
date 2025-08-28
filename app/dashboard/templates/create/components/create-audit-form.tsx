@@ -25,7 +25,7 @@ import { omit } from "lodash";
 import SubmitBtn from "@/components/custom/submit-btn";
 import { getPreloadedQuestions } from "@/components/template-cover-page/template-cover-page";
 import { Question, Section } from "@/lib/types/audit-types";
-import { useAuditTemplates } from "@/hooks/use-audit-templates";
+import { useTemplatesStore } from "@/store/templates";
 
 export default function CreateAuditForm() {
   const router = useRouter();
@@ -160,8 +160,7 @@ export default function CreateAuditForm() {
   ) {
     setTemplate((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
-  //@ts-expect-error -e9
-  const { setAuditTemplates } = useAuditTemplates();
+  const { reset } = useTemplatesStore();
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -223,13 +222,15 @@ export default function CreateAuditForm() {
       const createdBy = user?.id ?? "";
       const result = await createTemplate(formData, createdBy);
       console.log("result", result);
-      if (result && result.error) {
+      if (result.error) {
         toast.error(result.error);
         return;
       }
-      if (result && "success" in result) {
+      if (result.data) {
         toast.success(String(result.success));
-        setAuditTemplates(result.data);
+        reset();
+
+        // setTemplates((prev) => [result.data, ...prev]);
         router.push("/dashboard/templates");
       }
     } catch (error) {

@@ -13,6 +13,7 @@ export function useSites() {
 
   const enabled = !sites || sites.length === 0;
   const { data: fetchedSites, isLoading } = useGetSites(enabled);
+  console.log("fetched sites", fetchedSites);
 
   useEffect(() => {
     if (fetchedSites && sites.length === 0) {

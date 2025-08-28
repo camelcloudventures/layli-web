@@ -1,24 +1,24 @@
-'use client'
+"use client";
 
-import { useState, useRef, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import type { Question, Response } from '@/lib/types/inspection-types'
+import { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import type { Question, Response } from "@/lib/types/inspection-types";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import SignatureCanvas from 'react-signature-canvas'
-import Image from 'next/image'
+} from "@/components/ui/dialog";
+import SignatureCanvas from "react-signature-canvas";
+import Image from "next/image";
 
 interface SignatureFieldProps {
-  question: Question
-  response?: Response
-  onResponse: (value: string) => void
-  isDisabled?: boolean
+  question: Question;
+  response?: Response;
+  onResponse: (value: string) => void;
+  isDisabled?: boolean;
 }
 
 export function SignatureField({
@@ -27,31 +27,31 @@ export function SignatureField({
   onResponse,
   isDisabled,
 }: SignatureFieldProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [localSignature, setLocalSignature] = useState<string>('')
-  const sigCanvas = useRef<SignatureCanvas | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [localSignature, setLocalSignature] = useState<string>("");
+  const sigCanvas = useRef<SignatureCanvas | null>(null);
 
   // Initialize local signature from response
   useEffect(() => {
-    setLocalSignature(response?.response_value || '')
-  }, [response?.response_value])
+    setLocalSignature(response?.response_value || "");
+  }, [response?.response_value]);
 
   const handleSaveSignature = () => {
     if (sigCanvas.current) {
-      const signature = sigCanvas.current.toDataURL()
-      setLocalSignature(signature)
-      onResponse(signature) // This updates the local state, not saved to backend yet
-      setIsDialogOpen(false)
+      const signature = sigCanvas.current.toDataURL();
+      setLocalSignature(signature);
+      onResponse(signature); // This updates the local state, not saved to backend yet
+      setIsDialogOpen(false);
     }
-  }
+  };
 
   const handleClearSignature = () => {
-    setLocalSignature('')
-    onResponse('') // Clear the local signature
+    setLocalSignature("");
+    onResponse(""); // Clear the local signature
     if (sigCanvas.current) {
-      sigCanvas.current.clear()
+      sigCanvas.current.clear();
     }
-  }
+  };
 
   return (
     <div className="space-y-2 w-full">
@@ -76,7 +76,7 @@ export function SignatureField({
           onClick={() => setIsDialogOpen(true)}
           disabled={isDisabled}
         >
-          {localSignature ? 'Edit Signature' : 'Add Signature'}
+          {localSignature ? "Edit Signature" : "Add Signature"}
         </Button>
         {localSignature && (
           <Button
@@ -91,7 +91,7 @@ export function SignatureField({
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="w-full ">
+        <DialogContent className="w-full  p-6">
           <DialogHeader>
             <DialogTitle>Provide Signature</DialogTitle>
           </DialogHeader>
@@ -102,7 +102,7 @@ export function SignatureField({
               canvasProps={{
                 width: 450,
                 height: 200,
-                className: 'sigCanvas',
+                className: "sigCanvas",
               }}
             />
           </div>
@@ -118,5 +118,5 @@ export function SignatureField({
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

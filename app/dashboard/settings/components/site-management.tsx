@@ -27,11 +27,14 @@ export function SiteManagement() {
     addSite,
   } = useOrganizationSite();
 
-  const mutation = useCreateOrganizationSiteMutation();
+  const { mutate: addSiteMutation, isPending: isAddSiteMutationPending } =
+    useCreateOrganizationSiteMutation();
 
   const handleSiteSubmit = (data: SiteFormData) => {
-    mutation.mutate(data, {
-      onSuccess: () => {
+    console.log("============THIS FUNCTION WAS CALLED============-");
+    addSiteMutation(data, {
+      onSuccess: (data) => {
+        console.log(data);
         addSite(data as Site);
         toast.success("Site created successfully");
         setIsCreateSiteDialogOpen(false);
@@ -68,7 +71,7 @@ export function SiteManagement() {
             </DialogHeader>
             <SitesForm
               onSubmit={handleSiteSubmit}
-              isLoading={mutation.isPending}
+              isLoading={isAddSiteMutationPending}
             />
           </DialogContent>
         </Dialog>

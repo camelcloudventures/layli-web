@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { getSchedules, getSites } from "./actions";
+import { getSchedules } from "./actions";
 import { GET } from "@/app/backend/apiMethods";
 import { ActiveUser } from "@/lib/types";
+import { getSites } from "../../sites/actions/actions";
 
 export function useGetActiveUsers(enabled: boolean) {
   return useQuery({

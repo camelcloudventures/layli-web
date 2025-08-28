@@ -1,10 +1,10 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   CheckCircle,
   XCircle,
@@ -12,102 +12,172 @@ import {
   FileText,
   User,
   Download,
-} from 'lucide-react'
-import { Inspection, InspectionResponse } from '../types/inspection-types'
-import { downloadInspectionPDF } from '../utils/pdf-generator'
-import { toast } from 'sonner'
+} from "lucide-react";
+import { Inspection, InspectionResponse } from "../types/inspection-types";
+import { downloadInspectionPDF } from "../utils/pdf-generator";
+import { toast } from "sonner";
+import { useActionsStore } from "@/store/actions";
+import Image from "next/image";
 
 interface InspectionReportProps {
-  inspection: Inspection
+  inspection: Inspection;
 }
 
 export function InspectionReport({ inspection }: InspectionReportProps) {
-  const [selectedPage, setSelectedPage] = useState(0)
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
+  const [selectedPage, setSelectedPage] = useState(0);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const { actions } = useActionsStore();
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
-  }
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
 
   const getGradeColor = (grade: string) => {
     switch (grade) {
-      case 'A':
-        return 'bg-green-100 text-green-800'
-      case 'B':
-        return 'bg-blue-100 text-blue-800'
-      case 'C':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'D':
-        return 'bg-orange-100 text-orange-800'
-      case 'F':
-        return 'bg-red-100 text-red-800'
+      case "A":
+        return "bg-green-100 text-green-800";
+      case "B":
+        return "bg-blue-100 text-blue-800";
+      case "C":
+        return "bg-yellow-100 text-yellow-800";
+      case "D":
+        return "bg-orange-100 text-orange-800";
+      case "F":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800'
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
-  const getResponseDisplayValue = (response: InspectionResponse) => {
-    if (response.text_value) return response.text_value
-    if (response.numeric_value !== null && response.numeric_value !== undefined)
-      return response.numeric_value.toString()
-    if (response.response_value)
-      return new Date(response.response_value).toLocaleDateString()
-    if (response.selected_options && response.selected_options.length > 0) {
-      return response.selected_options.join(', ')
+  const getResponseDisplayValue = (
+    response: InspectionResponse,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    question: any
+  ) => {
+    // Handle Signature
+    if (question.field_type === "SIGNATURE" && response.response_value) {
+      return (
+        <a
+          href={response.response_value}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Image
+            src={response.response_value}
+            alt="Signature"
+            width={200}
+            height={100}
+            className="rounded-md border bg-white"
+          />
+        </a>
+      );
     }
-    return 'No response'
-  }
+
+    // Handle Photo
+    if (
+      question.field_type === "PHOTO" &&
+      response.file_attachments &&
+      response.file_attachments.length > 0
+    ) {
+      const photo = response.file_attachments[0];
+      return (
+        //@ts-expect-error - this is a temporary fix to get the photo to display
+        <a href={photo?.file_path} target="_blank" rel="noopener noreferrer">
+          <Image
+            // @ts-expect-error - this is a temporary fix to get the photo to display
+            src={photo?.file_path}
+            // @ts-expect-error - this is a temporary fix to get the photo to display
+            alt={photo?.filename}
+            width={200}
+            height={150}
+            className="rounded-md border object-cover"
+          />
+        </a>
+      );
+    }
+
+    // Handle SELECT or MULTI_SELECT
+    if (
+      (question.field_type === "SELECT" ||
+        question.field_type === "MULTI_SELECT") &&
+      response.selected_options &&
+      response.selected_options.length > 0 &&
+      question.response_options
+    ) {
+      const selectedLabels = response.selected_options
+        .map((optionId) => {
+          const option = question.response_options.find(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (o: any) => o.id === optionId
+          );
+          return option ? option.label : null;
+        })
+        .filter(Boolean)
+        .join(", ");
+      return selectedLabels || "No response";
+    }
+
+    if (response.text_value) return response.text_value;
+    if (response.numeric_value !== null && response.numeric_value !== undefined)
+      return response.numeric_value.toString();
+    if (response.response_value)
+      return new Date(response.response_value).toLocaleDateString();
+    if (response.selected_options && response.selected_options.length > 0) {
+      return response.selected_options.join(", ");
+    }
+    return "No response";
+  };
 
   const getQuestionById = (questionId: number) => {
     for (const page of inspection.pages) {
       for (const section of page.sections) {
-        const question = section.questions.find((q) => q.id === questionId)
-        if (question) return question
+        const question = section.questions.find((q) => q.id === questionId);
+        if (question) return question;
       }
     }
-    return null
-  }
+    return null;
+  };
 
   const getSectionScore = (sectionId: number) => {
     return inspection.section_scores.find(
-      (score) => score.section_id === sectionId,
-    )
-  }
+      (score) => score.section_id === sectionId
+    );
+  };
 
   const handleDownloadPDF = async () => {
     try {
-      setIsGeneratingPDF(true)
+      setIsGeneratingPDF(true);
 
       // Generate filename based on inspection title and date
       const filename = `inspection-report-${inspection.title.replace(
         /[^a-zA-Z0-9]/g,
-        '-',
-      )}-${new Date().toISOString().split('T')[0]}.pdf`
+        "-"
+      )}-${new Date().toISOString().split("T")[0]}.pdf`;
 
       // Download the PDF
-      downloadInspectionPDF(inspection, { filename })
+      downloadInspectionPDF(inspection, { filename });
 
-      toast.success('PDF downloaded successfully!')
+      toast.success("PDF downloaded successfully!");
     } catch (error) {
-      console.error('Error generating PDF:', error)
-      toast.error('Failed to generate PDF. Please try again.')
+      console.error("Error generating PDF:", error);
+      toast.error("Failed to generate PDF. Please try again.");
     } finally {
-      setIsGeneratingPDF(false)
+      setIsGeneratingPDF(false);
     }
-  }
+  };
 
   // Calculate issues and actions counts
-  const issueCount = inspection.responses.filter((r) => r.is_flagged).length
-  const actionCount = inspection.responses.filter((r) => r.action_id).length
+  const issueCount = inspection.responses.filter((r) => r.is_flagged).length;
+  const actionCount = inspection.responses.filter((r) => r.action_id).length;
 
   // Get inspector name from assignees
   const inspector =
-    inspection.assignees.find((a) => a.role === 'auditor') ||
-    inspection.assignees[0]
+    inspection.assignees.find((a) => a.role === "auditor") ||
+    inspection.assignees[0];
 
   return (
     <div className="space-y-6">
@@ -126,7 +196,7 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
             disabled={isGeneratingPDF}
           >
             <Download className="w-4 h-4 mr-2" />
-            {isGeneratingPDF ? 'Generating...' : 'Download PDF'}
+            {isGeneratingPDF ? "Generating..." : "Download PDF"}
           </Button>
           <Link href="/dashboard/inspections">
             <Button variant="outline">Back to Inspections</Button>
@@ -162,7 +232,7 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
                 Inspector
               </p>
               <p className="text-lg font-semibold">
-                {inspector?.full_name || 'N/A'}
+                {inspector?.full_name || "N/A"}
               </p>
             </div>
             <div>
@@ -170,10 +240,10 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
               <p
                 className={`text-lg font-semibold ${
                   (inspection.final_score || 0) >= 80
-                    ? 'text-green-600'
+                    ? "text-green-600"
                     : (inspection.final_score || 0) >= 60
-                    ? 'text-amber-600'
-                    : 'text-red-600'
+                    ? "text-amber-600"
+                    : "text-red-600"
                 }`}
               >
                 {inspection.final_score}%
@@ -227,7 +297,7 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
               {inspection.pages.map((page, index) => (
                 <Button
                   key={page.id}
-                  variant={selectedPage === index ? 'default' : 'outline'}
+                  variant={selectedPage === index ? "default" : "outline"}
                   onClick={() => setSelectedPage(index)}
                 >
                   {page.title}
@@ -241,21 +311,21 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
       {/* Sections */}
       <div className="space-y-6">
         {inspection.pages[selectedPage]?.sections.map((section) => {
-          const sectionScore = getSectionScore(section.id)
+          const sectionScore = getSectionScore(section.id);
           const sectionResponses = inspection.responses.filter((response) => {
-            const question = getQuestionById(response.question_id)
+            const question = getQuestionById(response.question_id);
             return (
               question && section.questions.some((q) => q.id === question.id)
-            )
-          })
+            );
+          });
 
           return (
             <Card
               key={section.id}
               className={
                 sectionResponses.some((r) => r.is_flagged)
-                  ? 'border-red-200 bg-red-50'
-                  : ''
+                  ? "border-red-200 bg-red-50"
+                  : ""
               }
             >
               <CardHeader>
@@ -284,23 +354,30 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
               <CardContent className="space-y-4">
                 {section.questions.map((question) => {
                   const response = inspection.responses.find(
-                    (r) => r.question_id === question.id,
-                  )
+                    (r) => r.question_id === question.id
+                  );
 
                   return (
                     <div
                       key={question.id}
                       className={`p-4 border rounded-lg ${
                         response?.is_flagged
-                          ? 'border-red-300 bg-red-50'
-                          : 'border-gray-200'
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-200"
                       }`}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">
-                            {question.title}
-                          </h4>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium text-gray-900">
+                              {/* @ts-expect-error - this is a temporary fix to get the question text to display */}
+                              {question.text}
+                            </h4>
+                            <Badge variant="secondary">
+                              {/* @ts-expect-error - this is a temporary fix to get the field type to display */}
+                              {question.field_type}
+                            </Badge>
+                          </div>
                           {question.description && (
                             <p className="text-sm text-gray-600 mt-1">
                               {question.description}
@@ -329,14 +406,14 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
                       </div>
 
                       {response && (
-                        <div className="space-y-2">
+                        <div className="space-y-4 mt-4">
                           <div className="bg-gray-50 p-3 rounded">
                             <span className="text-sm font-medium text-gray-700">
                               Response:
                             </span>
-                            <p className="text-sm text-gray-900 mt-1">
-                              {getResponseDisplayValue(response)}
-                            </p>
+                            <div className="text-sm text-gray-900 mt-1">
+                              {getResponseDisplayValue(response, question)}
+                            </div>
                           </div>
 
                           {response.inspector_notes && (
@@ -367,21 +444,58 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
                                 <span className="text-sm font-medium text-gray-700">
                                   Attachments:
                                 </span>
-                                <div className="flex gap-2 mt-1">
+                                <div className="flex flex-col gap-2 mt-1">
                                   {response.file_attachments.map(
                                     (attachment, index) => (
-                                      <div
+                                      <a
                                         key={index}
-                                        className="flex items-center gap-1 text-sm text-blue-600"
+                                        // @ts-expect-error - this is a temporary fix to get the attachment to display
+                                        href={attachment?.file_path}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
                                       >
-                                        <FileText className="w-3 h-3" />
-                                        <span>Attachment {index + 1}</span>
-                                      </div>
-                                    ),
+                                        <FileText className="w-4 h-4" />
+                                        {/* @ts-expect-error - this is a temporary fix to get the attachment to display */}
+                                        <span>{attachment?.filename}</span>
+                                      </a>
+                                    )
                                   )}
                                 </div>
                               </div>
                             )}
+
+                          {response.action_id &&
+                            (() => {
+                              const action = actions.find(
+                                (a) => a.id === response.action_id
+                              );
+                              if (!action) return null;
+                              return (
+                                <div className="bg-purple-50 p-3 rounded">
+                                  <span className="text-sm font-medium text-purple-700">
+                                    Linked Action:
+                                  </span>
+                                  <div className="text-sm text-purple-900 mt-1 space-y-1">
+                                    <p>
+                                      <strong>Title:</strong> {action.title}
+                                    </p>
+                                    <p>
+                                      <strong>Status:</strong>{" "}
+                                      <Badge variant="outline">
+                                        {action.status}
+                                      </Badge>
+                                    </p>
+                                    <p>
+                                      <strong>Priority:</strong>{" "}
+                                      <Badge variant="outline">
+                                        {action.priority}
+                                      </Badge>
+                                    </p>
+                                  </div>
+                                </div>
+                              );
+                            })()}
                         </div>
                       )}
 
@@ -397,13 +511,13 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
                         </div>
                       )}
                     </div>
-                  )
+                  );
                 })}
               </CardContent>
             </Card>
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }

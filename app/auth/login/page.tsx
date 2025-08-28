@@ -1,40 +1,46 @@
-import Link from 'next/link'
+import Link from "next/link";
+import LoginForm from "./components/login-form";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import LoginForm from './components/login-form'
-
-export default function page() {
+export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Login</CardTitle>
-          <CardDescription>
-            Enter your credentials to access your account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <LoginForm />
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">
-            Don&apos;t have an account?{' '}
-            <Link
-              href="/auth/sign-up"
-              className="font-medium text-primary hover:underline"
-            >
-              Sign up
-            </Link>
-          </p>
-        </CardFooter>
-      </Card>
+    <div className="min-h-screen bg-gray-50">
+      <div className="flex items-center justify-between p-6">
+        <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center">
+          <div className="w-4 h-4 bg-white rounded-full"></div>
+        </div>
+
+        <Link
+          href="/auth/sign-up"
+          className="text-sm font-medium text-[#0000FF] hover:text-[#5266EB] flex items-center gap-1"
+        >
+          Open Account
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </Link>
+      </div>
+
+      <div className="flex min-h-screen items-center justify-center px-4 -mt-16">
+        <div className="w-full max-w-sm">
+          <div className="mb-8">
+            <h1 className="text-2xl font-medium text-gray-900 mb-2">Log In</h1>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <LoginForm />
+          </div>
+        </div>
+      </div>
     </div>
-  )
+  );
 }

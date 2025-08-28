@@ -11,13 +11,16 @@ export async function getSites(): Promise<Site[] | null> {
 export async function createOrganizationSite(formData: SiteFormData) {
   const siteData = {
     name: formData.name,
-    address: "Address",
+    address: "",
     longitude: 0,
     latitude: 0,
   };
 
+  console.log("site data being sent", siteData);
+
   const res = await POST("/sites/create", siteData);
 
+  console.log("response from the backend", res);
   revalidateTag("organization-sites");
   return res;
 }

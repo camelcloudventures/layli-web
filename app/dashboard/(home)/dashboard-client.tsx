@@ -1,14 +1,5 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -291,23 +282,25 @@ export function DashboardClient() {
         reportData={reportData}
       />
       {/* Recent Inspections Section */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+      <div className="rounded-lg border text-card-foreground">
+        <div className="flex flex-row items-center justify-between p-6 pb-2">
           <div>
-            <CardTitle>Recent Inspections</CardTitle>
-            <CardDescription>
+            <h3 className="text-lg font-semibold leading-none tracking-tight">
+              Recent Inspections
+            </h3>
+            <p className="text-sm text-muted-foreground">
               {recentInspections.length > 0
                 ? "A list of your recent inspections and their status"
                 : ""}
-            </CardDescription>
+            </p>
           </div>
           {recentInspections.length > 0 && (
             <Button variant="outline" size="sm" asChild>
               <Link href="/dashboard/inspections">View all</Link>
             </Button>
           )}
-        </CardHeader>
-        <CardContent>
+        </div>
+        <div className="p-6 pt-2">
           {inspectionsDataLoading ? (
             <InspectionCardSkeleton />
           ) : recentInspections.length > 0 ? (
@@ -328,15 +321,15 @@ export function DashboardClient() {
               <p className="text-gray-500">No recent inspections found</p>
             </div>
           )}
-        </CardContent>
-        <CardFooter>
+        </div>
+        <div className="p-6 pt-0">
           {recentInspections.length > 0 && (
             <Button variant="ghost" size="sm" className="w-full" asChild>
               <Link href="/dashboard/inspections">View all inspections</Link>
             </Button>
           )}
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

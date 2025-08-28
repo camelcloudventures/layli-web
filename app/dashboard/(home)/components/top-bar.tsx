@@ -1,12 +1,12 @@
-'use client'
+"use client";
 
-import { Button } from '@/components/ui/button'
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu";
 import {
   ListChecks,
   BarChart3,
@@ -17,73 +17,73 @@ import {
   CheckCircle2,
   Search,
   Settings,
-} from 'lucide-react'
-import Link from 'next/link'
-import { FileText } from 'lucide-react'
-import React from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+} from "lucide-react";
+import Link from "next/link";
+import { FileText } from "lucide-react";
+import React from "react";
 
 const createOptions = {
   admin: [
     {
-      label: 'Create Audit Template',
+      label: "Create Audit Template",
       icon: FileText,
-      href: '/dashboard/templates',
+      href: "/dashboard/templates",
     },
-    { label: 'Create Schedule', icon: Calendar, href: '/dashboard/schedules' },
-    { label: 'Create Action', icon: ListChecks, href: '/dashboard/actions' },
-    { label: 'Create User', icon: Users, href: '/dashboard/settings' },
+    { label: "Create Schedule", icon: Calendar, href: "/dashboard/schedules" },
+    { label: "Create Action", icon: ListChecks, href: "/dashboard/actions" },
+    { label: "Create User", icon: Users, href: "/dashboard/settings" },
   ],
   auditor: [
     {
-      label: 'Create Audit Template',
+      label: "Create Audit Template",
       icon: FileText,
-      href: '/dashboard/templates',
+      href: "/dashboard/templates",
     },
-    { label: 'Create Schedule', icon: Calendar, href: '/dashboard/schedules' },
-    { label: 'Create Action', icon: ListChecks, href: '/dashboard/actions' },
-    { label: 'Report Issue', icon: Flag, href: '/dashboard/issues' },
+    { label: "Create Schedule", icon: Calendar, href: "/dashboard/schedules" },
+    { label: "Create Action", icon: ListChecks, href: "/dashboard/actions" },
+    { label: "Report Issue", icon: Flag, href: "/dashboard/issues" },
   ],
   supervisor: [
     {
-      label: 'Create Audit Template',
+      label: "Create Audit Template",
       icon: FileText,
-      href: '/dashboard/templates',
+      href: "/dashboard/templates",
     },
-    { label: 'Create Schedule', icon: Calendar, href: '/dashboard/schedules' },
-    { label: 'Create Action', icon: ListChecks, href: '/dashboard/actions' },
-    { label: 'Generate Report', icon: BarChart3, href: '/dashboard/analytics' },
+    { label: "Create Schedule", icon: Calendar, href: "/dashboard/schedules" },
+    { label: "Create Action", icon: ListChecks, href: "/dashboard/actions" },
+    { label: "Generate Report", icon: BarChart3, href: "/dashboard/analytics" },
   ],
-}
+};
 
 // Role-based quick actions
 const quickActions = {
   admin: [
-    { label: 'Create New Audit', icon: Plus, href: '/dashboard/templates' },
-    { label: 'Manage Users', icon: Users, href: '/dashboard/settings' },
-    { label: 'System Settings', icon: Settings, href: '/dashboard/settings' },
+    { label: "Create New Audit", icon: Plus, href: "/dashboard/templates" },
+    { label: "Manage Users", icon: Users, href: "/dashboard/settings" },
+    { label: "System Settings", icon: Settings, href: "/dashboard/settings" },
   ],
   auditor: [
-    { label: 'Start New Audit', icon: Plus, href: '/dashboard/templates' },
-    { label: 'Review Findings', icon: Search, href: '/dashboard/issues' },
-    { label: 'Submit Report', icon: FileText, href: '/dashboard/actions' },
+    { label: "Start New Audit", icon: Plus, href: "/dashboard/templates" },
+    { label: "Review Findings", icon: Search, href: "/dashboard/issues" },
+    { label: "Submit Report", icon: FileText, href: "/dashboard/actions" },
   ],
   supervisor: [
-    { label: 'Approve Audits', icon: CheckCircle2, href: '/dashboard/audits' },
-    { label: 'Assign Tasks', icon: Users, href: '/dashboard/actions' },
-    { label: 'View Reports', icon: BarChart3, href: '/dashboard/analytics' },
+    { label: "Approve Audits", icon: CheckCircle2, href: "/dashboard/audits" },
+    { label: "Assign Tasks", icon: Users, href: "/dashboard/actions" },
+    { label: "View Reports", icon: BarChart3, href: "/dashboard/analytics" },
   ],
-}
+};
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function TopBar({ user }: { user: any }) {
   // Role-based quick actions
   const userActions =
-    quickActions[user.role as keyof typeof quickActions] || quickActions.auditor
+    quickActions[user.role as keyof typeof quickActions] ||
+    quickActions.auditor;
 
   // Get create options based on user role
   const userCreateOptions =
     createOptions[user.role as keyof typeof createOptions] ||
-    createOptions.auditor
+    createOptions.auditor;
 
   return (
     <div className="flex flex-col gap-4">
@@ -105,7 +105,7 @@ export default function TopBar({ user }: { user: any }) {
                   href={option.href}
                   className="flex items-center cursor-pointer"
                 >
-                  <option.icon />
+                  <option.icon className="text-primary" />
                   <span>{option.label}</span>
                 </Link>
               </DropdownMenuItem>
@@ -116,19 +116,19 @@ export default function TopBar({ user }: { user: any }) {
       <div className="grid gap-4 md:grid-cols-3">
         {userActions.map((action, index) => (
           <Link href={action.href} key={index}>
-            <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-              <CardContent className="flex items-center gap-4 p-4">
+            <div className="rounded-lg border text-card-foreground hover:bg-accent/50 transition-colors cursor-pointer">
+              <div className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-primary/10 p-2">
                   <action.icon className="h-5 w-5 text-primary" />
                 </div>
                 <div>
                   <p className="font-medium">{action.label}</p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </Link>
         ))}
       </div>
     </div>
-  )
+  );
 }

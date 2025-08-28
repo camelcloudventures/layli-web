@@ -19,29 +19,16 @@ export default function DashboardLayout({
       <DashboardHeader />
 
       <div className="flex flex-1">
-        {/* Aside (fixed width, white background) */}
-        <aside className="hidden md:block w-60 bg-white border-r">
-          <div className="sticky top-16 h-[calc(100vh-4rem)]">
+        {/* Aside (fixed width, positioned under header) */}
+        <aside className="hidden md:block w-60 bg-[#FBFCFD] border-r">
+          <div className="h-full">
             <SidebarNav items={dashboardNavItems} />
           </div>
         </aside>
 
-        {/* Main content (fills the rest, blue background) */}
-        <main className="flex-1 bg-primary/5 overflow-y-auto py-6 px-4">
-          {children}
-        </main>
+        {/* Main content (fills the rest, positioned under header) */}
+        <main className="flex-1  overflow-y-auto py-6 px-4">{children}</main>
       </div>
-
-      {/* <div className="flex flex-1 gap-12 md:grid-cols-[200px_1fr] lg:grid-cols-[240px_1fr] mx-12 bg-primary/5 px-2">
-        <aside className="hidden border-r md:block bg-white">
-          <div className="sticky top-16 -ml-2 h-[calc(100vh-4rem)]">
-            <SidebarNav items={dashboardNavItems} />
-          </div>
-        </aside>
-        <main className="flex w-full flex-col overflow-hidden py-6">
-          {children}
-        </main>
-      </div> */}
     </div>
   );
 }

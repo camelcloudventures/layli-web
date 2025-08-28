@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -6,8 +6,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import ResetEmailForm from './components/reset-email-form'
+} from "@/components/ui/card";
+import ResetEmailForm from "./components/reset-email-form";
 
 export default function ResetEmailPage() {
   return (
@@ -25,10 +25,10 @@ export default function ResetEmailPage() {
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
-            Remember your password?{' '}
+            Remember your password?{" "}
             <Link
               href="/auth/login"
-              className="font-medium text-primary hover:underline"
+              className="font-medium text-[#0000FF] hover:underline"
             >
               Back to login
             </Link>
@@ -36,5 +36,5 @@ export default function ResetEmailPage() {
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }

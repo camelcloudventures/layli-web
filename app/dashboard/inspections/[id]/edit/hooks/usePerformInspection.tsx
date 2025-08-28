@@ -14,9 +14,8 @@ import {
   pauseInspection,
   saveResponse,
 } from "../../../actions/actions";
-import { ResponseData } from "@/app/dashboard/inspections/types/types";
 import { getActiveUsers } from "@/app/dashboard/schedules/actions/actions";
-import { User } from "@/lib/types";
+import { Action, User } from "@/lib/types";
 import { useInspectionStore } from "@/store/inspections";
 
 interface FileMetaType {
@@ -46,12 +45,98 @@ export function usePerformInspection(inspection: Inspection) {
   const [activeQuestionId, setActiveQuestionId] = useState<number | null>(null);
   const [note, setNote] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const getSessionStorageKey = useCallback(
+    () => `unsavedChanges_${inspection.id}`,
+    [inspection.id]
+  );
+
   const [unsavedChanges, setUnsavedChanges] = useState<
-    Record<number, ResponseData>
-  >({});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Record<number, any>
+  >(() => {
+    if (typeof window === "undefined") {
+      return {};
+    }
+    try {
+      const saved = window.sessionStorage.getItem(getSessionStorageKey());
+      return saved ? JSON.parse(saved) : {};
+    } catch (error) {
+      console.error("Error reading from sessionStorage", error);
+      return {};
+    }
+  });
+
   const [savingFields, setSavingFields] = useState<Record<number, boolean>>({});
   const [users, setUsers] = useState<User[]>([]);
   const [fileAttachments, setFileAttachments] = useState<ExtendedFile[]>([]);
+  const [isCreateActionDialogOpen, setIsCreateActionDialogOpen] =
+    useState(false);
+
+  // Persist unsavedChanges to sessionStorage
+  useEffect(() => {
+    try {
+      window.sessionStorage.setItem(
+        getSessionStorageKey(),
+        JSON.stringify(unsavedChanges)
+      );
+    } catch (error) {
+      console.error("Error writing to sessionStorage", error);
+    }
+  }, [unsavedChanges, getSessionStorageKey]);
+
+  // Apply stored unsaved changes to the initial inspection state on mount
+  useEffect(() => {
+    if (Object.keys(unsavedChanges).length > 0) {
+      setCurrentInspection((prevInspection) => {
+        const newResponses = [...prevInspection.responses];
+        Object.entries(unsavedChanges).forEach(([questionId, unsavedData]) => {
+          const qId = parseInt(questionId, 10);
+          const responseIndex = newResponses.findIndex(
+            (r) => r.question_id === qId
+          );
+
+          const updatedResponse: Response = {
+            ...(responseIndex !== -1 ? newResponses[responseIndex] : {}),
+            ...unsavedData,
+            id:
+              responseIndex !== -1 ? newResponses[responseIndex].id : undefined,
+            created_at:
+              responseIndex !== -1
+                ? newResponses[responseIndex].created_at
+                : new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            inspection_id: prevInspection.id,
+            points_earned: 0,
+            points_possible: 0,
+            manual_score: false,
+          };
+
+          if (responseIndex !== -1) {
+            newResponses[responseIndex] = updatedResponse;
+          } else {
+            newResponses.push(updatedResponse);
+          }
+        });
+
+        return { ...prevInspection, responses: newResponses };
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleActionCreated = (newAction: Action) => {
+    if (activeQuestionId) {
+      setUnsavedChanges((prev) => ({
+        ...prev,
+        [activeQuestionId]: {
+          ...prev[activeQuestionId],
+          action_id: newAction.id,
+          question_id: activeQuestionId,
+        },
+      }));
+    }
+  };
 
   // Fetch active users on component mount
   useEffect(() => {
@@ -86,6 +171,12 @@ export function usePerformInspection(inspection: Inspection) {
     };
     fetchUsers();
   }, []);
+
+  const clearSessionStorage = useCallback(() => {
+    if (typeof window !== "undefined") {
+      window.sessionStorage.removeItem(getSessionStorageKey());
+    }
+  }, [getSessionStorageKey]);
 
   // Handle individual field save
   const handleFieldSave = async (questionId: number) => {
@@ -167,7 +258,8 @@ export function usePerformInspection(inspection: Inspection) {
       value: string | string[] | LocationResponse,
       files?: File[]
     ) => {
-      let responseData: ResponseData;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let responseData: any;
 
       if (
         typeof value === "object" &&
@@ -249,9 +341,8 @@ export function usePerformInspection(inspection: Inspection) {
         return {
           ...prev,
           [question.id]: {
+            ...existing,
             ...responseData,
-            inspector_notes:
-              existing.inspector_notes || responseData.inspector_notes,
           },
         };
       });
@@ -331,6 +422,8 @@ export function usePerformInspection(inspection: Inspection) {
       const res = await pauseInspection(inspection_id);
       if (res?.success) {
         toast.success(res.success);
+        setUnsavedChanges({});
+        clearSessionStorage();
         // reflect in global list
         if (res?.data) {
           const updated = res.data as Inspection;
@@ -363,6 +456,8 @@ export function usePerformInspection(inspection: Inspection) {
     try {
       const res = await completeInspection(currentInspection.id);
       toast.success(res.success);
+      setUnsavedChanges({});
+      clearSessionStorage();
       // reflect in global list if backend returns data
       if (res?.data) {
         const updated = res.data as Inspection;
@@ -631,5 +726,8 @@ export function usePerformInspection(inspection: Inspection) {
     setFileAttachments,
     users,
     setUsers,
+    isCreateActionDialogOpen,
+    setIsCreateActionDialogOpen,
+    handleActionCreated,
   };
 }

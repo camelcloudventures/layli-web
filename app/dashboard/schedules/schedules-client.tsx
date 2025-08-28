@@ -6,10 +6,16 @@ import { SchedulesList } from "./components/schedules-list";
 import { useAuditTemplates } from "@/hooks/use-audit-templates";
 
 export function SchedulesClient() {
-  const { schedules } = useSchedules();
-  const { users } = useUsers();
-  const { templates } = useAuditTemplates();
-  const { sites } = useSites();
+  const { schedules, isLoading: isLoadingSchedules } = useSchedules();
+  const { users, isLoading: isLoadingUsers } = useUsers();
+  const { templates, isLoading: isLoadingTemplates } = useAuditTemplates();
+  const { sites, isLoading: isLoadingSites } = useSites();
+
+  const isLoading =
+    isLoadingSchedules ||
+    isLoadingUsers ||
+    isLoadingTemplates ||
+    isLoadingSites;
 
   return (
     <SchedulesList
@@ -17,6 +23,7 @@ export function SchedulesClient() {
       users={users || []}
       templates={templates || []}
       sites={sites || []}
+      isLoading={isLoading}
     />
   );
 }

@@ -14,8 +14,6 @@ import { UserManagement } from "./components/user-management";
 import { UserPreferences } from "./components/user-preferences";
 import { UserProfileForm } from "./components/user-profile-form";
 
-export const dynamic = "force-dynamic";
-
 export function SettingsClient() {
   const { invites } = useInvites();
 

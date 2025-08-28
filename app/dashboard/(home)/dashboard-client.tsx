@@ -41,7 +41,8 @@ export function DashboardClient() {
   const { issuesAnalytics: issues } = useIssuesAnalytics();
   const { actionsAnalytics: actions } = useActionsAnalytics();
   const { inspectionsAnalytics: inspections } = useInspectionsAnalytics();
-  const { inspections: inspectionsData } = useInspections();
+  const { inspections: inspectionsData, isLoading: inspectionsDataLoading } =
+    useInspections();
   const { issues: issuesData, isLoading: issuesDataLoading } = useIssues();
 
   console.log("notifications are", notifications);
@@ -276,7 +277,6 @@ export function DashboardClient() {
     },
   };
 
-  console.log(notifications);
   return (
     <div className="flex flex-col gap-6 w-full">
       <TopBar user={mockUser} />
@@ -301,12 +301,16 @@ export function DashboardClient() {
                 : ""}
             </CardDescription>
           </div>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/dashboard/inspections">View all</Link>
-          </Button>
+          {recentInspections.length > 0 && (
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/dashboard/inspections">View all</Link>
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
-          {recentInspections.length > 0 ? (
+          {inspectionsDataLoading ? (
+            <InspectionCardSkeleton />
+          ) : recentInspections.length > 0 ? (
             <div className="space-y-4">
               {recentInspections.map((inspection) => (
                 <AuditItem
@@ -320,13 +324,17 @@ export function DashboardClient() {
               ))}
             </div>
           ) : (
-            <InspectionCardSkeleton />
+            <div className="text-center py-12">
+              <p className="text-gray-500">No recent inspections found</p>
+            </div>
           )}
         </CardContent>
         <CardFooter>
-          <Button variant="ghost" size="sm" className="w-full" asChild>
-            <Link href="/dashboard/inspections">View all inspections</Link>
-          </Button>
+          {recentInspections.length > 0 && (
+            <Button variant="ghost" size="sm" className="w-full" asChild>
+              <Link href="/dashboard/inspections">View all inspections</Link>
+            </Button>
+          )}
         </CardFooter>
       </Card>
     </div>

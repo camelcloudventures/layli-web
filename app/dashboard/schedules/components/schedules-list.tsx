@@ -39,6 +39,7 @@ interface SchedulesListProps {
   users: UserOption[];
   templates: TemplateOption[];
   sites: SiteOption[];
+  isLoading: boolean;
 }
 
 export function SchedulesList({
@@ -46,6 +47,7 @@ export function SchedulesList({
   users,
   templates,
   sites,
+  isLoading,
 }: SchedulesListProps) {
   const { clearSchedules, setSchedules } = useSchedulesStore();
   console.log("schedules", schedules);
@@ -113,6 +115,7 @@ export function SchedulesList({
   return (
     <div className="space-y-6">
       <ScheduleHeader onCreateClick={() => setOpen(true)} />
+      {isLoading && <SchedulesLoadingSkeleton />}
       <HasPermission permission={Permission.MANAGE_SCHEDULES}>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[700px] overflow-hidden hover:overflow-y-auto scrollbar-none p-6">
@@ -168,7 +171,9 @@ export function SchedulesList({
 
       <div className="space-y-4">
         {filteredSchedules?.length === 0 ? (
-          <SchedulesLoadingSkeleton />
+          <div className="text-center py-12">
+            <p className="text-gray-500">No schedules found</p>
+          </div>
         ) : (
           filteredSchedules?.map((schedule) => (
             <ScheduleCard

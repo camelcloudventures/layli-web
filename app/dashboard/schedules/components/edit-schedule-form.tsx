@@ -200,19 +200,19 @@ export function EditScheduleForm({
           <MultiSelect
             name="assignee_ids"
             required
-            value={selectedAssignees.map((a) => a.assignee.id)}
+            value={selectedAssignees?.map((a) => a?.assignee?.id)}
             onValueChange={(ids: string[]) => {
-              const selectedUsers = users.filter((u) =>
-                ids.includes(u.user.id)
+              const selectedUsers = users?.filter((u) =>
+                ids.includes(u?.user?.id)
               );
               setSelectedAssignees(
-                selectedUsers.map((u) => ({ assignee: u.user }))
+                selectedUsers?.map((u) => ({ assignee: u?.user }))
               );
             }}
             placeholder="Select assignees"
-            options={users.map((user) => ({
-              value: user.user.id,
-              label: user.user.full_name,
+            options={users?.map((user) => ({
+              value: user?.user?.id,
+              label: user?.user?.full_name,
             }))}
           />
 

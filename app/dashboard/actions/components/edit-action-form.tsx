@@ -71,10 +71,10 @@ export function EditActionForm({
 
     // Convert assignee IDs to assignee objects
     const assignees = allOptions
-      .filter((option) => selectedAssigneeIds.includes(option.value))
+      ?.filter((option) => selectedAssigneeIds.includes(option.value))
       .map((option) => ({
-        id: option.value,
-        full_name: option.label,
+        id: option?.value,
+        full_name: option?.label,
         email: "", // We don't have email in the options
         role: "user", // Default role
       }));
@@ -118,15 +118,15 @@ export function EditActionForm({
   };
 
   // Create user options from users array
-  const userOptions = users.map((user) => ({
-    value: user.user.id,
-    label: user.user.full_name,
+  const userOptions = users?.map((user) => ({
+    value: user?.user?.id,
+    label: user?.user?.full_name,
   }));
 
   // Add assignees that might not be in the users array
-  const assigneeOptions = action.assignees.map((assignee) => ({
-    value: assignee.id,
-    label: assignee.full_name,
+  const assigneeOptions = action?.assignees?.map((assignee) => ({
+    value: assignee?.id,
+    label: assignee?.full_name,
   }));
 
   // Combine and deduplicate options

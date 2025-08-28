@@ -224,18 +224,18 @@ export default function ReportIssue({
           className="mb-4"
           name="assignee_ids"
           required
-          value={selectedAssignees.map((assignee) => assignee.id)}
+          value={selectedAssignees?.map((assignee) => assignee?.id)}
           onValueChange={(value) =>
             setSelectedAssignees(
               users
-                .filter((user) => value.includes(user.user.id))
-                .map((user) => user.user)
+                ?.filter((user) => value.includes(user?.user?.id))
+                .map((user) => user?.user)
             )
           }
           placeholder="Select assignees"
-          options={users.map((user) => ({
-            value: user.user.id,
-            label: user.user.full_name,
+          options={users?.map((user) => ({
+            value: user?.user?.id,
+            label: user?.user?.full_name,
           }))}
         />
       </div>

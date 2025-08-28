@@ -41,9 +41,6 @@ export function CreateInspectionForm({ sites, users, templates }: Props) {
   const [participateInInspection, setParticipateInInspection] = useState(false);
   const isSupervisor = user?.role === "supervisor";
 
-  console.log("assignedTo", assignedTo);
-  console.log("users", users);
-
   const [selectedTemplate, setSelectedTemplate] =
     useState<AuditTemplate | null>(null);
   console.log("selectedTemplate", selectedTemplate);
@@ -54,12 +51,12 @@ export function CreateInspectionForm({ sites, users, templates }: Props) {
       // Add current user to assignees if participating
       const finalAssignees: Assignees[] = [...assignedTo];
       if (participateInInspection && user?.id) {
-        if (!finalAssignees.some((assignee) => assignee.id === user.id)) {
+        if (!finalAssignees.some((assignee) => assignee?.id === user?.id)) {
           finalAssignees.push({
-            id: user.id,
-            full_name: user.full_name || "",
-            role: user.role || "",
-            email: user.email || "",
+            id: user?.id,
+            full_name: user?.full_name || "",
+            role: user?.role || "",
+            email: user?.email || "",
           });
         }
       }
@@ -150,18 +147,18 @@ export function CreateInspectionForm({ sites, users, templates }: Props) {
                 <MultiSelect
                   name="assignee_ids"
                   required
-                  value={assignedTo.map((assignee) => assignee.id)}
+                  value={assignedTo?.map((assignee) => assignee?.id)}
                   onValueChange={(selectedUserIds) => {
                     // Transform the selected user IDs to Assignees format
                     const transformedAssignees: Assignees[] = selectedUserIds
-                      .map((userId) => {
-                        const user = users.find((u) => u.user.id === userId);
+                      ?.map((userId) => {
+                        const user = users?.find((u) => u?.user?.id === userId);
                         if (user) {
                           return {
-                            id: user.user.id,
-                            full_name: user.user.full_name,
-                            role: user.user.role,
-                            email: user.user.email,
+                            id: user?.user?.id,
+                            full_name: user?.user?.full_name,
+                            role: user?.user?.role,
+                            email: user?.user?.email,
                           };
                         }
                         return null;
@@ -173,9 +170,9 @@ export function CreateInspectionForm({ sites, users, templates }: Props) {
                     setAssignedTo(transformedAssignees);
                   }}
                   placeholder="Select assignees"
-                  options={users.map((user) => ({
-                    value: user.user.id,
-                    label: user.user.full_name,
+                  options={users?.map((user) => ({
+                    value: user?.user?.id,
+                    label: user?.user?.full_name,
                   }))}
                 />
               </span>

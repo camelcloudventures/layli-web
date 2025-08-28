@@ -12,11 +12,11 @@ export default function IssuesClient() {
   const { issues, isLoading: isLoadingIssues } = useIssues();
 
   const assignees =
-    users.map((user) => ({
-      id: user.user.id,
-      full_name: user.user.full_name,
-      email: user.user.email,
-      role: user.user.role,
+    users?.map((user) => ({
+      id: user?.user?.id,
+      full_name: user?.user?.full_name,
+      email: user?.user?.email,
+      role: user?.user?.role,
     })) || [];
 
   return (

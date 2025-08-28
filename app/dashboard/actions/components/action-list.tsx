@@ -8,10 +8,11 @@ import { ActionListSkeleton } from "./action-list-skeleton";
 interface ActionListProps {
   actions: Action[];
   columns: ColumnDef<Action>[];
+  isLoading: boolean;
 }
 
-export function ActionList({ actions, columns }: ActionListProps) {
-  if (actions.length === 0) {
+export function ActionList({ actions, columns, isLoading }: ActionListProps) {
+  if (isLoading) {
     return <ActionListSkeleton />;
   }
   return <DataTable columns={columns} data={actions} border />;

@@ -1,40 +1,42 @@
-'use client'
-import { useEffect, useState } from 'react'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import SubmitBtn from '@/components/custom/submit-btn'
-import { toast } from 'sonner'
-import { acceptInvite } from '../../actions/actions'
-import { useSearchParams } from 'next/navigation'
+"use client";
+import { useEffect, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import SubmitBtn from "@/components/custom/submit-btn";
+import { toast } from "sonner";
+import { acceptInvite } from "../../actions/actions";
+import { useSearchParams } from "next/navigation";
 
 export default function InviteForm() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [fullUrl, setFullUrl] = useState('')
+  const [isLoading, setIsLoading] = useState(false);
+  const [fullUrl, setFullUrl] = useState("");
   useEffect(() => {
-    const fullUrl = window.location.href
-    setFullUrl(fullUrl)
-  }, [])
+    const fullUrl = window.location.href;
+    setFullUrl(fullUrl);
+  }, []);
 
-  const params = useSearchParams()
-  const role = params.get('role')
-  const token = params.get('token')
-  const orgId = params.get('org_id')
+  const params = useSearchParams();
+  const role = params.get("role");
+  const token = params.get("token");
+  const orgId = params.get("org_id");
 
   if (!token || !role) {
-    return <div>Missing invite token or role</div>
+    return <div>Missing invite token or role</div>;
   }
 
   async function handleSubmit(formData: FormData) {
-    setIsLoading(true)
-    const res = await acceptInvite(formData, fullUrl, role!, token!, orgId!)
-    setIsLoading(false)
+    setIsLoading(true);
+    const res = await acceptInvite(formData, fullUrl, role!, token!, orgId!);
+    console.log("=============THIS FUNCTION  WAS CALLED=============");
+    console.log("res", res);
+    setIsLoading(false);
 
-    if (res?.error) toast.error(res.error)
+    if (res?.error) toast.error(res.error);
     if (res?.success) {
-      toast.success(res.success)
+      toast.success(res.success);
       setTimeout(() => {
-        window.location.href = '/dashboard/settings'
-      }, 1000)
+        window.location.href = "/dashboard/settings";
+      }, 1000);
     }
   }
 
@@ -81,11 +83,11 @@ export default function InviteForm() {
         />
       </div>
       <SubmitBtn
-        label={isLoading ? 'Submitting...' : 'Accept Invite'}
+        label={isLoading ? "Submitting..." : "Accept Invite"}
         variant="default"
         className="w-full"
         isDisabled={isLoading}
       />
     </form>
-  )
+  );
 }

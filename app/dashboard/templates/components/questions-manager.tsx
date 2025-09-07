@@ -31,16 +31,19 @@ import type {
 } from "@/lib/types/audit-types";
 import { ResponseOptionsManager } from "@/app/dashboard/templates/components/response-options-manager";
 import { ImageUpload } from "@/app/dashboard/templates/components/image-upload";
+import { reflowTemplateByA4 } from "@/app/dashboard/templates/utils/a4-pagination";
 
 interface QuestionsManagerProps {
   template: AuditTemplate;
   setTemplate: Dispatch<SetStateAction<AuditTemplate>>;
   page: Page;
   section: Section;
-  //eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleQuestionAddition: (sectionId: string, newQuestion: any) => void;
-  //eslint-disable-next-line @typescript-eslint/no-explicit-any
-  questionsForThisPage: any[];
+  handleQuestionAddition: (
+    pageId: string,
+    sectionId: string,
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    newQuestion: any
+  ) => void;
 }
 
 export function QuestionsManager({
@@ -49,14 +52,11 @@ export function QuestionsManager({
   page,
   section,
   handleQuestionAddition,
-  questionsForThisPage,
 }: QuestionsManagerProps) {
   const [expandedQuestions, setExpandedQuestions] = useState<string[]>([]);
 
-  // Filter questions for this section that belong to the current page
-  const questionsForThisSectionOnThisPage = questionsForThisPage.filter(
-    (q) => q.sectionId === section.id
-  );
+  // For real pages, render the questions that actually belong to this section on this page
+  const questionsForThisSectionOnThisPage = section.questions;
 
   const addNewQuestion = () => {
     const newQuestion: NewQuestion = {
@@ -72,7 +72,7 @@ export function QuestionsManager({
     };
 
     // Use the new question addition logic
-    handleQuestionAddition(section.id, newQuestion);
+    handleQuestionAddition(page.id, section.id, newQuestion);
   };
 
   const updateQuestion = (
@@ -116,7 +116,8 @@ export function QuestionsManager({
             ].response_options = [];
           }
 
-          setTemplate(updatedTemplate);
+          const reflowed = reflowTemplateByA4(updatedTemplate);
+          setTemplate(reflowed);
         }
       }
     }
@@ -134,7 +135,8 @@ export function QuestionsManager({
           updatedTemplate.pages[pageIndex].sections[
             sectionIndex
           ].questions.filter((q) => q.id !== questionId);
-        setTemplate(updatedTemplate);
+        const reflowed = reflowTemplateByA4(updatedTemplate);
+        setTemplate(reflowed);
       }
     }
   };
@@ -165,7 +167,8 @@ export function QuestionsManager({
             question.ordinal = index + 1;
           });
 
-          setTemplate(updatedTemplate);
+          const reflowed = reflowTemplateByA4(updatedTemplate);
+          setTemplate(reflowed);
         }
       }
     }
@@ -197,7 +200,8 @@ export function QuestionsManager({
             question.ordinal = index + 1;
           });
 
-          setTemplate(updatedTemplate);
+          const reflowed = reflowTemplateByA4(updatedTemplate);
+          setTemplate(reflowed);
         }
       }
     }
@@ -236,8 +240,7 @@ export function QuestionsManager({
         </div>
       ) : (
         <div className="space-y-4">
-          {questionsForThisSectionOnThisPage.map((questionData) => {
-            const question = questionData.question;
+          {questionsForThisSectionOnThisPage.map((question) => {
             return (
               <Card
                 key={question.id}
@@ -318,7 +321,7 @@ export function QuestionsManager({
                           Field Type
                         </Label>
                         <Select
-                          defaultValue={question.field_type}
+                          value={question.field_type}
                           onValueChange={(value) =>
                             updateQuestion(
                               question.id,
@@ -513,7 +516,7 @@ export function QuestionsManager({
                             Person
                           </Label>
                           <Select
-                            defaultValue={question.response_options?.[0]?.id}
+                            value={question.response_options?.[0]?.id}
                             onValueChange={(value) =>
                               updateQuestion(
                                 question.id,

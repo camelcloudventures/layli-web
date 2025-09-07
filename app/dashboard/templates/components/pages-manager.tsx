@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { GripVertical, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
-import type { AuditTemplate, Page, Question } from "@/lib/types/audit-types";
+import type { AuditTemplate, Page } from "@/lib/types/audit-types";
 import { SectionsManager } from "@/app/dashboard/templates/components/sections-manager";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { reflowTemplateByA4 } from "@/app/dashboard/templates/utils/a4-pagination";
 
 interface PagesManagerProps {
   template: AuditTemplate;
@@ -104,165 +105,53 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
     setActivePage(pageId);
   };
 
-  // Step 2: Global Question Counting Logic
-  const QUESTIONS_PER_PAGE = 6;
+  const handleQuestionAddition = (
+    pageId: string,
+    sectionId: string,
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    newQuestion: any
+  ) => {
+    const draft = JSON.parse(JSON.stringify(template)) as AuditTemplate;
 
-  // Flatten all questions from all pages with their global positions
-  const getAllQuestionsWithPositions = (currentTemplate: AuditTemplate) => {
-    const allQuestions: Array<{
-      //eslint-disable-next-line @typescript-eslint/no-explicit-any
-      question: any;
-      globalPosition: number;
-      pageId: string;
-      sectionId: string;
-      currentPageId: string;
-    }> = [];
-
-    let globalPosition = 1;
-
-    currentTemplate.pages.forEach((page) => {
-      page.sections.forEach((section) => {
-        section.questions.forEach((question) => {
-          allQuestions.push({
-            question,
-            globalPosition,
-            pageId: page.id,
-            sectionId: section.id,
-            currentPageId: page.id,
-          });
-          globalPosition++;
-        });
+    // Find the last fragment of this section across pages by traversal order
+    let lastFragment: { pageIndex: number; sectionIndex: number } | null = null;
+    draft.pages.forEach((p, pi) => {
+      p.sections.forEach((s, si) => {
+        if (s.id === sectionId)
+          lastFragment = { pageIndex: pi, sectionIndex: si };
       });
     });
 
-    return allQuestions;
-  };
-
-  // Calculate which page a question should be on based on its global position
-  //eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const getTargetPageForPosition = (globalPosition: number) => {
-    const targetPageIndex = Math.ceil(globalPosition / QUESTIONS_PER_PAGE) - 1;
-    return template.pages[targetPageIndex]?.id || null;
-  };
-
-  // Get questions that should be on a specific page
-  const getQuestionsForPage = (pageId: string) => {
-    const allQuestions = getAllQuestionsWithPositions(template);
-    const pageIndex = template.pages.findIndex((p) => p.id === pageId);
-    if (pageIndex === -1) return [];
-
-    const startPosition = pageIndex * QUESTIONS_PER_PAGE + 1;
-    const endPosition = (pageIndex + 1) * QUESTIONS_PER_PAGE;
-
-    return allQuestions.filter(
-      (q) =>
-        q.globalPosition >= startPosition && q.globalPosition <= endPosition
-    );
-  };
-
-  // Get the target page for a new question
-  //eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const getTargetPageForNewQuestion = () => {
-    const allQuestions = getAllQuestionsWithPositions(template);
-    const totalQuestions = allQuestions.length;
-    const targetPageIndex = Math.floor(totalQuestions / QUESTIONS_PER_PAGE);
-
-    // If we need a new page
-    if (targetPageIndex >= template.pages.length) {
-      return null; // Indicates new page needed
-    }
-
-    return template.pages[targetPageIndex]?.id || null;
-  };
-
-  // Current page info
-  const currentPage = template.pages.find((p) => p.id === activePage);
-  const currentPageQuestions = currentPage
-    ? getQuestionsForPage(currentPage.id)
-    : [];
-  const totalGlobalQuestions = getAllQuestionsWithPositions(template).length;
-
-  console.log("Total global questions:", totalGlobalQuestions);
-  console.log("Current page questions:", currentPageQuestions.length);
-  console.log("Questions per page limit:", QUESTIONS_PER_PAGE);
-
-  // Step 3: Page Creation Logic
-  //eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const createNewPage = () => {
-    const newPageId = Date.now().toString();
-    const newPage = {
-      id: newPageId,
-      template_id: template.id,
-      title: `Page ${template.pages.length + 1}`,
-      description: "",
-      ordinal: template.pages.length + 1,
-      sections: [],
-      created_at: new Date().toISOString(),
-    };
-
-    const updatedTemplate = {
-      ...template,
-      pages: [...template.pages, newPage],
-    };
-
-    setTemplate(updatedTemplate);
-    setActivePage(newPageId); // Navigate to the new page
-    return newPageId;
-  };
-
-  //eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleQuestionAddition = (sectionId: string, newQuestion: any) => {
-    const updatedTemplate = JSON.parse(JSON.stringify(template));
-
-    // Find the section and add the new question to it, regardless of page
-    let sectionFound = false;
-    for (const page of updatedTemplate.pages) {
-      for (const section of page.sections) {
-        if (section.id === sectionId) {
-          section.questions.push({
-            ...newQuestion,
-            id: Date.now().toString(),
-            section_id: section.id,
-            ordinal: section.questions.length + 1,
-            created_at: new Date().toISOString(),
-          });
-          sectionFound = true;
-          break;
-        }
-      }
-      if (sectionFound) break;
-    }
-
-    if (!sectionFound) {
+    if (!lastFragment) {
       console.error("Section not found!");
       return;
     }
 
-    // After adding the question, check if a new page is needed.
-    // We need to pass the modified template to the counting function.
-    const allQuestions = getAllQuestionsWithPositions(updatedTemplate);
-    const totalQuestions = allQuestions.length;
-    const requiredPages = Math.ceil(totalQuestions / QUESTIONS_PER_PAGE) || 1;
+    const qId = Date.now().toString();
+    const { pageIndex, sectionIndex } = lastFragment;
+    draft.pages[pageIndex].sections[sectionIndex].questions.push({
+      ...newQuestion,
+      id: qId,
+      section_id: sectionId,
+      page_id: draft.pages[pageIndex].id,
+      ordinal:
+        draft.pages[pageIndex].sections[sectionIndex].questions.length + 1,
+      created_at: new Date().toISOString(),
+    });
 
-    let newPageId = null;
-    if (requiredPages > updatedTemplate.pages.length) {
-      newPageId = Date.now().toString();
-      const newPage = {
-        id: newPageId,
-        template_id: updatedTemplate.id,
-        title: `Page ${updatedTemplate.pages.length + 1}`,
-        description: "",
-        ordinal: updatedTemplate.pages.length + 1,
-        sections: [],
-        created_at: new Date().toISOString(),
-      };
-      updatedTemplate.pages.push(newPage);
-    }
+    // Reflow the entire template using A4 layout rules
+    const reflowed = reflowTemplateByA4(draft);
+    setTemplate(reflowed);
 
-    setTemplate(updatedTemplate);
-
-    if (newPageId) {
-      setActivePage(newPageId);
+    // Find which page now contains the new question and activate it
+    for (const p of reflowed.pages) {
+      for (const s of p.sections) {
+        if (s.id !== sectionId) continue;
+        if (s.questions.some((q) => q.id === qId)) {
+          setActivePage(p.id);
+          return;
+        }
+      }
     }
   };
 
@@ -339,8 +228,6 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
                 template={template}
                 setTemplate={setTemplate}
                 handleQuestionAddition={handleQuestionAddition}
-                //@ts-expect-error -e9
-                getQuestionsForPage={getQuestionsForPage}
               />
             ) : (
               <Alert>
@@ -359,9 +246,12 @@ interface PageEditorProps {
   updatePage: (pageId: string, field: keyof Page, value: string) => void;
   template: AuditTemplate;
   setTemplate: Dispatch<SetStateAction<AuditTemplate>>;
-  //eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleQuestionAddition: (sectionId: string, newQuestion: any) => void;
-  getQuestionsForPage: (pageId: string) => Question[];
+  handleQuestionAddition: (
+    pageId: string,
+    sectionId: string,
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    newQuestion: any
+  ) => void;
 }
 
 function PageEditor({
@@ -370,7 +260,6 @@ function PageEditor({
   template,
   setTemplate,
   handleQuestionAddition,
-  getQuestionsForPage,
 }: PageEditorProps) {
   return (
     <Card>
@@ -409,7 +298,6 @@ function PageEditor({
             setTemplate={setTemplate}
             page={page}
             handleQuestionAddition={handleQuestionAddition}
-            questionsForThisPage={getQuestionsForPage(page.id)}
           />
         </div>
       </CardContent>

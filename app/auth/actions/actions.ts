@@ -70,6 +70,7 @@ export async function signIn(formData: FormData) {
       return { error: signInError.message };
     }
 
+    //Query the profile table to get the last_active_organizatio_id  and store this id in the frontend and use to query for any data
     const { error: setSessionError } = await supabase.auth.setSession({
       access_token: signInData.session?.access_token,
       refresh_token: signInData.session?.refresh_token,

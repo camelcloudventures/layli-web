@@ -24,8 +24,8 @@ import { AuditTemplate } from "@/lib/types/audit-types";
 import { omit } from "lodash";
 import SubmitBtn from "@/components/custom/submit-btn";
 import { getPreloadedQuestions } from "@/components/template-cover-page/template-cover-page";
-import { Question, Section } from "@/lib/types/audit-types";
 import { useTemplatesStore } from "@/store/templates";
+import { reflowTemplateByA4 } from "@/app/dashboard/templates/utils/a4-pagination";
 
 export default function CreateAuditForm() {
   const router = useRouter();
@@ -73,86 +73,7 @@ export default function CreateAuditForm() {
   const reorganizeTemplateForPreview = (
     originalTemplate: AuditTemplate
   ): AuditTemplate => {
-    const QUESTIONS_PER_PAGE = 6;
-
-    // Deep copy to avoid modifying the original state during calculations
-    const templateCopy = JSON.parse(
-      JSON.stringify(originalTemplate)
-    ) as AuditTemplate;
-
-    // 1. Gather all questions from the template into a single, ordered list.
-    const allQuestions: { question: Question; originalSection: Section }[] = [];
-    templateCopy.pages.forEach((page) => {
-      page.sections.forEach((section) => {
-        section.questions.forEach((question) => {
-          allQuestions.push({ question, originalSection: section });
-        });
-      });
-    });
-
-    // 2. Create a new, reorganized template.
-    const reorganizedTemplate: AuditTemplate = {
-      ...templateCopy,
-      pages: [],
-    };
-
-    if (allQuestions.length === 0 && templateCopy.pages.length > 0) {
-      // If there are no questions but there are pages with empty sections, preserve them.
-      return templateCopy;
-    }
-
-    // 3. Distribute questions into new pages.
-    for (let i = 0; i < allQuestions.length; i++) {
-      const pageIndex = Math.floor(i / QUESTIONS_PER_PAGE);
-      const { question, originalSection } = allQuestions[i];
-
-      // Create a new page if it doesn't exist yet.
-      if (!reorganizedTemplate.pages[pageIndex]) {
-        reorganizedTemplate.pages[pageIndex] = {
-          id: `preview-page-${pageIndex + 1}`,
-          template_id: templateCopy.id,
-          title: `Page ${pageIndex + 1}`,
-          description: templateCopy.pages[pageIndex]?.description || "", // Carry over original page description if it exists
-          ordinal: pageIndex + 1,
-          sections: [],
-          created_at: new Date().toISOString(),
-        };
-      }
-
-      const currentPage = reorganizedTemplate.pages[pageIndex];
-
-      // Find or create the section on the new page.
-      let targetSection = currentPage.sections.find(
-        (s) => s.id === originalSection.id
-      );
-
-      if (!targetSection) {
-        targetSection = {
-          ...originalSection,
-          questions: [], // Start with an empty question list for this page
-          page_id: currentPage.id,
-        };
-        currentPage.sections.push(targetSection);
-      }
-
-      // Add the question to the section on the correct page.
-      targetSection.questions.push(question);
-    }
-
-    // If there are no questions at all, ensure there is at least one page.
-    if (reorganizedTemplate.pages.length === 0) {
-      reorganizedTemplate.pages.push({
-        id: "preview-page-1",
-        template_id: templateCopy.id,
-        title: "Page 1",
-        description: "",
-        ordinal: 1,
-        sections: [],
-        created_at: new Date().toISOString(),
-      });
-    }
-
-    return reorganizedTemplate;
+    return reflowTemplateByA4(originalTemplate);
   };
 
   function handleInputChange(

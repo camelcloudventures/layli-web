@@ -25,15 +25,17 @@ import type {
   NewSection,
 } from "@/lib/types/audit-types";
 import { QuestionsManager } from "@/app/dashboard/templates/components/questions-manager";
+import { reflowTemplateByA4 } from "@/app/dashboard/templates/utils/a4-pagination";
 
 interface SectionsManagerProps {
   template: AuditTemplate;
   setTemplate: Dispatch<SetStateAction<AuditTemplate>>;
   page: Page;
-  //eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleQuestionAddition: (sectionId: string, newQuestion: any) => void;
-  //eslint-disable-next-line @typescript-eslint/no-explicit-any
-  questionsForThisPage: any[];
+  handleQuestionAddition: (
+    pageId: string,
+    sectionId: string,
+    newQuestion: NewSection["questions"][number]
+  ) => void;
 }
 
 export function SectionsManager({
@@ -41,27 +43,10 @@ export function SectionsManager({
   setTemplate,
   page,
   handleQuestionAddition,
-  questionsForThisPage,
 }: SectionsManagerProps) {
   const [openSections, setOpenSections] = useState<string[]>([]);
 
-  const sectionsOnThisPage = template.pages
-    .flatMap((p) => p.sections)
-    .filter((section) =>
-      questionsForThisPage.some((q) => q.sectionId === section.id)
-    );
-
-  // Also include empty sections that belong to the current page.
-  const emptySectionsOnThisPage =
-    template.pages
-      .find((p) => p.id === page.id)
-      ?.sections.filter((s) => s.questions.length === 0) || [];
-
-  const combinedSections = [...sectionsOnThisPage, ...emptySectionsOnThisPage];
-
-  const uniqueSectionsOnThisPage = [
-    ...new Map(combinedSections.map((s) => [s.id, s])).values(),
-  ];
+  const uniqueSectionsOnThisPage = page.sections;
 
   console.log("page", page);
 
@@ -86,7 +71,8 @@ export function SectionsManager({
         ...newSection,
         id: tempId,
       } as Section);
-      setTemplate(updatedTemplate);
+      const reflowed = reflowTemplateByA4(updatedTemplate);
+      setTemplate(reflowed);
       setOpenSections([...openSections, tempId]);
     }
   };
@@ -97,32 +83,22 @@ export function SectionsManager({
     value: string
   ) => {
     const updatedTemplate = { ...template };
-    const pageIndex = updatedTemplate.pages.findIndex((p) => p.id === page.id);
-
-    if (pageIndex !== -1) {
-      const sectionIndex = updatedTemplate.pages[pageIndex].sections.findIndex(
-        (section) => section.id === sectionId
+    // propagate update across all fragments of this section id
+    for (const p of updatedTemplate.pages) {
+      p.sections = p.sections.map((s) =>
+        s.id === sectionId ? { ...s, [field]: value } : s
       );
-
-      if (sectionIndex !== -1) {
-        updatedTemplate.pages[pageIndex].sections[sectionIndex] = {
-          ...updatedTemplate.pages[pageIndex].sections[sectionIndex],
-          [field]: value,
-        };
-        setTemplate(updatedTemplate);
-      }
     }
+    setTemplate(updatedTemplate);
   };
 
   const handleDeleteSection = (sectionId: string) => {
     const updatedTemplate = { ...template };
-    const pageIndex = updatedTemplate.pages.findIndex((p) => p.id === page.id);
-    if (pageIndex !== -1) {
-      updatedTemplate.pages[pageIndex].sections = updatedTemplate.pages[
-        pageIndex
-      ].sections.filter((s) => s.id !== sectionId);
-      setTemplate(updatedTemplate);
+    for (const p of updatedTemplate.pages) {
+      p.sections = p.sections.filter((s) => s.id !== sectionId);
     }
+    const reflowed = reflowTemplateByA4(updatedTemplate);
+    setTemplate(reflowed);
   };
 
   const moveSectionUp = (sectionId: string) => {
@@ -294,7 +270,6 @@ export function SectionsManager({
                     page={page}
                     section={section}
                     handleQuestionAddition={handleQuestionAddition}
-                    questionsForThisPage={questionsForThisPage}
                   />
                 </div>
               </AccordionContent>

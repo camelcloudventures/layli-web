@@ -29,7 +29,7 @@ export default async function EditInspectionPage({
       // @ts-expect-error - this is a temporary fix to get the inspection to display
       inspection={inspectionResult?.data}
       // @ts-expect-error - this is a temporary fix to get the sites to display
-      sites={sitesResult?.data}
+      sites={sitesResult}
     />
   );
 }

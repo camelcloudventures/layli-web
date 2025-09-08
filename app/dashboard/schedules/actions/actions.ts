@@ -33,6 +33,7 @@ export async function createSchedule(formData: FormData) {
     end_time,
     completion_policy,
   };
+  console.log("THE REAL SCHEDULE DATA", scheduleData);
 
   const res = await POST("/schedules/create", scheduleData, true, [
     "schedules",

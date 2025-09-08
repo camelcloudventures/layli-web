@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
+import { useState } from "react";
 
 import {
   Calendar,
@@ -10,36 +10,36 @@ import {
   User,
   Building,
   Play,
-} from 'lucide-react'
+} from "lucide-react";
 
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import type { Schedule } from '@/lib/types/schedule-types'
-import { getFrequencyColor, getStatusColor } from '@/utils/utils'
-import HasPermission from '../../components/has-permission'
-import { Permission } from '@/lib/auth/auth'
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import type { Schedule } from "@/lib/types/schedule-types";
+import { getFrequencyColor, getStatusColor } from "@/utils/utils";
+import HasPermission from "../../components/has-permission";
+import { Permission } from "@/lib/auth/auth";
 
 interface ScheduleDetailsProps {
-  schedule: Schedule
-  onStatusUpdate?: (status: string) => Promise<void>
+  schedule: Schedule;
+  onStatusUpdate?: (status: string) => Promise<void>;
 }
 
 export function ScheduleDetails({
   schedule,
   onStatusUpdate,
 }: ScheduleDetailsProps) {
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   const formatDate = (dateString: string | undefined) => {
-    if (!dateString) return 'Not set'
+    if (!dateString) return "Not set";
     try {
-      return new Date(dateString).toLocaleDateString()
+      return new Date(dateString).toLocaleDateString();
     } catch {
-      return 'Invalid date'
+      return "Invalid date";
     }
-  }
+  };
 
-  console.log('schedule details', schedule)
+  console.log("schedule details", schedule);
 
   return (
     <div className="space-y-5">
@@ -114,12 +114,14 @@ export function ScheduleDetails({
               </p>
               <div className="space-y-1 mt-0.5">
                 {schedule.assignees?.length > 0 ? (
-                  schedule.assignees.map((assigneeWrapper) => (
+                  schedule.assignees.map((assignee) => (
                     <p
-                      key={assigneeWrapper.assignee.id}
+                      // @ts-expect-error - assignees structure needs to be fixed
+                      key={assignee?.id}
                       className="text-sm font-medium text-foreground truncate"
                     >
-                      {assigneeWrapper.assignee.full_name}
+                      {/* @ts-expect-error - assignees structure needs to be fixed */}
+                      {assignee?.full_name}
                     </p>
                   ))
                 ) : (
@@ -138,7 +140,7 @@ export function ScheduleDetails({
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-muted-foreground">Site</p>
               <p className="text-sm font-medium text-foreground mt-0.5 truncate">
-                {schedule.site?.name || 'No site'}
+                {schedule.site?.name || "No site"}
               </p>
               {schedule.site?.address && (
                 <p className="text-xs text-muted-foreground mt-0.5 truncate">
@@ -157,7 +159,7 @@ export function ScheduleDetails({
                 Audit Template
               </p>
               <p className="text-sm font-medium text-foreground mt-0.5 truncate">
-                {schedule.template?.title || 'No template'}
+                {schedule.template?.title || "No template"}
               </p>
             </div>
           </div>
@@ -170,28 +172,28 @@ export function ScheduleDetails({
           <div className="flex items-center gap-3">
             <p className="text-sm font-medium text-muted-foreground">Status</p>
             <Badge
-              className={getStatusColor(schedule.status || '')}
+              className={getStatusColor(schedule.status || "")}
               variant="secondary"
             >
               {schedule.status
                 ? schedule.status.charAt(0).toUpperCase() +
                   schedule.status.slice(1)
-                : 'Not started'}
+                : "Not started"}
             </Badge>
           </div>
 
           <HasPermission permission={Permission.MANAGE_SCHEDULES}>
             {onStatusUpdate && (
               <div className="flex gap-2">
-                {schedule.status === 'active' && (
+                {schedule.status === "active" && (
                   <Button
                     variant="outline"
                     size="sm"
                     disabled={loading}
                     onClick={async () => {
-                      setLoading(true)
-                      await onStatusUpdate('paused')
-                      setLoading(false)
+                      setLoading(true);
+                      await onStatusUpdate("paused");
+                      setLoading(false);
                     }}
                     className="h-8 px-3"
                     aria-label="Pause Schedule"
@@ -212,15 +214,15 @@ export function ScheduleDetails({
                     )}
                   </Button>
                 )}
-                {schedule.status === 'paused' && (
+                {schedule.status === "paused" && (
                   <Button
                     variant="outline"
                     size="sm"
                     disabled={loading}
                     onClick={async () => {
-                      setLoading(true)
-                      await onStatusUpdate('active')
-                      setLoading(false)
+                      setLoading(true);
+                      await onStatusUpdate("active");
+                      setLoading(false);
                     }}
                     className="h-8 px-3"
                     aria-label="Resume Schedule"
@@ -244,5 +246,5 @@ export function ScheduleDetails({
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -92,8 +92,10 @@ export function CreateScheduleForm({
 
     // Set completion policy
     formData.set("completion_policy", completionPolicy);
+    console.log("THE REAL FORM DATA", formData);
 
     const res = await createSchedule(formData);
+    console.log("THE REAL RES DATA", res);
     if (res?.error) toast.error(res.error);
     else {
       toast.success(res?.success);

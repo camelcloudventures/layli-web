@@ -5,12 +5,8 @@ import type { SchedulesResponse, Schedule } from "@/lib/types/schedule-types";
 import { revalidateTag } from "next/cache";
 import { ActiveUser } from "@/lib/types";
 
-export async function getSchedules(
-  page: number
-): Promise<SchedulesResponse | null> {
-  return await GET<SchedulesResponse>(`/schedules/get?page=${page}`, [
-    "schedules",
-  ]);
+export async function getSchedules(): Promise<SchedulesResponse | null> {
+  return await GET<SchedulesResponse>(`/schedules/get`, ["schedules"]);
 }
 
 export async function createSchedule(formData: FormData) {

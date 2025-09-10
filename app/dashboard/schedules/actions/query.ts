@@ -26,11 +26,11 @@ export function useGetSites(enabled: boolean) {
   });
 }
 
-export function useGetSchedules(page: number, enabled: boolean) {
+export function useGetSchedules(enabled: boolean) {
   return useQuery({
-    queryKey: ["schedules", page],
+    queryKey: ["schedules"],
     queryFn: async () => {
-      return await getSchedules(page);
+      return await getSchedules();
     },
     enabled: enabled ?? true,
   });

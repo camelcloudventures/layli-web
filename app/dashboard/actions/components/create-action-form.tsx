@@ -45,7 +45,6 @@ export function CreateActionForm({
   questionId,
   inspectionId,
 }: CreateActionFormProps) {
-  console.log("SITES ARE -----------------===========!", sites);
   const { user } = useAuth();
   const { setActions } = useActionsStore();
   const [selectedAssignees, setSelectedAssignees] = useState<Assignee[]>([]);
@@ -99,6 +98,8 @@ export function CreateActionForm({
       selectedSite!,
       selectedAssignees
     );
+
+    console.log("RESULT!!!!!!!!===========!!!!!", result);
 
     if (result?.data?.data) {
       toast.success("Action created successfully");

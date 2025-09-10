@@ -19,6 +19,7 @@ export function useAuditTemplates() {
     isLoading,
     isError,
   } = useGetAuditTemplates(templates.length === 0);
+  console.log("fetchedAuditTemplates", fetchedAuditTemplates);
 
   console.log("error", isError);
   useEffect(() => {

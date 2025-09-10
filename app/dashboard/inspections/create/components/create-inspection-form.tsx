@@ -66,7 +66,8 @@ export function CreateInspectionForm({ sites, users, templates }: Props) {
           ? selectedTemplate.title
           : (formData.get("inspection-name") as string),
         description: `Inspection for ${
-          sites.find((s) => s.id === selectedLocation)?.name
+          // @ts-expect-error - sites.data structure needs to be fixed
+          sites?.data?.find((s) => s.id === selectedLocation)?.name
         }`,
         assignees: finalAssignees,
         site_id: selectedLocation,
@@ -131,7 +132,8 @@ export function CreateInspectionForm({ sites, users, templates }: Props) {
                     <SelectValue placeholder="Select location" />
                   </SelectTrigger>
                   <SelectContent className="w-full">
-                    {sites.map((location) => (
+                    {/* @ts-expect-error - sites.data structure needs to be fixed */}
+                    {sites?.data?.map((location) => (
                       <SelectItem key={location.id} value={String(location.id)}>
                         {location.name}
                       </SelectItem>

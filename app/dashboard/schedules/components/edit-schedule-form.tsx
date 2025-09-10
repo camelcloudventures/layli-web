@@ -20,7 +20,7 @@ import type {
   SiteOption,
   UserOption,
 } from "../types/schedule-form-types";
-import type { Schedule, Assignee } from "@/lib/types/schedule-types";
+import type { Schedule } from "@/lib/types/schedule-types";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { useSchedulesStore } from "@/store/schedules";
 
@@ -42,8 +42,8 @@ export function EditScheduleForm({
   onCancel,
 }: EditScheduleFormProps) {
   const { setSchedules } = useSchedulesStore();
-
-  const [selectedAssignees, setSelectedAssignees] = useState<Assignee[]>(
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [selectedAssignees, setSelectedAssignees] = useState<any[]>(
     schedule.assignees || []
   );
   const [completionPolicy, setCompletionPolicy] = useState<"any" | "all">(
@@ -93,10 +93,10 @@ export function EditScheduleForm({
 
     // Flatten the assignee objects to match the expected structure
     const flattenedAssignees = selectedAssignees.map((a) => ({
-      id: a.assignee.id,
-      role: a.assignee.role || "inspector",
-      full_name: a.assignee.full_name,
-      email: a.assignee.email,
+      id: a.id,
+      role: a.role || "inspector",
+      full_name: a.full_name,
+      email: a.email,
     }));
 
     formData.append("assignees", JSON.stringify(flattenedAssignees));
@@ -118,7 +118,7 @@ export function EditScheduleForm({
       data?: Schedule;
     };
 
-    console.log("err", res.error);
+    console.log("err", res);
 
     console.log("res", res);
     if (res?.error) toast.error(res.error);
@@ -205,15 +205,12 @@ export function EditScheduleForm({
           <MultiSelect
             name="assignee_ids"
             required
-            // @ts-expect-error - assignees structure needs to be fixed
             value={selectedAssignees?.map((a) => a?.id)}
             onValueChange={(ids: string[]) => {
               const selectedUsers = users?.filter((u) =>
                 ids.includes(u?.user?.id)
               );
-              setSelectedAssignees(
-                selectedUsers?.map((u) => ({ assignee: u?.user }))
-              );
+              setSelectedAssignees(selectedUsers?.map((u) => u?.user));
             }}
             placeholder="Select assignees"
             options={users?.map((user) => ({
@@ -223,13 +220,11 @@ export function EditScheduleForm({
           />
 
           <div className="flex flex-wrap gap-2 mt-2">
-            {selectedAssignees.map((assignee) => (
+            {selectedAssignees.map((assignee, i) => (
               <span
-                // @ts-expect-error - assignees structure needs to be fixed
-                key={assignee?.id}
+                key={i}
                 className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs"
               >
-                {/* @ts-expect-error - assignees structure needs to be fixed */}
                 {assignee?.full_name}
               </span>
             ))}

@@ -13,7 +13,7 @@ export function useSchedules() {
 
   console.log("schd", schedules);
   const enabled = !schedules || schedules.length === 0;
-  const { data: fetchedSchedules, isLoading } = useGetSchedules(1, enabled);
+  const { data: fetchedSchedules, isLoading } = useGetSchedules(enabled);
 
   useEffect(() => {
     if (fetchedSchedules?.data && schedules.length === 0) {

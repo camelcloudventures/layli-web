@@ -6,7 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { GripVertical, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
+import {
+  GripVertical,
+  ChevronDown,
+  ChevronUp,
+  Trash2,
+  PlusCircle,
+} from "lucide-react";
 import type { AuditTemplate, Page } from "@/lib/types/audit-types";
 import { SectionsManager } from "@/app/dashboard/templates/components/sections-manager";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -75,6 +81,25 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
       pages: template.pages.filter((page) => page.id !== pageId),
     };
     setTemplate(updatedTemplate);
+  };
+
+  const handleAddPage = () => {
+    const newPageId = Date.now().toString();
+    const newPage: Page = {
+      id: newPageId,
+      template_id: template.id,
+      title: `Page ${template.pages.length + 1}`,
+      description: "",
+      ordinal: template.pages.length + 1,
+      sections: [],
+      created_at: new Date().toISOString(),
+    };
+
+    setTemplate((prev) => ({
+      ...prev,
+      pages: [...prev.pages, newPage],
+    }));
+    setActivePage(newPageId);
   };
 
   const movePageUp = (pageId: string) => {
@@ -181,7 +206,6 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      disabled={page.ordinal === 1}
                       onClick={(e) => {
                         e.stopPropagation();
                         movePageUp(page.id);
@@ -192,7 +216,6 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      disabled={page.ordinal === template.pages.length}
                       onClick={(e) => {
                         e.stopPropagation();
                         movePageDown(page.id);
@@ -215,6 +238,14 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
                   </div>
                 </div>
               ))}
+              <Button
+                onClick={handleAddPage}
+                variant="outline"
+                className="w-full mt-4"
+              >
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Add Page
+              </Button>
             </div>
           </div>
 

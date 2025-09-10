@@ -63,8 +63,7 @@ export function CreateScheduleForm({
     };
   });
 
-  console.log("THE REAL SITES DATA", sites);
-
+  console.log("TEMPLATE DATA=================-----------!", templates);
   async function handleCreate(formData: FormData) {
     // Add selected assignees to form data
     formData.delete("assignee_ids");

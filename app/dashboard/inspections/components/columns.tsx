@@ -1,10 +1,10 @@
-'use client'
+"use client";
 
-import { ColumnDef } from '@tanstack/react-table'
-import { format, parseISO } from 'date-fns'
-import { Inspection, InspectionStatus } from '@/lib/types/inspection-types'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { ColumnDef } from "@tanstack/react-table";
+import { format, parseISO } from "date-fns";
+import { Inspection, InspectionStatus } from "@/lib/types/inspection-types";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +12,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu";
 import {
   FileText,
   Edit,
@@ -25,27 +25,27 @@ import {
   PauseCircle,
   XCircle,
   ArrowUpDown,
-} from 'lucide-react'
+} from "lucide-react";
 
 // Separate component for actions
 function InspectionActions({ inspection }: { inspection: Inspection }) {
-  'use client'
+  "use client";
 
   const handleContinue = () => {
-    window.location.href = `/dashboard/inspections/${inspection.id}/edit`
-  }
+    window.location.href = `/dashboard/inspections/${inspection.id}/edit`;
+  };
 
   const handleViewReport = () => {
-    window.location.href = `/dashboard/inspections/${inspection.id}/report`
-  }
+    window.location.href = `/dashboard/inspections/${inspection.id}/report`;
+  };
 
   const handleStartInspection = () => {
-    window.location.href = `/dashboard/inspections/${inspection.id}/edit`
-  }
+    window.location.href = `/dashboard/inspections/${inspection.id}/edit`;
+  };
 
   const handleDownloadReport = () => {
-    alert(`Downloading report for inspection ${inspection.id}`)
-  }
+    alert(`Downloading report for inspection ${inspection.id}`);
+  };
 
   if (inspection.status === InspectionStatus.COMPLETED) {
     return (
@@ -70,7 +70,7 @@ function InspectionActions({ inspection }: { inspection: Inspection }) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-    )
+    );
   }
 
   if (
@@ -86,10 +86,12 @@ function InspectionActions({ inspection }: { inspection: Inspection }) {
       >
         <Play className="h-4 w-4" />
       </Button>
-    )
+    );
   }
 
   if (inspection.status === InspectionStatus.PENDING) {
+    console.log("inspections this side are 11111111111111", inspection);
+
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -111,92 +113,92 @@ function InspectionActions({ inspection }: { inspection: Inspection }) {
           </DropdownMenuItem> */}
         </DropdownMenuContent>
       </DropdownMenu>
-    )
+    );
   }
 
-  return null
+  return null;
 }
 
 export const columns: ColumnDef<Inspection>[] = [
   {
-    accessorKey: 'title',
+    accessorKey: "title",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="p-0 hover:bg-transparent"
         >
           Name
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
   },
   {
-    accessorKey: 'site',
-    header: 'Location',
+    accessorKey: "site",
+    header: "Location",
     cell: ({ row }) => {
-      const site = row.original.site
-      return site?.name || 'N/A'
+      const site = row.original.site;
+      return site?.name || "N/A";
     },
   },
   {
-    accessorKey: 'due_date',
+    accessorKey: "due_date",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="p-0 hover:bg-transparent"
         >
           Due Date
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
     cell: ({ row }) => {
       return row.original.due_date
-        ? format(parseISO(row.original.due_date), 'MMM d, yyyy')
-        : 'N/A'
+        ? format(parseISO(row.original.due_date), "MMM d, yyyy")
+        : "N/A";
     },
   },
   {
-    accessorKey: 'final_score',
+    accessorKey: "final_score",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="p-0 hover:bg-transparent"
         >
           Score
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
     cell: ({ row }) => {
       return row.original.final_score !== null
         ? `${row.original.final_score}%`
-        : 'Not Completed'
+        : "Not Completed";
     },
   },
   {
-    accessorKey: 'status',
+    accessorKey: "status",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="p-0 hover:bg-transparent"
         >
           Status
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
+      );
     },
     cell: ({ row }) => {
-      const status = row.original.status
+      const status = row.original.status;
       switch (status) {
         case InspectionStatus.COMPLETED:
           return (
@@ -204,41 +206,41 @@ export const columns: ColumnDef<Inspection>[] = [
               <CheckCircle2 className="mr-1 h-3 w-3" />
               Completed
             </Badge>
-          )
+          );
         case InspectionStatus.IN_PROGRESS:
           return (
             <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
               <Clock className="mr-1 h-3 w-3" />
               In Progress
             </Badge>
-          )
+          );
         case InspectionStatus.PAUSED:
           return (
             <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200">
               <PauseCircle className="mr-1 h-3 w-3" />
               Paused
             </Badge>
-          )
+          );
         case InspectionStatus.CANCELLED:
           return (
             <Badge className="bg-red-100 text-red-800 hover:bg-red-200">
               <XCircle className="mr-1 h-3 w-3" />
               Cancelled
             </Badge>
-          )
+          );
         default:
           return (
             <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200">
               <AlertTriangle className="mr-1 h-3 w-3" />
               Pending
             </Badge>
-          )
+          );
       }
     },
   },
   {
-    id: 'actions',
-    header: 'Actions',
+    id: "actions",
+    header: "Actions",
     cell: ({ row }) => <InspectionActions inspection={row.original} />,
   },
-]
+];

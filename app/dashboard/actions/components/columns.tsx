@@ -1,5 +1,5 @@
 "use client";
-import { Action, ActionPriority, ActionStatus, Site } from "@/lib/types";
+import { Action, ActionPriority, ActionStatus } from "@/lib/types";
 import { ColumnDef } from "@tanstack/react-table";
 import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { MarkAsDoneDialog } from "./mark-as-done-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useActionsStore } from "@/store/actions";
+import { MarkAsDoneDialog } from "./mark-as-done-dialog";
 
 const getPriorityBadgeColor = (priority: ActionPriority) => {
   switch (priority) {
@@ -36,29 +36,12 @@ const getPriorityBadgeColor = (priority: ActionPriority) => {
   }
 };
 
-const getStatusBadgeColor = (status: ActionStatus) => {
-  switch (status) {
-    case ActionStatus.IN_PROGRESS:
-      return "bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80";
-    case ActionStatus.TODO:
-      return "bg-blue-100 text-blue-800 hover:bg-blue-100/80";
-    case ActionStatus.COMPLETED:
-      return "bg-green-100 text-green-800 hover:bg-green-100/80";
-    case ActionStatus.DONE:
-      return "bg-gray-100 text-gray-800 hover:bg-gray-100/80";
-    default:
-      return "bg-gray-100 text-gray-800 hover:bg-gray-100/80";
-  }
-};
-
 // Separate component for the actions cell to fix useState issue
 function ActionCell({
   action,
-  sites,
   onEdit,
 }: {
   action: Action;
-  sites: Site[];
   onEdit?: (action: Action) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -78,10 +61,16 @@ function ActionCell({
             <DialogTitle>Mark as Done</DialogTitle>
           </DialogHeader>
           <MarkAsDoneDialog
-            key={action.id} // Force re-render when action changes
+            isOpen={open}
+            key={action.id}
             action={action}
-            sites={sites}
-            onComplete={() => setOpen(false)}
+            onSuccess={(updatedAction) => {
+              setActions((prev) =>
+                prev.map((a) => (a.id === updatedAction.id ? updatedAction : a))
+              );
+              setOpen(false);
+            }}
+            onOpenChange={setOpen}
           />
         </DialogContent>
       </Dialog>
@@ -125,7 +114,6 @@ function ActionCell({
 }
 
 export const columns = (
-  sites: Site[],
   onEdit?: (action: Action) => void
 ): ColumnDef<Action>[] => [
   {
@@ -141,11 +129,35 @@ export const columns = (
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => (
-      <Badge className={getStatusBadgeColor(row.original.status)}>
-        {row.original.status.replace("_", " ")}
-      </Badge>
-    ),
+    cell: ({ row }) => {
+      const status = row.original.status;
+      switch (status) {
+        case ActionStatus.DONE:
+          return (
+            <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
+              Done
+            </Badge>
+          );
+        case ActionStatus.IN_PROGRESS:
+          return (
+            <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100/80">
+              In Progress
+            </Badge>
+          );
+        case ActionStatus.TODO:
+          return (
+            <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100/80">
+              To Do
+            </Badge>
+          );
+        default:
+          return (
+            <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100/80">
+              {status.replace("_", " ")}
+            </Badge>
+          );
+      }
+    },
   },
   {
     accessorKey: "priority",
@@ -191,8 +203,6 @@ export const columns = (
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => (
-      <ActionCell action={row.original} sites={sites} onEdit={onEdit} />
-    ),
+    cell: ({ row }) => <ActionCell action={row.original} onEdit={onEdit} />,
   },
 ];

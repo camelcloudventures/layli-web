@@ -119,6 +119,22 @@ export type Site = {
   longitude: number;
 };
 
+export type ActionComment = {
+  id: string;
+  comment: string;
+  created_at: string;
+  user: {
+    full_name: string;
+    image: string;
+  };
+};
+
+export type ActionAttachment = {
+  id: string;
+  url: string;
+  type: string;
+};
+
 export enum ActionFrequency {
   ONE_TIME = "one_time",
   DAILY = "daily",
@@ -148,16 +164,12 @@ export type Action = {
   due_at: string;
   frequency: ActionFrequency;
   assignees: Assignee[];
-  site_id: number;
+  site_id: string;
   label: string;
   created_at: string;
   created_by: Assignee;
   organization_id: string;
-  site: {
-    id: number;
-    name: string;
-    address: string;
-    latitude: number;
-    longitude: number;
-  };
+  site: Site;
+  comments: ActionComment[];
+  attachments: ActionAttachment[];
 };

@@ -47,7 +47,7 @@ function InspectionActions({ inspection }: { inspection: Inspection }) {
     alert(`Downloading report for inspection ${inspection.id}`);
   };
 
-  if (inspection.status === InspectionStatus.COMPLETED) {
+  if (inspection.status === InspectionStatus.DONE) {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -200,7 +200,7 @@ export const columns: ColumnDef<Inspection>[] = [
     cell: ({ row }) => {
       const status = row.original.status;
       switch (status) {
-        case InspectionStatus.COMPLETED:
+        case InspectionStatus.DONE:
           return (
             <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
               <CheckCircle2 className="mr-1 h-3 w-3" />

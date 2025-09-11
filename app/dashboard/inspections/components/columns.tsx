@@ -25,11 +25,16 @@ import {
   PauseCircle,
   XCircle,
   ArrowUpDown,
+  Loader2,
 } from "lucide-react";
+import { downloadInspectionPDF } from "../[id]/report/utils/pdf-generator";
+import { useState } from "react";
+import { toast } from "sonner";
 
 // Separate component for actions
 function InspectionActions({ inspection }: { inspection: Inspection }) {
   "use client";
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleContinue = () => {
     window.location.href = `/dashboard/inspections/${inspection.id}/edit`;
@@ -44,10 +49,26 @@ function InspectionActions({ inspection }: { inspection: Inspection }) {
   };
 
   const handleDownloadReport = () => {
-    alert(`Downloading report for inspection ${inspection.id}`);
+    setIsDownloading(true);
+    try {
+      const safeTitle = inspection.title
+        .replace(/[^a-zA-Z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .toLowerCase();
+      //@ts-expect-error - needs type
+      downloadInspectionPDF(inspection, {
+        filename: `${safeTitle}-report.pdf`,
+      });
+      toast.success("Report downloaded successfully");
+    } catch (error) {
+      console.error("Failed to generate PDF:", error);
+      toast.error("Could not generate PDF report.");
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
-  if (inspection.status === InspectionStatus.DONE) {
+  if (inspection.status === InspectionStatus.COMPLETED) {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -64,8 +85,15 @@ function InspectionActions({ inspection }: { inspection: Inspection }) {
             <FileText className="mr-2 h-4 w-4" />
             View Report
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleDownloadReport}>
-            <Download className="mr-2 h-4 w-4" />
+          <DropdownMenuItem
+            onClick={handleDownloadReport}
+            disabled={isDownloading}
+          >
+            {isDownloading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="mr-2 h-4 w-4" />
+            )}
             Download Report
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -200,7 +228,7 @@ export const columns: ColumnDef<Inspection>[] = [
     cell: ({ row }) => {
       const status = row.original.status;
       switch (status) {
-        case InspectionStatus.DONE:
+        case InspectionStatus.COMPLETED:
           return (
             <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
               <CheckCircle2 className="mr-1 h-3 w-3" />

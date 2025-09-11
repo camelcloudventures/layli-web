@@ -51,6 +51,7 @@ export const createColumns = (
     id: "actions",
     header: "Actions",
     cell: ({ row }) => (
+      //@ts-expect-error - needs type
       <IssueActions issue={row.original} onOpenDialog={onOpenDialog} />
     ),
   },

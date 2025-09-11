@@ -99,6 +99,7 @@ export function EditActionForm({
       assignees,
     };
 
+    //@ts-expect-error - needs type
     toast.promise(updateAction(action.id, payload), {
       loading: "Updating action...",
       success: (data) => {

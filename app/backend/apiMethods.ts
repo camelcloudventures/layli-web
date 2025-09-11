@@ -203,6 +203,8 @@ export async function GET<T>(
 
 export async function DELETE<T>(
   url: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payload?: any,
   tags?: string[]
 ): Promise<T | null> {
   try {
@@ -218,17 +220,26 @@ export async function DELETE<T>(
       return { error: "No active organization selected" };
     }
 
-    const thisUrl = `${baseUrl}/api${url}`;
-    const response = await fetch(thisUrl, {
+    const headers: HeadersInit = {
+      Accept: "application/json",
+      Authorization: `Bearer ${accessToken}`,
+      "X-Organization-Id": activeOrgId,
+    };
+
+    const config: RequestInit = {
       method: "DELETE",
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${accessToken}`,
-        "X-Organization-Id": activeOrgId,
-      },
+      headers,
       cache: "no-store",
       next: tags ? { tags } : undefined,
-    });
+    };
+
+    if (payload) {
+      headers["Content-Type"] = "application/json";
+      config.body = JSON.stringify(payload);
+    }
+
+    const thisUrl = `${baseUrl}/api${url}`;
+    const response = await fetch(thisUrl, config);
     const rawResponse = await response.text();
 
     if (response.headers.get("content-type")?.includes("application/json")) {

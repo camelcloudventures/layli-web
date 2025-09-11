@@ -8,10 +8,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Trash2, Pencil, CheckCircle } from "lucide-react";
+import { MoreHorizontal, Trash2, Pencil, CheckCircle, Eye } from "lucide-react";
 import { Issue } from "@/lib/types";
 
-type DialogType = "update" | "close" | "delete" | null;
+type DialogType = "update" | "close" | "delete" | "view" | null;
 
 interface IssueActionsProps {
   issue: Issue;
@@ -32,7 +32,12 @@ export function IssueActions({ issue, onOpenDialog }: IssueActionsProps) {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuSeparator />
-
+          {issue.status === "closed" && (
+            <DropdownMenuItem onClick={() => onOpenDialog("view", issue)}>
+              <Eye className="mr-2 h-4 w-4" />
+              View issue
+            </DropdownMenuItem>
+          )}
           {issue.status !== "closed" && (
             <DropdownMenuItem onClick={() => onOpenDialog("update", issue)}>
               <Pencil className="mr-2 h-4 w-4" />

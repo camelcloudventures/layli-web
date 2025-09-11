@@ -9,8 +9,13 @@ import { Download, Share2, Trash2, Loader2 } from "lucide-react";
 import type { Issue, IssuePriority } from "@/lib/types/issue-types";
 import Chip from "@/components/custom/chip";
 import { Category, Priority, Status } from "@/lib/types";
-import { addComment, updateIssue, updateAttachments } from "../actions/actions";
-import SubmitBtn from "@/components/custom/submit-btn";
+import {
+  addComment,
+  updateIssue,
+  addAttachments,
+  removeAttachments,
+} from "../actions/actions";
+
 import { useFormStatus } from "react-dom";
 import { uploadImage } from "@/utils/common";
 import { generatePDF } from "@/utils/utils";
@@ -21,6 +26,8 @@ import DetailsTab from "./details-tab";
 import ShareIssueDialog from "./share-issue-dialog";
 import { useIssuesStore } from "@/store/issues";
 import useIssue from "../hooks/useIssue";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 interface IssueDetailsProps {
   issue: Issue;
@@ -44,16 +51,16 @@ function IssueDetailsForm({ issue, assignees }: IssueDetailsProps) {
 
   const { pending } = useFormStatus();
   const { user: currentUser } = useAuth();
-  const { setIssues } = useIssuesStore();
 
   const {
     uploadedImages,
     setUploadedImages,
+    attachmentsToAdd,
+    attachmentIdsToDelete,
     removeNewImage,
     removeExistingAttachment,
-    isRemovingAttachment,
-    removingAttachmentVariables,
-  } = useIssue({ issue });
+    addNewAttachment,
+  } = useIssue();
 
   const handleAddComment = async () => {
     setIsSendingComment(true);
@@ -81,7 +88,6 @@ function IssueDetailsForm({ issue, assignees }: IssueDetailsProps) {
     try {
       const doc = generatePDF(issue);
       setTimeout(() => {
-        // Create a safe filename from the issue title
         const safeTitle = issue.title
           ? issue.title
               .replace(/[^a-zA-Z0-9\s-]/g, "")
@@ -124,44 +130,8 @@ function IssueDetailsForm({ issue, assignees }: IssueDetailsProps) {
                 : img
             )
           );
-
-          // Immediately add the file to the issue via API
-          const res = await updateAttachments(
-            issue.id,
-            [
-              {
-                fileName: file.name,
-                fileUrl: result.fileUrl,
-              },
-            ],
-            undefined
-          );
-
-          if (res) {
-            // Update the store with the new attachment
-            setIssues((prevIssues) =>
-              prevIssues.map((i) =>
-                i.id === issue.id
-                  ? {
-                      ...i,
-                      attachments: [
-                        ...i.attachments,
-                        {
-                          id: crypto.randomUUID(), // Temporary ID, will be updated when store refreshes
-                          file_url: result.fileUrl,
-                          issue_id: issue.id,
-                          created_at: new Date().toISOString(),
-                          created_by: currentUser?.id || "",
-                        },
-                      ],
-                    }
-                  : i
-              )
-            );
-            toast.success("Image uploaded successfully");
-          } else {
-            toast.error("Failed to add image to issue");
-          }
+          addNewAttachment(file.name, result.fileUrl);
+          toast.success("Image ready for upload");
         } else {
           setUploadedImages((prev) => prev.filter((img) => img.id !== imageId));
           toast.error(result.error || "Failed to upload image");
@@ -171,26 +141,21 @@ function IssueDetailsForm({ issue, assignees }: IssueDetailsProps) {
         toast.error("Failed to upload image");
       }
     },
-    [issue.id, setIssues, currentUser?.id, setUploadedImages]
+    [addNewAttachment, setUploadedImages]
   );
 
   return (
     <div className="">
-      {/* Hidden inputs for attachment data */}
-      {/* {attachmentsToAdd.length > 0 && (
-        <input
-          type="hidden"
-          name="attachmentsToAdd"
-          value={JSON.stringify(attachmentsToAdd)}
-        />
-      )} */}
-      {/* {attachmentIdsToDelete.length > 0 && (
-        <input
-          type="hidden"
-          name="attachmentIdsToDelete"
-          value={JSON.stringify(attachmentIdsToDelete)}
-        />
-      )} */}
+      <input
+        type="hidden"
+        name="attachmentsToAdd"
+        value={JSON.stringify(attachmentsToAdd)}
+      />
+      <input
+        type="hidden"
+        name="attachmentIdsToDelete"
+        value={JSON.stringify(attachmentIdsToDelete)}
+      />
 
       <div className="flex flex-col mb-4 space-y-1.5">
         <div className="flex my-4 items-center gap-4">
@@ -228,7 +193,16 @@ function IssueDetailsForm({ issue, assignees }: IssueDetailsProps) {
           </div>
         </div>
       </div>
-
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="cause" className="text-lg font-medium mb-2">
+            Cause
+          </Label>
+          <Textarea id="cause" name="cause" defaultValue={issue?.cause || ""} />
+        </div>
+      </div>
+      <input type="hidden" name="status" value={status} />
+      <input type="hidden" name="priority" value={priority} />
       <TabsSwitcher
         defaultValue="details"
         value={currentTab}
@@ -263,8 +237,8 @@ function IssueDetailsForm({ issue, assignees }: IssueDetailsProps) {
                 handleFileUpload={handleFileUpload}
                 removeImage={removeNewImage}
                 removeExistingAttachment={removeExistingAttachment}
-                isRemovingAttachment={isRemovingAttachment}
-                removingAttachmentVariables={removingAttachmentVariables}
+                isRemovingAttachment={pending}
+                attachmentIdsToDelete={attachmentIdsToDelete}
               />
             ),
           },
@@ -311,7 +285,10 @@ function IssueDetailsForm({ issue, assignees }: IssueDetailsProps) {
           </Button>
         </div>
         <div className="flex gap-2">
-          <SubmitBtn label="Update Issue" variant="default" />
+          <Button type="submit" disabled={pending}>
+            {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Update Issue
+          </Button>
         </div>
       </div>
 
@@ -327,40 +304,85 @@ function IssueDetailsForm({ issue, assignees }: IssueDetailsProps) {
 }
 
 export function IssueDetails({ issue, onClose, assignees }: IssueDetailsProps) {
-  const { issues } = useIssuesStore();
+  const { issues, setIssues } = useIssuesStore();
+  //eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Get the latest issue data from the store
   const currentIssue = issues.find((i) => i.id === issue.id) || issue;
 
   const handleUpdateIssue = async (formData: FormData) => {
+    setIsUpdating(true);
+    let success = true;
+    let errorMessage = "Failed to update issue. Please try again.";
+    let finalIssueData: Issue | null = null;
+
     try {
-      // Add attachment data to form if there are changes
-      // const attachmentsToAdd = formData.get("attachmentsToAdd");
-      // const attachmentIdsToDelete = formData.get("attachmentIdsToDelete");
-
-      // if (attachmentsToAdd) {
-      //   formData.set("attachmentsToAdd", attachmentsToAdd as string);
-      // }
-      // if (attachmentIdsToDelete) {
-      //   formData.set("attachmentIdsToDelete", attachmentIdsToDelete as string);
-      // }
-
-      const res = await updateIssue(currentIssue.id, formData);
-
-      console.log("res from issue update", res);
-      if (res) {
-        toast.success("Issue updated successfully");
-
-        // The optimistic updates in removeExistingAttachment will handle the UI updates
-        // The store will be updated when the page refreshes or when the issues are refetched
-
-        onClose?.();
-      } else {
-        toast.error("Failed to update issue");
+      // Step 1: Update core issue details
+      const updateRes = await updateIssue(currentIssue.id, formData);
+      console.log("updateRes", updateRes);
+      //@ts-expect-error - needs type
+      if (!updateRes?.success) {
+        success = false;
+        //@ts-expect-error - needs type
+        errorMessage = updateRes?.error || errorMessage;
+        throw new Error("Failed to update issue details.");
       }
+      //@ts-expect-error - needs type
+      finalIssueData = updateRes.data;
+
+      // Step 2: Add new attachments
+      const attachmentsToAdd = JSON.parse(
+        formData.get("attachmentsToAdd") as string
+      );
+      if (attachmentsToAdd && attachmentsToAdd.length > 0) {
+        const addRes = await addAttachments(currentIssue.id, attachmentsToAdd);
+        if (!addRes.success) {
+          success = false;
+          errorMessage = addRes.error || errorMessage;
+          throw new Error("Failed to add attachments.");
+        }
+        finalIssueData = addRes.data;
+      }
+
+      // Step 3: Remove attachments
+      const attachmentIdsToDelete = JSON.parse(
+        formData.get("attachmentIdsToDelete") as string
+      );
+      if (attachmentIdsToDelete && attachmentIdsToDelete.length > 0) {
+        const removeRes = await removeAttachments(
+          currentIssue.id,
+          attachmentIdsToDelete
+        );
+        //@ts-expect-error - needs type
+        if (!removeRes.success) {
+          success = false;
+          //@ts-expect-error - needs type
+          errorMessage = removeRes?.error || errorMessage;
+          throw new Error("Failed to remove attachments.");
+        }
+        //@ts-expect-error - needs type
+        finalIssueData = removeRes.data;
+      }
+
+      if (finalIssueData) {
+        //@ts-expect-error - needs type
+        setIssues((prevIssues) =>
+          prevIssues.map((i) =>
+            i.id === (finalIssueData as Issue).id ? finalIssueData : i
+          )
+        );
+      }
+
+      toast.success("Issue updated successfully!");
+      onClose?.();
     } catch (error) {
       console.error("Error updating issue:", error);
-      toast.error("Failed to update issue");
+      toast.error(errorMessage);
+      //eslint-disable-next-line @typescript-eslint/no-unused-vars
+      success = false;
+    } finally {
+      setIsUpdating(false);
     }
   };
 

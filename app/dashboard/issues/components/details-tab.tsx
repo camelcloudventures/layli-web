@@ -38,17 +38,9 @@ export default function DetailsTab({
 }: DetailsTabProps) {
   return (
     <div className="space-y-4">
-      <div>
-        <Label htmlFor="cause" className="text-lg font-medium mb-2">
-          Cause
-        </Label>
-        <Textarea id="cause" name="cause" defaultValue={issue?.cause || ""} />
-      </div>
-
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2 w-full items-center">
           <h3 className="text-sm font-medium">Status</h3>
-          <input type="hidden" name="status" value={status} />
           <CustomSelect
             options={[
               { label: "Open", value: "open" },
@@ -63,7 +55,6 @@ export default function DetailsTab({
 
         <div className="space-y-2 w-full items-center">
           <h3 className="text-sm font-medium">Priority</h3>
-          <input type="hidden" name="priority" value={priority} />
           <CustomSelect
             options={[
               { label: "Low", value: "low" },

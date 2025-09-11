@@ -77,7 +77,8 @@ export async function updateSchedule(formData: FormData) {
 }
 
 export async function deleteSchedule(id: string) {
-  const res = await DELETE(`/schedules/delete/${id}`, true, ["schedules"]);
+  const res = await DELETE(`/schedules/delete/${id}`, ["schedules"]);
+  console.log("res from backend ~~~~~~~~~~~~~~~~~~~~", res);
   revalidateTag("schedules");
   return res;
 }

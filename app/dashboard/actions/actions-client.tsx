@@ -30,6 +30,8 @@ import { ActionList } from "./components/action-list";
 import { columns } from "./components/columns";
 import { CreateActionDialog } from "./components/create-action-dialog";
 import { EditActionForm } from "./components/edit-action-form";
+import { MarkAsDoneDialog } from "./components/mark-as-done-dialog";
+import { DoneActionDetails } from "./components/done-action-details";
 
 type View = "board" | "list";
 type UpdateActionResponse = { success?: string; error?: string };
@@ -39,6 +41,9 @@ export default function ActionsClient() {
   const [isCreateActionDialogOpen, setIsCreateActionDialogOpen] =
     useState(false);
   const [isEditActionDialogOpen, setIsEditActionDialogOpen] = useState(false);
+  const [isCompleteActionDialogOpen, setIsCompleteActionDialogOpen] =
+    useState(false);
+  const [isViewActionDialogOpen, setIsViewActionDialogOpen] = useState(false);
   const [selectedAction, setSelectedAction] = useState<Action | null>(null);
   const [activeAction, setActiveAction] = useState<Action | null>(null);
 
@@ -54,19 +59,22 @@ export default function ActionsClient() {
 
   const handleEditAction = useCallback((action: Action) => {
     setSelectedAction(action);
-    setIsEditActionDialogOpen(true);
+    if (action.status === ActionStatus.DONE) {
+      setIsViewActionDialogOpen(true);
+    } else {
+      setIsEditActionDialogOpen(true);
+    }
   }, []);
 
   // Memoize columns to prevent recreation on every render
   const memoizedColumns = useMemo(
-    () => columns(sites, handleEditAction),
-    [sites, handleEditAction]
+    () => columns(handleEditAction),
+    [handleEditAction]
   );
 
   const statusMap: Record<string, ActionStatus> = {
     [ActionStatus.TODO]: ActionStatus.TODO,
     [ActionStatus.IN_PROGRESS]: ActionStatus.IN_PROGRESS,
-    [ActionStatus.COMPLETED]: ActionStatus.COMPLETED,
     [ActionStatus.DONE]: ActionStatus.DONE,
   };
 
@@ -94,10 +102,12 @@ export default function ActionsClient() {
 
     // Get the new status
     const newStatus = getStatusFromOverId(String(over.id));
-    console.log("over.id:", over.id, "type:", typeof over.id);
-    console.log("newStatus", newStatus);
-    if (!newStatus) {
-      toast.error("Invalid status");
+    if (!newStatus) return;
+
+    if (newStatus === ActionStatus.DONE) {
+      setSelectedAction(action);
+      setIsCompleteActionDialogOpen(true);
+      // We don't optimistically update here. The dialog will handle the update.
       return;
     }
 
@@ -240,6 +250,22 @@ export default function ActionsClient() {
           )}
         </DialogContent>
       </Dialog>
+      <MarkAsDoneDialog
+        isOpen={isCompleteActionDialogOpen}
+        onOpenChange={setIsCompleteActionDialogOpen}
+        action={selectedAction}
+        onSuccess={(updatedAction) => {
+          setActions((prev) =>
+            prev.map((a) => (a.id === updatedAction.id ? updatedAction : a))
+          );
+          setSelectedAction(null);
+        }}
+      />
+      <DoneActionDetails
+        isOpen={isViewActionDialogOpen}
+        onOpenChange={setIsViewActionDialogOpen}
+        action={selectedAction}
+      />
     </div>
   );
 }

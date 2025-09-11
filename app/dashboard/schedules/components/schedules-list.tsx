@@ -12,7 +12,6 @@ import { Permission } from "@/lib/auth/auth";
 import type { Schedule } from "@/lib/types/schedule-types";
 import { useSchedulesStore } from "@/store/schedules";
 import { Trash2Icon } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import HasPermission from "../../components/has-permission";
@@ -49,7 +48,7 @@ export function SchedulesList({
   sites,
   isLoading,
 }: SchedulesListProps) {
-  const { clearSchedules, setSchedules } = useSchedulesStore();
+  const { removeSchedule, setSchedules } = useSchedulesStore();
   console.log("schedules", schedules);
   const [searchQuery, setSearchQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -58,7 +57,6 @@ export function SchedulesList({
     null
   );
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const router = useRouter();
 
   const filteredSchedules = useMemo(() => {
     if (!searchQuery.trim()) return schedules;
@@ -81,14 +79,14 @@ export function SchedulesList({
   }, [searchQuery, schedules]);
 
   async function handleDelete(schedule: Schedule) {
-    try {
-      await deleteSchedule(String(schedule.id));
+    const res = await deleteSchedule(String(schedule.id));
+    //@ts-expect-error --need to fix this
+    if (res?.success) {
       toast.success("Schedule deleted successfully");
-      clearSchedules(); // Clear store to trigger refetch
-      router.refresh();
-    } catch (error) {
-      console.error("Failed to delete schedule:", error);
-      toast.error("Failed to delete schedule");
+      removeSchedule(String(schedule.id));
+    } else {
+      //@ts-expect-error --need to fix this
+      toast.error(res?.error || "Failed to delete schedule");
     }
   }
 

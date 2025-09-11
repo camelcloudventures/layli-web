@@ -7,17 +7,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useInvites } from "@/hooks/use-invites";
 import { Permission } from "@/lib/auth/auth";
 import HasPermission from "../components/has-permission";
 import { UserManagement } from "./components/user-management";
-import { UserPreferences } from "./components/user-preferences";
+// import { UserPreferences } from "./components/user-preferences";
 import { UserProfileForm } from "./components/user-profile-form";
 import { SiteManagement } from "./components/site-management";
+import { useSearchParams } from "next/navigation";
 
 export function SettingsClient() {
-  const { invites } = useInvites();
-
+  const searchParams = useSearchParams();
+  const tab = searchParams.get("tab");
   return (
     <div className="space-y-6">
       <div>
@@ -27,7 +27,7 @@ export function SettingsClient() {
         </p>
       </div>
 
-      <Tabs defaultValue="general" className="">
+      <Tabs defaultValue={tab || "general"} className="">
         <TabsList className="w-44 ">
           <TabsTrigger className="cursor-pointer" value="general">
             General
@@ -53,7 +53,7 @@ export function SettingsClient() {
               </CardContent>
             </Card>
 
-            <Card>
+            {/* <Card>
               <CardHeader>
                 <CardTitle>Preferences</CardTitle>
                 <CardDescription>
@@ -63,7 +63,7 @@ export function SettingsClient() {
               <CardContent>
                 <UserPreferences />
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
         </TabsContent>
 
@@ -74,7 +74,7 @@ export function SettingsClient() {
               <CardDescription>Invite users and manage roles</CardDescription>
             </CardHeader>
             <CardContent className="space-y-10">
-              <UserManagement invites={invites} />
+              <UserManagement />
               <SiteManagement />
             </CardContent>
           </Card>

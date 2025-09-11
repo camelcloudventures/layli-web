@@ -99,6 +99,7 @@ export function EditActionForm({
       assignees,
     };
 
+    //@ts-expect-error - needs type
     toast.promise(updateAction(action.id, payload), {
       loading: "Updating action...",
       success: (data) => {
@@ -223,11 +224,18 @@ export function EditActionForm({
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
             <SelectContent>
-              {Object.values(ActionStatus).map((status) => (
-                <SelectItem key={status} value={status}>
-                  {status}
-                </SelectItem>
-              ))}
+              {Object.values(ActionStatus)
+                .filter(
+                  (status) =>
+                    status === ActionStatus.TODO ||
+                    status === ActionStatus.IN_PROGRESS
+                )
+                .map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {status.charAt(0).toUpperCase() +
+                      status.slice(1).replace("_", " ")}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </div>

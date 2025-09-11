@@ -1,10 +1,10 @@
 import { useGetOrganizationSites } from "@/app/dashboard/sites/actions/query";
-import { useOrganizationSitesStore } from "@/store/organisation-site";
+import { useSitesStore } from "@/store/sites";
 import { useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 export function useOrganizationSite() {
-  const { sites, setSites, addSite } = useOrganizationSitesStore(
+  const { sites, setSites, addSite } = useSitesStore(
     useShallow((state) => ({
       sites: state.sites,
       setSites: state.setSites,

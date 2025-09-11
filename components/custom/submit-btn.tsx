@@ -14,12 +14,14 @@ type IProps = {
     | "ghost"
     | "link";
   isDisabled?: boolean;
+  onClick?: () => void;
 };
 export default function SubmitBtn({
   variant,
   className,
   label,
   isDisabled,
+  onClick,
 }: IProps) {
   const { pending } = useFormStatus();
   return (
@@ -31,6 +33,7 @@ export default function SubmitBtn({
         // pending ? 'bg-opacity-50' : '',
         // isDisabled ? '' : '',
       )}
+      onClick={onClick}
     >
       {pending ? <BtnLoader /> : label}
     </Button>

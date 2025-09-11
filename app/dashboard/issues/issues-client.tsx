@@ -21,7 +21,7 @@ export default function IssuesClient() {
 
   return (
     <div className="space-y-4">
-      <Issues users={users || []} />
+      <Issues users={users || []} issues={issues || []} />
       <IssueSearch />
 
       <IssuesTable

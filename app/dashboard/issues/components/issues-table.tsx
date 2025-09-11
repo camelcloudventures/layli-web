@@ -14,8 +14,9 @@ import {
 import UpdateIssue from "./update-issue";
 import CloseIssue from "./close-issue";
 import DeleteIssue from "./delete-issue";
+import ViewIssue from "./view-issue";
 
-type DialogType = "update" | "close" | "delete" | null;
+type DialogType = "update" | "close" | "delete" | "view" | null;
 
 interface IssuesTableProps {
   issues: Issue[];
@@ -66,6 +67,7 @@ export default function IssuesTable({
           <DialogHeader className="pb-4">
             <DialogTitle>
               {activeDialog === "update" && "Issue Details"}
+              {activeDialog === "view" && "Issue Details"}
               {activeDialog === "close" && "Close Issue"}
               {activeDialog === "delete" && "Delete Issue"}
             </DialogTitle>
@@ -79,6 +81,7 @@ export default function IssuesTable({
                   assignees={assignees}
                 />
               )}
+              {activeDialog === "view" && <ViewIssue issue={selectedIssue} />}
               {activeDialog === "close" && (
                 <CloseIssue issue={selectedIssue} onClose={handleCloseDialog} />
               )}

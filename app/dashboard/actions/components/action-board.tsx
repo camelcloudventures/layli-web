@@ -14,8 +14,8 @@ interface ActionColumnProps {
   title: string;
   actions: Action[];
   onEditAction: (action: Action) => void;
-  droppable?: boolean;
   isLoading: boolean;
+  cardsDraggable?: boolean;
 }
 
 function ActionColumn({
@@ -23,10 +23,13 @@ function ActionColumn({
   title,
   actions,
   onEditAction,
-  droppable = true,
   isLoading,
+  cardsDraggable = true,
 }: ActionColumnProps) {
-  const { setNodeRef, isOver } = useDroppable({ id });
+  const { setNodeRef, isOver } = useDroppable({
+    id,
+    disabled: !cardsDraggable,
+  });
 
   const content = (
     <div className="space-y-3">
@@ -38,7 +41,7 @@ function ActionColumn({
             key={action.id}
             action={action}
             onClick={onEditAction}
-            isDraggable={droppable}
+            isDraggable={cardsDraggable}
           />
         ))
       )}
@@ -55,8 +58,7 @@ function ActionColumn({
       ref={setNodeRef}
       className={cn(
         "bg-muted/50 rounded-lg p-4 min-h-[500px] w-full transition-all",
-        isOver && droppable && "ring-2 ring-primary ring-inset bg-muted",
-        !droppable && "opacity-70 pointer-events-none"
+        isOver && "ring-2 ring-primary ring-inset bg-muted"
       )}
     >
       <h3 className="font-medium mb-4 flex items-center justify-between">
@@ -65,16 +67,13 @@ function ActionColumn({
           {actions.length}
         </span>
       </h3>
-      {droppable ? (
-        <SortableContext
-          items={actions.map((action) => action.id)}
-          strategy={rectSortingStrategy}
-        >
-          {content}
-        </SortableContext>
-      ) : (
-        content
-      )}
+      <SortableContext
+        items={actions.map((action) => action.id)}
+        strategy={rectSortingStrategy}
+        disabled={!cardsDraggable}
+      >
+        {content}
+      </SortableContext>
     </div>
   );
 }
@@ -94,17 +93,13 @@ export function ActionBoard({ actions, isLoading, onEdit }: ActionBoardProps) {
     () => actions.filter((a) => a.status === ActionStatus.IN_PROGRESS),
     [actions]
   );
-  const completedActions = useMemo(
-    () => actions.filter((a) => a.status === ActionStatus.COMPLETED),
-    [actions]
-  );
   const doneActions = useMemo(
     () => actions.filter((a) => a.status === ActionStatus.DONE),
     [actions]
   );
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <ActionColumn
         id={ActionStatus.TODO}
         title="To Do"
@@ -120,19 +115,12 @@ export function ActionBoard({ actions, isLoading, onEdit }: ActionBoardProps) {
         isLoading={isLoading}
       />
       <ActionColumn
-        id={ActionStatus.COMPLETED}
-        title="Completed"
-        actions={completedActions}
-        onEditAction={onEdit}
-        isLoading={isLoading}
-      />
-      <ActionColumn
         id={ActionStatus.DONE}
         title="Done"
         actions={doneActions}
-        onEditAction={() => {}}
-        droppable={false}
+        onEditAction={onEdit}
         isLoading={isLoading}
+        cardsDraggable={false}
       />
     </div>
   );

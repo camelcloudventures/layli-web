@@ -1,5 +1,5 @@
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import type { Invite } from "@/app/dashboard/settings/components/columns";
+import type { Invite } from "./user-management";
 import { Loader2 } from "lucide-react";
 
 interface RoleActionItemProps {
@@ -16,7 +16,7 @@ export function RoleActionItem({
   disabled,
 }: RoleActionItemProps) {
   function handleClick() {
-    if (user?.role !== role) onChange(user?.user_id, role);
+    if (user?.role !== role) onChange(user?.user_id as string, role);
   }
 
   return (

@@ -12,9 +12,76 @@ import {
   DialogHeader,
   DialogContent,
 } from "@/components/ui/dialog";
+import { Issue } from "@/lib/types/issue-types";
 
-export default function Issues({ users }: { users: User[] }) {
+function downloadCSV(csv: string, filename: string) {
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.setAttribute("href", url);
+  link.setAttribute("download", filename);
+  link.style.visibility = "hidden";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function convertToCSV(issues: Issue[]) {
+  console.log("issues", issues);
+  const headers = [
+    "Code",
+    "Title",
+    "Status",
+    "Priority",
+    "Category",
+    "Site",
+    "Location",
+    "Cause",
+    "Solution",
+    "Due Date",
+    "Date Occurred",
+    "Assignees",
+    "Reporter",
+  ];
+  const rows = issues.map((issue) => {
+    const assignees =
+      issue.assignees?.map((a) => a.full_name).join(", ") ?? "N/A";
+    const reporter = issue.reporter?.full_name ?? "N/A";
+    const siteName = issue.site?.name ?? "N/A";
+
+    return [
+      issue.code ?? "N/A",
+      `"${issue.title.replace(/"/g, '""')}"`,
+      issue.status,
+      issue.priority,
+      issue.category,
+      `"${siteName.replace(/"/g, '""')}"`,
+      `"${(issue.location ?? "N/A").replace(/"/g, '""')}"`,
+      `"${(issue.cause ?? "N/A").replace(/"/g, '""')}"`,
+      `"${(issue.solution ?? "N/A").replace(/"/g, '""')}"`,
+      issue.due_at ?? "N/A",
+      issue.date_occurred ?? "N/A",
+      `"${assignees.replace(/"/g, '""')}"`,
+      `"${reporter.replace(/"/g, '""')}"`,
+    ];
+  });
+
+  return [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
+}
+
+export default function Issues({
+  users,
+  issues,
+}: {
+  users: User[];
+  issues: Issue[];
+}) {
   const [isReportIssueDialogOpen, setIsReportIssueDialogOpen] = useState(false);
+
+  function handleExportCSV() {
+    const csv = convertToCSV(issues);
+    downloadCSV(csv, "issues.csv");
+  }
 
   return (
     <div className="space-y-6">
@@ -25,7 +92,7 @@ export default function Issues({ users }: { users: User[] }) {
           actions={[
             {
               label: "Export CSV",
-              onClick: () => {},
+              onClick: handleExportCSV,
               icon: <Download className="mr-2 h-4 w-4" />,
               variant: "outline",
             },

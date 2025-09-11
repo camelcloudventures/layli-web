@@ -23,13 +23,7 @@ interface FileAttachmentsProps {
   removeImage: (id: string) => void;
   removeExistingAttachment: (attachmentId: string) => void;
   isRemovingAttachment: boolean;
-  removingAttachmentVariables:
-    | {
-        issue_id: string;
-        attachmentsToAdd?: { fileName: string; fileUrl: string }[];
-        attachmentIdsToDelete?: string[];
-      }
-    | undefined;
+  attachmentIdsToDelete: string[];
 }
 
 export default function FileAttachments({
@@ -40,13 +34,17 @@ export default function FileAttachments({
   removeImage,
   removeExistingAttachment,
   isRemovingAttachment,
-  removingAttachmentVariables,
+  attachmentIdsToDelete,
 }: FileAttachmentsProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const filteredAttachments = issue.attachments.filter(
+    (att) => !attachmentIdsToDelete.includes(att.id)
+  );
+
   return (
     <div className="flex flex-col gap-8">
-      {issue.attachments.length === 0 ? (
+      {filteredAttachments.length === 0 && uploadedImages.length === 0 ? (
         <h3 className="text-muted-foreground font-medium">
           No files attached or images
         </h3>
@@ -88,7 +86,7 @@ export default function FileAttachments({
       </div>
 
       <div className="space-y-2">
-        {issue.attachments?.map((file) => (
+        {filteredAttachments?.map((file) => (
           <div
             key={file.id}
             className="flex items-center justify-between rounded-md border p-3"
@@ -122,15 +120,11 @@ export default function FileAttachments({
                 disabled={
                   pending ||
                   (isRemovingAttachment &&
-                    removingAttachmentVariables?.attachmentIdsToDelete?.includes(
-                      file.id
-                    ))
+                    attachmentIdsToDelete?.includes(file.id))
                 }
               >
                 {isRemovingAttachment &&
-                removingAttachmentVariables?.attachmentIdsToDelete?.includes(
-                  file.id
-                ) ? (
+                attachmentIdsToDelete?.includes(file.id) ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <X className="h-4 w-4" />

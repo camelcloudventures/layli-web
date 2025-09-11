@@ -48,7 +48,6 @@ export async function getIssues(): Promise<IssuesResponse | null> {
 }
 
 export async function updateIssue(issueId: string, formData: FormData) {
-  // Get basic issue data
   const payload: {
     title: string;
     cause: string;
@@ -57,8 +56,6 @@ export async function updateIssue(issueId: string, formData: FormData) {
     priority: string;
     assignees: FormDataEntryValue[];
     due_at: string | null;
-    attachmentsToAdd?: Array<{ fileName: string; fileUrl: string }>;
-    attachmentIdsToDelete?: string[];
   } = {
     title: formData.get("title") as string,
     cause: formData.get("cause") as string,
@@ -71,43 +68,31 @@ export async function updateIssue(issueId: string, formData: FormData) {
       : null,
   };
 
-  // Handle attachments if provided
-  const attachmentsToAdd = formData.get("attachmentsToAdd");
-  const attachmentIdsToDelete = formData.get("attachmentIdsToDelete");
-
-  if (attachmentsToAdd) {
-    payload.attachmentsToAdd = JSON.parse(attachmentsToAdd as string);
-  }
-
-  if (attachmentIdsToDelete) {
-    payload.attachmentIdsToDelete = JSON.parse(attachmentIdsToDelete as string);
-  }
-
   const res = await UPDATE(`/issues/${issueId}/update`, payload, ["issues"]);
   revalidateTag("issues");
   return res;
 }
 
-export async function updateAttachments(
+export async function addAttachments(
   issueId: string,
-  attachmentsToAdd?: Array<{ fileName: string; fileUrl: string }>,
-  attachmentIdsToDelete?: string[]
+  attachmentsToAdd: Array<{ fileName: string; fileUrl: string }>
 ) {
-  const payload: {
-    attachmentsToAdd?: Array<{ fileName: string; fileUrl: string }>;
-    attachmentIdsToDelete?: string[];
-  } = {};
+  const payload = {
+    attachmentsToAdd,
+  };
+  const res = await POST(`/issues/${issueId}/attachments`, payload);
+  revalidateTag("issues");
+  return res;
+}
 
-  if (attachmentsToAdd && attachmentsToAdd.length > 0) {
-    payload.attachmentsToAdd = attachmentsToAdd;
-  }
-
-  if (attachmentIdsToDelete && attachmentIdsToDelete.length > 0) {
-    payload.attachmentIdsToDelete = attachmentIdsToDelete;
-  }
-
-  const res = await UPDATE(`/issues/${issueId}/update`, payload, ["issues"]);
-  console.log("res is this from the server", res);
+export async function removeAttachments(
+  issueId: string,
+  attachmentIdsToDelete: string[]
+) {
+  const payload = {
+    attachmentsToRemove: attachmentIdsToDelete,
+  };
+  const res = await DELETE(`/issues/${issueId}/attachments`, payload);
   revalidateTag("issues");
   return res;
 }

@@ -84,7 +84,7 @@ export async function updateAction(id: string, payload: Partial<Action>) {
 }
 
 export async function deleteAction(id: string) {
-  const res = await DELETE(`/actions/${id}/delete `, {});
+  const res = await DELETE(`/actions/${id}/delete`);
   revalidatePath("/dashboard/actions");
   return res;
 }
@@ -111,11 +111,36 @@ export async function deleteAction(id: string) {
   @IsOptional()
   longitude?: number;
  */
-export async function markActionAsCompleted(
-  id: string,
-  payload: { comments: string; file?: string; site_id: string }
-) {
-  const res = await UPDATE(`/actions/${id}/done`, payload);
-  revalidatePath("/dashboard/actions");
-  return res;
+export async function markActionAsCompleted(id: string, formData: FormData) {
+  try {
+    const comments = formData.get("comments") as string;
+    const file = formData.get("file") as string | undefined;
+    const site_id = formData.get("site_id") as string | undefined;
+
+    if (!comments) {
+      return { error: "Comments are required to complete an action." };
+    }
+
+    const payload: { comments: string; file?: string; site_id?: string } = {
+      comments,
+    };
+
+    if (file) {
+      payload.file = file;
+    }
+
+    if (site_id) {
+      payload.site_id = site_id;
+    }
+
+    const res = await UPDATE(`/actions/${id}/done`, payload);
+
+    console.log("res from backedn~~~~~~~~~~~~~~~~~~~~~~~~~~^", res);
+
+    revalidateTag("actions");
+    return res;
+  } catch (error) {
+    console.error("Error completing action:", error);
+    return { error: "Failed to mark action as completed" };
+  }
 }

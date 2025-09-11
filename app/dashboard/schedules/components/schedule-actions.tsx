@@ -1,20 +1,20 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { MoreHorizontal, EditIcon, Trash2Icon } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import type { Schedule } from '@/lib/types/schedule-types'
+import { useState } from "react";
+import { MoreHorizontal, EditIcon, Trash2Icon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { Schedule } from "@/lib/types/schedule-types";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu";
 
 interface ScheduleActionsProps {
-  schedule: Schedule
-  onEdit: (schedule: Schedule) => void
-  onDelete: (schedule: Schedule) => void
+  schedule: Schedule;
+  onEdit: (schedule: Schedule) => void;
+  onDelete: (schedule: Schedule) => void;
 }
 
 export function ScheduleActions({
@@ -23,8 +23,8 @@ export function ScheduleActions({
   onDelete,
 }: ScheduleActionsProps) {
   const [dropdownOpenId, setDropdownOpenId] = useState<string | number | null>(
-    null,
-  )
+    null
+  );
 
   return (
     <DropdownMenu
@@ -39,8 +39,8 @@ export function ScheduleActions({
       <DropdownMenuContent align="end">
         <DropdownMenuItem
           onClick={() => {
-            setDropdownOpenId(null)
-            onEdit(schedule)
+            setDropdownOpenId(null);
+            onEdit(schedule);
           }}
         >
           <EditIcon className="mr-2 h-4 w-4" />
@@ -49,9 +49,9 @@ export function ScheduleActions({
         <DropdownMenuItem
           className="text-red-500 hover:bg-red-500 hover:text-white focus:bg-red-600 focus:text-white"
           onSelect={(e) => {
-            e.preventDefault()
-            setDropdownOpenId(null)
-            onDelete(schedule)
+            e.preventDefault();
+            setDropdownOpenId(null);
+            onDelete(schedule);
           }}
         >
           <Trash2Icon className="mr-2 focus:text-white h-4 w-4" />
@@ -59,5 +59,5 @@ export function ScheduleActions({
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

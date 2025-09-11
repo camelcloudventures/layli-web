@@ -7,7 +7,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useInvites } from "@/hooks/use-invites";
 import { Permission } from "@/lib/auth/auth";
 import HasPermission from "../components/has-permission";
 import { UserManagement } from "./components/user-management";
@@ -16,8 +15,6 @@ import { UserProfileForm } from "./components/user-profile-form";
 import { SiteManagement } from "./components/site-management";
 
 export function SettingsClient() {
-  const { invites } = useInvites();
-
   return (
     <div className="space-y-6">
       <div>
@@ -74,7 +71,7 @@ export function SettingsClient() {
               <CardDescription>Invite users and manage roles</CardDescription>
             </CardHeader>
             <CardContent className="space-y-10">
-              <UserManagement invites={invites} />
+              <UserManagement />
               <SiteManagement />
             </CardContent>
           </Card>

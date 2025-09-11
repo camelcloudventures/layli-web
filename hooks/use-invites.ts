@@ -21,5 +21,5 @@ export function useInvites() {
     }
   }, [fetchedInvites, invites, setInvites]);
 
-  return { invites, isLoading };
+  return { invites, isLoading, setInvites };
 }

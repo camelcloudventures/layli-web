@@ -30,6 +30,8 @@ import { useAuth } from "@/lib/context/auth-provider";
 import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { columns } from "./columns";
+import { useInvites } from "@/hooks/use-invites";
+import { useInvitesStore } from "@/store/invites";
 
 type UserRole = "admin" | "auditor" | "supervisor";
 
@@ -41,10 +43,13 @@ export interface Invite {
   invited_by: string;
   created_at: string;
   used: boolean;
+  user_id?: string;
 }
 
-export function UserManagement({ invites }: { invites: Invite[] }) {
+export function UserManagement() {
   const { user, activeOrg } = useAuth();
+  const { invites } = useInvites();
+  const addInvite = useInvitesStore((state) => state.addInvite);
 
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -70,7 +75,11 @@ export function UserManagement({ invites }: { invites: Invite[] }) {
       toast.error(res?.error || "Invitation failed, please try again.");
       return;
     }
-    toast.success(res?.success);
+
+    if (res.data && res.data.length > 0) {
+      addInvite(res.data[0] as Invite);
+    }
+    toast.success(res.success || "Invitation sent successfully");
     setInviteForm({ role: inviteForm.role });
     setIsInviteDialogOpen(false);
   };
@@ -143,11 +152,7 @@ export function UserManagement({ invites }: { invites: Invite[] }) {
       </div>
 
       <div className="border rounded-md">
-        <DataTable
-          columns={columns}
-          //@ts-expect-error -0expects invites to be typed
-          data={invites}
-        />
+        <DataTable columns={columns} data={invites} />
       </div>
     </div>
   );

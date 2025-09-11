@@ -59,7 +59,11 @@ const createOptions = {
 const quickActions = {
   admin: [
     { label: "Create New Audit", icon: Plus, href: "/dashboard/templates" },
-    { label: "Manage Users", icon: Users, href: "/dashboard/settings" },
+    {
+      label: "Manage Users",
+      icon: Users,
+      href: "/dashboard/settings?tab=advanced",
+    },
     { label: "System Settings", icon: Settings, href: "/dashboard/settings" },
   ],
   auditor: [

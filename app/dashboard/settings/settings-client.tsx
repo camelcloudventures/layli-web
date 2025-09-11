@@ -13,8 +13,11 @@ import { UserManagement } from "./components/user-management";
 // import { UserPreferences } from "./components/user-preferences";
 import { UserProfileForm } from "./components/user-profile-form";
 import { SiteManagement } from "./components/site-management";
+import { useSearchParams } from "next/navigation";
 
 export function SettingsClient() {
+  const searchParams = useSearchParams();
+  const tab = searchParams.get("tab");
   return (
     <div className="space-y-6">
       <div>
@@ -24,7 +27,7 @@ export function SettingsClient() {
         </p>
       </div>
 
-      <Tabs defaultValue="general" className="">
+      <Tabs defaultValue={tab || "general"} className="">
         <TabsList className="w-44 ">
           <TabsTrigger className="cursor-pointer" value="general">
             General

@@ -37,8 +37,7 @@ function ActionsCell({ site }: { site: Site }) {
 
   const { mutate: updateSiteMutation, isPending: isUpdating } =
     useUpdateSiteMutation();
-  const { mutate: deleteSiteMutation, isPending: isDeleting } =
-    useDeleteSiteMutation();
+  const { mutate: deleteSiteMutation } = useDeleteSiteMutation();
 
   const handleUpdate = () => {
     updateSiteMutation(
@@ -67,6 +66,7 @@ function ActionsCell({ site }: { site: Site }) {
   const handleDelete = async () => {
     return new Promise<void>((resolve) => {
       deleteSiteMutation(site.id, {
+        //eslint-disable-next-line
         onSuccess: (data: any) => {
           if (data?.statusCode >= 400 && data?.message) {
             toast.error(data.message);

@@ -7,6 +7,7 @@ interface SchedulesStore {
     schedules: Schedule[] | ((prev: Schedule[]) => Schedule[])
   ) => void;
   clearSchedules: () => void;
+  removeSchedule: (scheduleId: string) => void;
 }
 
 export const useSchedulesStore = create<SchedulesStore>()((set) => ({
@@ -19,4 +20,10 @@ export const useSchedulesStore = create<SchedulesStore>()((set) => ({
           : schedules,
     })),
   clearSchedules: () => set({ schedules: [] }),
+  removeSchedule: (scheduleId) =>
+    set((state) => ({
+      schedules: state.schedules.filter(
+        (schedule) => String(schedule.id) !== scheduleId
+      ),
+    })),
 }));

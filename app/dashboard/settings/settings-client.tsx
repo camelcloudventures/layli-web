@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Permission } from "@/lib/auth/auth";
 import HasPermission from "../components/has-permission";
 import { UserManagement } from "./components/user-management";
-import { UserPreferences } from "./components/user-preferences";
+// import { UserPreferences } from "./components/user-preferences";
 import { UserProfileForm } from "./components/user-profile-form";
 import { SiteManagement } from "./components/site-management";
 
@@ -50,7 +50,7 @@ export function SettingsClient() {
               </CardContent>
             </Card>
 
-            <Card>
+            {/* <Card>
               <CardHeader>
                 <CardTitle>Preferences</CardTitle>
                 <CardDescription>
@@ -60,7 +60,7 @@ export function SettingsClient() {
               <CardContent>
                 <UserPreferences />
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
         </TabsContent>
 

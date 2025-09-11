@@ -203,7 +203,6 @@ export async function GET<T>(
 
 export async function DELETE<T>(
   url: string,
-  data: T,
   tags?: string[]
 ): Promise<T | null> {
   try {
@@ -223,12 +222,10 @@ export async function DELETE<T>(
     const response = await fetch(thisUrl, {
       method: "DELETE",
       headers: {
-        "Content-Type": "application/json",
         Accept: "application/json",
         Authorization: `Bearer ${accessToken}`,
         "X-Organization-Id": activeOrgId,
       },
-      body: JSON.stringify(data),
       cache: "no-store",
       next: tags ? { tags } : undefined,
     });

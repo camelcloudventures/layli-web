@@ -33,80 +33,125 @@ function getQuestionHeight(question: Question): number {
 export function reflowTemplateByA4(original: AuditTemplate): AuditTemplate {
   const template: AuditTemplate = JSON.parse(JSON.stringify(original));
 
-  // Flatten sections preserving document order (by page ordinal, then section ordinal)
+  // Order pages by ordinal and seed a base list of pages (manual pages preserved)
   const orderedPages = [...template.pages].sort(
     (a, b) => a.ordinal - b.ordinal
   );
-  const originalPageIds = orderedPages.map((p) => p.id);
-  const orderedSections: Section[] = [];
-  for (const page of orderedPages) {
-    const sectionsSorted = [...page.sections].sort(
+
+  // Seed pages that will be filled by the reflow. Keep ids/titles/descriptions.
+  const basePages: Page[] = orderedPages.map((p, idx) => ({
+    id: p.id,
+    template_id: template.id,
+    title: p.title,
+    description: p.description,
+    ordinal: idx + 1,
+    sections: [],
+    created_at: p.created_at || new Date().toISOString(),
+  }));
+
+  function ensurePage(index: number): Page {
+    // Append auto pages on demand
+    while (basePages.length <= index) {
+      const newPageId = `page-${Date.now()}-${basePages.length}`;
+      basePages.push({
+        id: newPageId,
+        template_id: template.id,
+        title: `Page ${basePages.length + 1}`,
+        description: "",
+        ordinal: basePages.length + 1,
+        sections: [],
+        created_at: new Date().toISOString(),
+      });
+    }
+    return basePages[index];
+  }
+
+  // Build logical sections: dedupe by section.id, preserve first-seen order and page index
+  type LogicalSection = {
+    base: Pick<Section, "id" | "title" | "created_at">;
+    questions: Question[];
+    firstPageIndex: number; // index in orderedPages where this section first appeared
+    orderKey: number; // stable order of first encounter in traversal
+  };
+
+  const logicalSectionsMap = new Map<string, LogicalSection>();
+  let encounterCounter = 0;
+
+  orderedPages.forEach((p, pi) => {
+    const sectionsSorted = [...p.sections].sort(
       (a, b) => a.ordinal - b.ordinal
     );
-    for (const section of sectionsSorted) {
-      orderedSections.push(section);
-    }
-  }
+    sectionsSorted.forEach((s) => {
+      const existing = logicalSectionsMap.get(s.id);
+      const qs = [...s.questions].sort((a, b) => a.ordinal - b.ordinal);
+      if (!existing) {
+        logicalSectionsMap.set(s.id, {
+          base: { id: s.id, title: s.title, created_at: s.created_at },
+          questions: [...qs],
+          firstPageIndex: pi,
+          orderKey: encounterCounter++,
+        });
+      } else {
+        existing.questions.push(...qs);
+      }
+    });
+  });
 
-  const existingPageTitles = orderedPages.map((p) => p.title);
-  const existingPageDescriptions = orderedPages.map((p) => p.description);
+  const logicalSections = Array.from(logicalSectionsMap.values()).sort(
+    (a, b) => a.orderKey - b.orderKey
+  );
 
-  const newPages: Page[] = [];
-  let currentPage: Page | null = null;
-  let currentHeight = 0;
   let pageIndex = 0;
+  let currentPage: Page = ensurePage(pageIndex);
+  let currentHeight = 0;
+
+  function advanceToPage(targetIndex: number) {
+    pageIndex = targetIndex;
+    currentPage = ensurePage(pageIndex);
+    currentHeight = 0;
+  }
 
   function startNewPage() {
-    const newPageId =
-      originalPageIds[pageIndex] || `page-${Date.now()}-${pageIndex}`;
-    currentPage = {
-      id: newPageId,
-      template_id: template.id,
-      title: existingPageTitles[pageIndex] || `Page ${pageIndex + 1}`,
-      description: existingPageDescriptions[pageIndex] || "",
-      ordinal: pageIndex + 1,
-      sections: [],
-      created_at: new Date().toISOString(),
-    };
-    newPages.push(currentPage);
-    currentHeight = 0;
-    pageIndex += 1;
+    advanceToPage(pageIndex + 1);
   }
 
-  function pushSectionFragment(baseSection: Section, questions: Question[]) {
-    if (!currentPage) startNewPage();
+  function pushSectionFragment(
+    baseSection: LogicalSection["base"],
+    questions: Question[]
+  ) {
     const fragment: Section = {
       id: baseSection.id,
-      page_id: currentPage!.id,
+      page_id: currentPage.id,
       title: baseSection.title,
-      ordinal: (currentPage!.sections.length || 0) + 1,
-      questions: questions.map((q) => ({ ...q, page_id: currentPage!.id })),
+      ordinal: (currentPage.sections.length || 0) + 1,
+      questions: questions.map((q) => ({ ...q, page_id: currentPage.id })),
       created_at: baseSection.created_at,
     };
-    currentPage!.sections.push(fragment);
+    currentPage.sections.push(fragment);
     // update height: header + questions heights
     let used = SECTION_HEADER_HEIGHT;
     for (const q of questions) used += getQuestionHeight(q);
     currentHeight += used;
   }
 
-  for (const section of orderedSections) {
-    // ensure a page is active
-    if (!currentPage) startNewPage();
+  // Lay out each logical section, starting on the page it was created on.
+  for (const logical of logicalSections) {
+    if (pageIndex < logical.firstPageIndex) {
+      // Respect manual boundary where the section was added
+      advanceToPage(logical.firstPageIndex);
+    }
 
-    const allQs = [...section.questions].sort((a, b) => a.ordinal - b.ordinal);
+    const allQs = [...logical.questions].sort((a, b) => a.ordinal - b.ordinal);
     if (allQs.length === 0) {
-      // Empty section still consumes header height
       if (currentHeight + SECTION_HEADER_HEIGHT > A4_PAGE_HEIGHT_PX) {
         startNewPage();
       }
-      pushSectionFragment(section, []);
+      pushSectionFragment(logical.base, []);
       continue;
     }
 
     let cursor = 0;
     while (cursor < allQs.length) {
-      // If header does not fit, start new page
       if (currentHeight + SECTION_HEADER_HEIGHT > A4_PAGE_HEIGHT_PX) {
         startNewPage();
       }
@@ -122,19 +167,25 @@ export function reflowTemplateByA4(original: AuditTemplate): AuditTemplate {
         cursor += 1;
       }
 
-      // If nothing fit besides header, force at least one question per page
       if (fragmentQuestions.length === 0) {
         fragmentQuestions.push(allQs[cursor]);
         cursor += 1;
       }
 
-      pushSectionFragment(section, fragmentQuestions);
+      pushSectionFragment(logical.base, fragmentQuestions);
     }
   }
 
-  // Replace template pages with newPages while preserving ids in questions
+  // Fix ordinals after layout
+  basePages.forEach((p, pi) => {
+    p.ordinal = pi + 1;
+    p.sections.forEach((s, si) => {
+      s.ordinal = si + 1;
+    });
+  });
+
   return {
     ...template,
-    pages: newPages,
+    pages: basePages,
   };
 }

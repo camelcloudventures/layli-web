@@ -180,6 +180,7 @@ export enum InspectionStatus {
   IN_PROGRESS = "in_progress",
   PAUSED = "paused",
   COMPLETED = "completed",
+  DONE = "done",
   CANCELLED = "cancelled",
 }
 

@@ -52,13 +52,15 @@ export function SectionsManager({
 
   const addNewSection = () => {
     const tempId = `temp-${Date.now()}`;
-    const totalSections = template.pages.reduce(
-      (acc, p) => acc + p.sections.length,
-      0
+    // Count unique logical sections by id across the whole template
+    const uniqueSectionIds = new Set<string>();
+    template.pages.forEach((p) =>
+      p.sections.forEach((s) => uniqueSectionIds.add(s.id))
     );
+    const totalUniqueSections = uniqueSectionIds.size;
     const newSection: NewSection = {
       page_id: page.id,
-      title: `Section ${totalSections + 1}`,
+      title: `Section ${totalUniqueSections + 1}`,
       ordinal: page.sections.length + 1,
       questions: [],
     };

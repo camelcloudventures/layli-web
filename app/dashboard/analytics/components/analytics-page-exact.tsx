@@ -18,7 +18,6 @@ import {
   Bar,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   AreaChart,
@@ -215,7 +214,13 @@ export default function AnalyticsPageExact() {
       </div>
 
       {/* Tabs */}
-      <Tabs value={currentTab} onValueChange={changeTab} className="w-full">
+      <Tabs
+        value={currentTab}
+        onValueChange={(value) =>
+          changeTab(value as "inspections" | "issues" | "actions" | "locations")
+        }
+        className="w-full"
+      >
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="inspections">Inspections</TabsTrigger>
           <TabsTrigger value="issues">Issues</TabsTrigger>

@@ -4,7 +4,7 @@ import { Tabs } from "@/components/ui/tabs";
 
 import { useState } from "react";
 import TabSelector from "./tab-selector";
-import Analytics from "./analytics";
+import Analytics from "./analytics-new";
 import Reports from "./reports";
 import Notifications from "./notifications";
 import Overview from "./overview";
@@ -79,10 +79,7 @@ type IProps = {
 export default function HomeTabs({
   stats,
   notifications,
-  inspectionTrends,
-  issuesByCategory,
-  actionCompletionRate,
-  summary,
+
   reportData,
 }: IProps) {
   const [selectedTab, setSelectedTab] = useState("overview");
@@ -117,14 +114,7 @@ export default function HomeTabs({
   function renderTabContent() {
     switch (selectedTab) {
       case "analytics":
-        return (
-          <Analytics
-            inspectionTrends={inspectionTrends}
-            issuesByCategory={issuesByCategory}
-            actionCompletionRate={actionCompletionRate}
-            summary={summary}
-          />
-        );
+        return <Analytics />;
       case "reports":
         return (
           <Reports

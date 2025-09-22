@@ -64,23 +64,15 @@ export function useAnalyticsComprehensive() {
         setLoading(false);
       }
     },
-    [
-      timeFilter,
-      setComprehensiveData,
-      setLocationData,
-      setRiskData,
-      setComplianceData,
-      setIssuesData,
-      setLoading,
-      setError,
-      setLastUpdated,
-    ]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [timeFilter]
   );
 
   // Auto-refresh function
   const refreshData = useCallback(() => {
     fetchComprehensiveData(timeFilter);
-  }, [fetchComprehensiveData, timeFilter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchComprehensiveData]);
 
   // Change time filter
   const changeTimeFilter = useCallback(
@@ -88,7 +80,8 @@ export function useAnalyticsComprehensive() {
       setTimeFilter(filter);
       fetchComprehensiveData(filter);
     },
-    [setTimeFilter, fetchComprehensiveData]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [fetchComprehensiveData]
   );
 
   // Change tab

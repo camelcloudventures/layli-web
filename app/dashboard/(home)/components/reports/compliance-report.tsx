@@ -1,4 +1,4 @@
-import { format } from 'date-fns'
+import { format } from "date-fns";
 
 interface ComplianceReportData {
   overview: {
@@ -42,8 +42,6 @@ interface ComplianceReportProps {
 }
 
 export function ComplianceReport({ data }: ComplianceReportProps) {
-  const currentDate = new Date()
-
   // Use real data or fallback to mock data if not available
   const reportData = data || {
     overview: {
@@ -142,40 +140,40 @@ export function ComplianceReport({ data }: ComplianceReportProps) {
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'compliant':
-        return 'text-green-600';
-      case 'partial':
-        return 'text-yellow-600';
-      case 'non-compliant':
-        return 'text-red-600';
+      case "compliant":
+        return "text-green-600";
+      case "partial":
+        return "text-yellow-600";
+      case "non-compliant":
+        return "text-red-600";
       default:
-        return 'text-gray-600';
+        return "text-gray-600";
     }
   };
 
   const getSeverityColor = (severity: string) => {
     switch (severity.toLowerCase()) {
-      case 'high':
-        return 'text-red-600';
-      case 'medium':
-        return 'text-yellow-600';
-      case 'low':
-        return 'text-green-600';
+      case "high":
+        return "text-red-600";
+      case "medium":
+        return "text-yellow-600";
+      case "low":
+        return "text-green-600";
       default:
-        return 'text-gray-600';
+        return "text-gray-600";
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
-      case 'high':
-        return 'text-red-600';
-      case 'medium':
-        return 'text-yellow-600';
-      case 'low':
-        return 'text-green-600';
+      case "high":
+        return "text-red-600";
+      case "medium":
+        return "text-yellow-600";
+      case "low":
+        return "text-green-600";
       default:
-        return 'text-gray-600';
+        return "text-gray-600";
     }
   };
 
@@ -183,12 +181,13 @@ export function ComplianceReport({ data }: ComplianceReportProps) {
     <div
       id="compliance-report"
       className="p-8 bg-white text-black"
-      style={{ width: '800px' }}
+      style={{ width: "800px" }}
     >
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold">Compliance Status Report</h1>
         <p className="text-gray-500">
-          Generated on {format(new Date(reportData.generated_at), 'MMMM d, yyyy')}
+          Generated on{" "}
+          {format(new Date(reportData.generated_at), "MMMM d, yyyy")}
         </p>
       </div>
 
@@ -207,7 +206,9 @@ export function ComplianceReport({ data }: ComplianceReportProps) {
               style={{ width: `${reportData.overview.overall_score}%` }}
             ></div>
           </div>
-          <span className="text-lg font-bold">{reportData.overview.overall_score}%</span>
+          <span className="text-lg font-bold">
+            {reportData.overview.overall_score}%
+          </span>
         </div>
         <p className="text-sm text-gray-600">
           Overall compliance score based on completed audits and resolved issues
@@ -230,11 +231,13 @@ export function ComplianceReport({ data }: ComplianceReportProps) {
               <tr key={index}>
                 <td className="border p-2">{framework.name}</td>
                 <td className="border p-2">{framework.score}%</td>
-                <td className={`border p-2 ${getStatusColor(framework.status)}`}>
+                <td
+                  className={`border p-2 ${getStatusColor(framework.status)}`}
+                >
                   {framework.status}
                 </td>
                 <td className="border p-2">
-                  {format(new Date(framework.last_audit), 'MMM d, yyyy')}
+                  {format(new Date(framework.last_audit), "MMM d, yyyy")}
                 </td>
               </tr>
             ))}
@@ -258,11 +261,13 @@ export function ComplianceReport({ data }: ComplianceReportProps) {
               <tr key={index}>
                 <td className="border p-2">{issue.title}</td>
                 <td className="border p-2">{issue.framework}</td>
-                <td className={`border p-2 ${getSeverityColor(issue.severity)}`}>
+                <td
+                  className={`border p-2 ${getSeverityColor(issue.severity)}`}
+                >
                   {issue.severity}
                 </td>
                 <td className="border p-2">
-                  {format(new Date(issue.due_date), 'MMM d, yyyy')}
+                  {format(new Date(issue.due_date), "MMM d, yyyy")}
                 </td>
               </tr>
             ))}
@@ -283,10 +288,16 @@ export function ComplianceReport({ data }: ComplianceReportProps) {
                   </p>
                 </div>
                 <div className="text-right">
-                  <span className={`text-sm font-medium ${getPriorityColor(rec.priority)}`}>
+                  <span
+                    className={`text-sm font-medium ${getPriorityColor(
+                      rec.priority
+                    )}`}
+                  >
                     {rec.priority}
                   </span>
-                  <p className="text-xs text-gray-500">{rec.estimated_effort}</p>
+                  <p className="text-xs text-gray-500">
+                    {rec.estimated_effort}
+                  </p>
                 </div>
               </div>
             </div>
@@ -296,10 +307,14 @@ export function ComplianceReport({ data }: ComplianceReportProps) {
 
       <div className="mt-8 pt-4 border-t">
         <p className="text-sm text-gray-500 text-center">
-          Report generated on {format(new Date(reportData.generated_at), 'MMMM d, yyyy \'at\' h:mm a')} 
+          Report generated on{" "}
+          {format(
+            new Date(reportData.generated_at),
+            "MMMM d, yyyy 'at' h:mm a"
+          )}
           for the {reportData.period} period
         </p>
       </div>
     </div>
-  )
+  );
 }

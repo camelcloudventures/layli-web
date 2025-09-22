@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Image from 'next/image'
-import { Button } from '@/components/ui/button'
+import { useState } from "react";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,42 +10,35 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import type { AuditTemplate, Question } from '@/lib/types/audit-types'
+} from "@/components/ui/card";
+import type { AuditTemplate, Question } from "@/lib/types/audit-types";
 import {
   ChevronLeft,
   ChevronRight,
   AlertTriangle,
   FileText,
-} from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { ImageUpload } from './image-upload'
-import { Slider } from '@/components/ui/slider'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ImageUpload } from "./image-upload";
+import { Slider } from "@/components/ui/slider";
 
 interface TemplatePreviewProps {
-  template: AuditTemplate
+  template: AuditTemplate;
 }
 
 export function TemplatePreview({ template }: TemplatePreviewProps) {
-  const [currentPageIndex, setCurrentPageIndex] = useState(0)
+  const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [imageAnswers, setImageAnswersState] = useState<Record<string, string>>(
-    {},
-  )
+    {}
+  );
 
   function setImageAnswers(id: string, value: string) {
-    setImageAnswersState((prev) => ({ ...prev, [id]: value }))
+    setImageAnswersState((prev) => ({ ...prev, [id]: value }));
   }
 
   // Check if template has pages
@@ -58,23 +51,23 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
           Add pages, sections, and questions to see a preview of your template
         </p>
       </div>
-    )
+    );
   }
 
-  const currentPage = template.pages[currentPageIndex]
-  const pageCount = template.pages.length
+  const currentPage = template.pages[currentPageIndex];
+  const pageCount = template.pages.length;
 
   const goToNextPage = () => {
     if (currentPageIndex < pageCount - 1) {
-      setCurrentPageIndex(currentPageIndex + 1)
+      setCurrentPageIndex(currentPageIndex + 1);
     }
-  }
+  };
 
   const goToPrevPage = () => {
     if (currentPageIndex > 0) {
-      setCurrentPageIndex(currentPageIndex - 1)
+      setCurrentPageIndex(currentPageIndex - 1);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -114,8 +107,8 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
         {currentPage.photo && (
           <div className="relative h-48 w-full">
             <Image
-              src={currentPage.photo || '/placeholder.svg'}
-              alt={currentPage.title || 'Page cover'}
+              src={currentPage.photo || "/placeholder.svg"}
+              alt={currentPage.title || "Page cover"}
               fill
               className="object-cover"
             />
@@ -172,7 +165,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
                           {renderQuestionInput(
                             question,
                             imageAnswers,
-                            setImageAnswers,
+                            setImageAnswers
                           )}
                         </div>
                       </div>
@@ -204,16 +197,16 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }
 
 function renderQuestionInput(
   question: Question,
   imageAnswers: Record<string, string>,
-  setImageAnswers: (id: string, value: string) => void,
+  setImageAnswers: (id: string, value: string) => void
 ) {
   switch (question.field_type) {
-    case 'BOOLEAN':
+    case "BOOLEAN":
       return (
         <div className="flex gap-4">
           <div className="flex items-center gap-2">
@@ -229,32 +222,32 @@ function renderQuestionInput(
             </RadioGroup>
           </div>
         </div>
-      )
+      );
 
-    case 'TEXT':
+    case "TEXT":
       return (
         <Textarea
           placeholder="Enter your answer here..."
           className="min-h-[100px]"
         />
-      )
+      );
 
-    case 'DATE':
-      return <Input type="date" />
+    case "DATE":
+      return <Input type="date" />;
 
-    case 'PHOTO':
+    case "PHOTO":
       return (
         <ImageUpload
-          value={imageAnswers[String(question.id)] || ''}
+          value={imageAnswers[String(question.id)] || ""}
           onChange={(img) => setImageAnswers(String(question.id), img)}
           label="Upload Image"
         />
-      )
+      );
 
-    case 'NUMBER':
-      return <Input type="number" placeholder="Enter a number" />
+    case "NUMBER":
+      return <Input type="number" placeholder="Enter a number" />;
 
-    case 'SELECT':
+    case "SELECT":
       if (
         !question.response_options ||
         question.response_options.length === 0
@@ -263,7 +256,7 @@ function renderQuestionInput(
           <p className="text-sm text-muted-foreground">
             No options defined for this question
           </p>
-        )
+        );
       }
 
       return (
@@ -286,9 +279,9 @@ function renderQuestionInput(
             </div>
           ))}
         </RadioGroup>
-      )
+      );
 
-    case 'MULTI_SELECT':
+    case "MULTI_SELECT":
       if (
         !question.response_options ||
         question.response_options.length === 0
@@ -297,7 +290,7 @@ function renderQuestionInput(
           <p className="text-sm text-muted-foreground">
             No options defined for this question
           </p>
-        )
+        );
       }
 
       return (
@@ -317,9 +310,9 @@ function renderQuestionInput(
             </div>
           ))}
         </div>
-      )
+      );
 
-    case 'SLIDER':
+    case "SLIDER":
       return (
         <div className="space-y-2">
           <Label htmlFor={`slider-${question.id}`}>Slider (1-5)</Label>
@@ -338,9 +331,9 @@ function renderQuestionInput(
             <span className="ml-2 text-muted-foreground text-xs">Value: 1</span>
           </div>
         </div>
-      )
+      );
 
-    case 'SIGNATURE':
+    case "SIGNATURE":
       return (
         <div className="space-y-2">
           <Label htmlFor={`signature-${question.id}`}>Signature</Label>
@@ -359,9 +352,9 @@ function renderQuestionInput(
             <span className="text-xs text-muted-foreground">Sign here</span>
           </div>
         </div>
-      )
+      );
 
-    case 'LOCATION':
+    case "LOCATION":
       return (
         <div className="space-y-2">
           <Label htmlFor={`location-${question.id}`}>Location</Label>
@@ -399,52 +392,13 @@ function renderQuestionInput(
             />
           </div>
         </div>
-      )
-
-    case 'PERSON':
-      return <PersonPreviewField questionId={question.id} />
-
-    case 'ASSET':
-      return <AssetPreviewField questionId={question.id} />
+      );
 
     default:
       return (
         <p className="text-sm text-muted-foreground">
           Unsupported question type
         </p>
-      )
+      );
   }
-}
-
-function PersonPreviewField({ questionId }: { questionId: string }) {
-  const [selectedPerson, setSelectedPerson] = useState('')
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={`person-${questionId}`}>Person</Label>
-      <Select defaultValue={selectedPerson} onValueChange={setSelectedPerson}>
-        <SelectTrigger>
-          <SelectValue placeholder="Select a person" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="1">John Doe</SelectItem>
-          <SelectItem value="2">Jane Smith</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
-  )
-}
-
-function AssetPreviewField({ questionId }: { questionId: string }) {
-  const [assetFile, setAssetFile] = useState('')
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={`asset-${questionId}`}>Asset</Label>
-      <ImageUpload
-        value={assetFile}
-        onChange={setAssetFile}
-        label="Upload Asset"
-        accept="*/*"
-      />
-    </div>
-  )
 }

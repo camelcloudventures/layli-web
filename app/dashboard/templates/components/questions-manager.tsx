@@ -30,7 +30,6 @@ import type {
   NewQuestion,
 } from "@/lib/types/audit-types";
 import { ResponseOptionsManager } from "@/app/dashboard/templates/components/response-options-manager";
-import { ImageUpload } from "@/app/dashboard/templates/components/image-upload";
 import { reflowTemplateByA4 } from "@/app/dashboard/templates/utils/a4-pagination";
 
 interface QuestionsManagerProps {
@@ -337,8 +336,6 @@ export function QuestionsManager({
                                 | "SIGNATURE"
                                 | "LOCATION"
                                 | "SLIDER"
-                                | "PERSON"
-                                | "ASSET"
                             )
                           }
                         >
@@ -360,8 +357,6 @@ export function QuestionsManager({
                             <SelectItem value="SIGNATURE">Signature</SelectItem>
                             <SelectItem value="LOCATION">Location</SelectItem>
                             <SelectItem value="SLIDER">Slider</SelectItem>
-                            <SelectItem value="PERSON">Person</SelectItem>
-                            <SelectItem value="ASSET">Asset</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -510,46 +505,6 @@ export function QuestionsManager({
                         </div>
                       )}
 
-                      {question.field_type === "PERSON" && (
-                        <div className="space-y-2">
-                          <Label htmlFor={`person-${question.id}`}>
-                            Person
-                          </Label>
-                          <Select
-                            value={question.response_options?.[0]?.id}
-                            onValueChange={(value) =>
-                              updateQuestion(
-                                question.id,
-                                "response_options",
-                                value
-                              )
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a person" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="1">John Doe</SelectItem>
-                              <SelectItem value="2">Jane Smith</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
-
-                      {question.field_type === "ASSET" && (
-                        <div className="space-y-2">
-                          <Label htmlFor={`asset-${question.id}`}>Asset</Label>
-                          <ImageUpload
-                            value={""}
-                            onChange={(file: string) =>
-                              updateQuestion(question.id, "asset_file", file)
-                            }
-                            label="Upload Asset"
-                            accept="*/*"
-                          />
-                        </div>
-                      )}
-
                       {/* Response Options Manager (for SELECT & MULTI_SELECT) */}
                       {(question.field_type === "SELECT" ||
                         question.field_type === "MULTI_SELECT") && (
@@ -571,9 +526,7 @@ export function QuestionsManager({
                           question.field_type === "BOOLEAN" ||
                           question.field_type === "PHOTO" ||
                           question.field_type === "SIGNATURE" ||
-                          question.field_type === "LOCATION" ||
-                          question.field_type === "PERSON" ||
-                          question.field_type === "ASSET") && (
+                          question.field_type === "LOCATION") && (
                           <div className="space-y-2">
                             <Label className="font-medium">Flag when…</Label>
                             {/* TEXT */}
@@ -827,12 +780,10 @@ export function QuestionsManager({
                                 </select>
                               </div>
                             )}
-                            {/* PHOTO, SIGNATURE, LOCATION, PERSON, ASSET */}
+                            {/* PHOTO, SIGNATURE, LOCATION */}
                             {(question.field_type === "PHOTO" ||
                               question.field_type === "SIGNATURE" ||
-                              question.field_type === "LOCATION" ||
-                              question.field_type === "PERSON" ||
-                              question.field_type === "ASSET") && (
+                              question.field_type === "LOCATION") && (
                               <div className="flex gap-2 items-center">
                                 <select
                                   className="border rounded px-2 py-1 text-sm"

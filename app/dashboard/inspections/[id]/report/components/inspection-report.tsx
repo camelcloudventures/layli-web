@@ -16,7 +16,7 @@ import {
 import { Inspection, InspectionResponse } from "../types/inspection-types";
 import { downloadInspectionPDF } from "../utils/pdf-generator";
 import { toast } from "sonner";
-import { useActionsStore } from "@/store/actions";
+import { useActions } from "@/hooks/use-actions";
 import Image from "next/image";
 
 interface InspectionReportProps {
@@ -26,7 +26,7 @@ interface InspectionReportProps {
 export function InspectionReport({ inspection }: InspectionReportProps) {
   const [selectedPage, setSelectedPage] = useState(0);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const { actions } = useActionsStore();
+  const { actions } = useActions();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -77,55 +77,238 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
       );
     }
 
-    // Handle Photo
-    if (
-      question.field_type === "PHOTO" &&
-      response.file_attachments &&
-      response.file_attachments.length > 0
-    ) {
-      const photo = response.file_attachments[0];
-      return (
-        //@ts-expect-error - this is a temporary fix to get the photo to display
-        <a href={photo?.file_path} target="_blank" rel="noopener noreferrer">
-          <Image
-            // @ts-expect-error - this is a temporary fix to get the photo to display
-            src={photo?.file_path}
-            // @ts-expect-error - this is a temporary fix to get the photo to display
-            alt={photo?.filename}
-            width={200}
-            height={150}
-            className="rounded-md border object-cover"
-          />
-        </a>
-      );
+    // Handle Photo - check both file_attachments and response_value
+    if (question.field_type === "PHOTO") {
+      // First check if there are file attachments
+      if (response.file_attachments && response.file_attachments.length > 0) {
+        const photo = response.file_attachments[0];
+        return (
+          //@ts-expect-error - this is a temporary fix to get the photo to display
+          <a href={photo?.file_path} target="_blank" rel="noopener noreferrer">
+            <Image
+              // @ts-expect-error - this is a temporary fix to get the photo to display
+              src={photo?.file_path}
+              // @ts-expect-error - this is a temporary fix to get the photo to display
+              alt={photo?.filename}
+              width={200}
+              height={150}
+              className="rounded-md border object-cover"
+            />
+          </a>
+        );
+      }
+      // If no file attachments, check if response_value is a URL
+      if (
+        response.response_value &&
+        response.response_value.startsWith("http")
+      ) {
+        return (
+          <a
+            href={response.response_value}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              src={response.response_value}
+              alt="Uploaded photo"
+              width={200}
+              height={150}
+              className="rounded-md border object-cover"
+            />
+          </a>
+        );
+      }
+      return "No photo uploaded";
     }
 
-    // Handle SELECT or MULTI_SELECT
-    if (
-      (question.field_type === "SELECT" ||
-        question.field_type === "MULTI_SELECT") &&
-      response.selected_options &&
-      response.selected_options.length > 0 &&
-      question.response_options
-    ) {
-      const selectedLabels = response.selected_options
-        .map((optionId) => {
-          const option = question.response_options.find(
+    // Handle BOOLEAN questions
+    if (question.field_type === "BOOLEAN") {
+      if (
+        response.response_value === "true" ||
+        response.response_value === "1"
+      ) {
+        return "Yes";
+      }
+      if (
+        response.response_value === "false" ||
+        response.response_value === "0"
+      ) {
+        return "No";
+      }
+      return "No response";
+    }
+
+    // Handle NUMBER questions
+    if (question.field_type === "NUMBER") {
+      if (
+        response.numeric_value !== null &&
+        response.numeric_value !== undefined
+      ) {
+        return response.numeric_value.toString();
+      }
+      if (response.response_value) {
+        return response.response_value;
+      }
+      return "No response";
+    }
+
+    // Handle DATE questions
+    if (question.field_type === "DATE") {
+      if (response.response_value) {
+        try {
+          return new Date(response.response_value).toLocaleDateString();
+        } catch {
+          return response.response_value;
+        }
+      }
+      return "No response";
+    }
+
+    // Handle SELECT questions
+    if (question.field_type === "SELECT") {
+      // First check if response_value contains a valid option label
+      if (response.response_value && question.response_options) {
+        const matchingOption = question.response_options.find(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (option: any) => option.label === response.response_value
+        );
+        if (matchingOption) {
+          return response.response_value;
+        }
+      }
+      // Fallback: check if we have selected_options with IDs (rare case)
+      if (
+        response.selected_options &&
+        response.selected_options.length > 0 &&
+        question.response_options
+      ) {
+        const selectedLabels = response.selected_options
+          .map((optionId) => {
+            // Convert to number if it's a string
+            const numericId =
+              typeof optionId === "string" ? parseInt(optionId) : optionId;
+            const option = question.response_options.find(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (o: any) => o.id === numericId
+            );
+            return option ? option.label : null;
+          })
+          .filter(Boolean)
+          .join(", ");
+        return selectedLabels || "No response";
+      }
+      // Final fallback to response_value
+      if (response.response_value) {
+        return response.response_value;
+      }
+      return "No response";
+    }
+
+    // Handle MULTI_SELECT questions
+    if (question.field_type === "MULTI_SELECT") {
+      // First check if response_value contains comma-separated labels
+      if (response.response_value && question.response_options) {
+        // Split by comma and check if each part matches an option label
+        const responseValues = response.response_value
+          .split(",")
+          .map((v) => v.trim());
+        const validLabels = responseValues.filter((value) =>
+          question.response_options.some(
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (o: any) => o.id === optionId
-          );
-          return option ? option.label : null;
-        })
-        .filter(Boolean)
-        .join(", ");
-      return selectedLabels || "No response";
+            (option: any) => option.label === value
+          )
+        );
+        if (validLabels.length > 0) {
+          return validLabels.join(", ");
+        }
+      }
+      // Fallback: check if we have selected_options with IDs (rare case)
+      if (
+        response.selected_options &&
+        response.selected_options.length > 0 &&
+        question.response_options
+      ) {
+        const selectedLabels = response.selected_options
+          .map((optionId) => {
+            // Convert to number if it's a string
+            const numericId =
+              typeof optionId === "string" ? parseInt(optionId) : optionId;
+            const option = question.response_options.find(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (o: any) => o.id === numericId
+            );
+            return option ? option.label : null;
+          })
+          .filter(Boolean)
+          .join(", ");
+        return selectedLabels || "No response";
+      }
+      // Final fallback to response_value
+      if (response.response_value) {
+        return response.response_value;
+      }
+      return "No response";
     }
 
+    // Handle TEXT questions
+    if (question.field_type === "TEXT") {
+      if (response.text_value) {
+        return response.text_value;
+      }
+      if (response.response_value) {
+        return response.response_value;
+      }
+      return "No response";
+    }
+
+    // Handle LOCATION questions
+    if (question.field_type === "LOCATION") {
+      if (response.location_data) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const location = response.location_data as any;
+        if (location?.address) {
+          return location.address;
+        }
+        if (location?.latitude && location?.longitude) {
+          return `Lat: ${location.latitude}, Lng: ${location.longitude}`;
+        }
+      }
+      return "No location recorded";
+    }
+
+    // Handle SLIDER questions
+    if (question.field_type === "SLIDER") {
+      if (
+        response.numeric_value !== null &&
+        response.numeric_value !== undefined
+      ) {
+        return response.numeric_value.toString();
+      }
+      if (response.response_value) {
+        return response.response_value;
+      }
+      return "No response";
+    }
+
+    // Fallback for other field types
     if (response.text_value) return response.text_value;
-    if (response.numeric_value !== null && response.numeric_value !== undefined)
+    if (
+      response.numeric_value !== null &&
+      response.numeric_value !== undefined
+    ) {
       return response.numeric_value.toString();
-    if (response.response_value)
-      return new Date(response.response_value).toLocaleDateString();
+    }
+    if (response.response_value) {
+      // Only try to parse as date if it looks like a date string
+      if (response.response_value.match(/^\d{4}-\d{2}-\d{2}/)) {
+        try {
+          return new Date(response.response_value).toLocaleDateString();
+        } catch {
+          return response.response_value;
+        }
+      }
+      return response.response_value;
+    }
     if (response.selected_options && response.selected_options.length > 0) {
       return response.selected_options.join(", ");
     }
@@ -407,11 +590,29 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
 
                       {response && (
                         <div className="space-y-4 mt-4">
-                          <div className="bg-gray-50 p-3 rounded">
-                            <span className="text-sm font-medium text-gray-700">
+                          <div
+                            className={`p-3 rounded ${
+                              response.is_flagged
+                                ? "bg-red-50 border border-red-200"
+                                : "bg-gray-50"
+                            }`}
+                          >
+                            <span
+                              className={`text-sm font-medium ${
+                                response.is_flagged
+                                  ? "text-red-700"
+                                  : "text-gray-700"
+                              }`}
+                            >
                               Response:
                             </span>
-                            <div className="text-sm text-gray-900 mt-1">
+                            <div
+                              className={`text-sm mt-1 ${
+                                response.is_flagged
+                                  ? "text-red-900"
+                                  : "text-gray-900"
+                              }`}
+                            >
                               {getResponseDisplayValue(response, question)}
                             </div>
                           </div>
@@ -428,11 +629,12 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
                           )}
 
                           {response.flag_reason && (
-                            <div className="bg-red-50 p-3 rounded">
-                              <span className="text-sm font-medium text-red-700">
+                            <div className="bg-red-100 border border-red-300 p-3 rounded">
+                              <span className="text-sm font-semibold text-red-800 flex items-center gap-2">
+                                <Flag className="w-4 h-4" />
                                 Flag Reason:
                               </span>
-                              <p className="text-sm text-red-900 mt-1">
+                              <p className="text-sm text-red-900 mt-1 font-medium">
                                 {response.flag_reason}
                               </p>
                             </div>

@@ -27,31 +27,10 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
   const [activePage, setActivePage] = useState<string | null>(null);
 
   useEffect(() => {
-    // If no pages exist, create the first one.
-    if (template.pages.length === 0) {
-      const newPageId = Date.now().toString();
-      setTemplate((prev) => ({
-        ...prev,
-        pages: [
-          {
-            id: newPageId,
-            template_id: prev.id,
-            title: "Page 1",
-            description: "",
-            ordinal: 1,
-            sections: [],
-            created_at: new Date().toISOString(),
-          },
-        ],
-      }));
-      setActivePage(newPageId);
-      return;
-    }
-
     // Set initial active page or handle active page deletion
     if (
-      activePage === null ||
-      !template.pages.some((p) => p.id === activePage)
+      template.pages.length > 0 &&
+      (activePage === null || !template.pages.some((p) => p.id === activePage))
     ) {
       setActivePage(template.pages[0].id);
     }

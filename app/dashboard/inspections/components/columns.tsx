@@ -30,23 +30,12 @@ import {
 import { downloadInspectionPDF } from "../[id]/report/utils/pdf-generator";
 import { useState } from "react";
 import { toast } from "sonner";
+import Link from "next/link";
 
 // Separate component for actions
 function InspectionActions({ inspection }: { inspection: Inspection }) {
   "use client";
   const [isDownloading, setIsDownloading] = useState(false);
-
-  const handleContinue = () => {
-    window.location.href = `/dashboard/inspections/${inspection.id}/edit`;
-  };
-
-  const handleViewReport = () => {
-    window.location.href = `/dashboard/inspections/${inspection.id}/report`;
-  };
-
-  const handleStartInspection = () => {
-    window.location.href = `/dashboard/inspections/${inspection.id}/edit`;
-  };
 
   const handleDownloadReport = () => {
     setIsDownloading(true);
@@ -81,9 +70,11 @@ function InspectionActions({ inspection }: { inspection: Inspection }) {
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem onClick={handleViewReport}>
-            <FileText className="mr-2 h-4 w-4" />
-            View Report
+          <DropdownMenuItem asChild>
+            <Link href={`/dashboard/inspections/${inspection.id}/report`}>
+              <FileText className="mr-2 h-4 w-4" />
+              View Report
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={handleDownloadReport}
@@ -106,14 +97,11 @@ function InspectionActions({ inspection }: { inspection: Inspection }) {
     inspection.status === InspectionStatus.PAUSED
   ) {
     return (
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={handleContinue}
-        className="h-8 w-8 p-0"
-      >
-        <Play className="h-4 w-4" />
-      </Button>
+      <Link href={`/dashboard/inspections/${inspection.id}/edit`}>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Play className="h-4 w-4" />
+        </Button>
+      </Link>
     );
   }
 
@@ -131,9 +119,11 @@ function InspectionActions({ inspection }: { inspection: Inspection }) {
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem onClick={handleStartInspection}>
-            <Edit className="mr-2 h-4 w-4" />
-            Start Inspection
+          <DropdownMenuItem asChild>
+            <Link href={`/dashboard/inspections/${inspection.id}/edit`}>
+              <Edit className="mr-2 h-4 w-4" />
+              Start Inspection
+            </Link>
           </DropdownMenuItem>
           {/* <DropdownMenuItem onClick={handleDownloadReport}>
             <Download className="mr-2 h-4 w-4" />

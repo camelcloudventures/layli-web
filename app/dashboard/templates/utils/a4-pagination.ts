@@ -17,9 +17,6 @@ function getQuestionHeight(question: Question): number {
     case "MULTI_SELECT":
     case "LOCATION":
     case "SLIDER":
-    case "PERSON":
-    case "ASSET":
-      return 80;
     case "BOOLEAN":
     case "TEXT":
     case "DATE":
@@ -48,23 +45,6 @@ export function reflowTemplateByA4(original: AuditTemplate): AuditTemplate {
     sections: [],
     created_at: p.created_at || new Date().toISOString(),
   }));
-
-  function ensurePage(index: number): Page {
-    // Append auto pages on demand
-    while (basePages.length <= index) {
-      const newPageId = `page-${Date.now()}-${basePages.length}`;
-      basePages.push({
-        id: newPageId,
-        template_id: template.id,
-        title: `Page ${basePages.length + 1}`,
-        description: "",
-        ordinal: basePages.length + 1,
-        sections: [],
-        created_at: new Date().toISOString(),
-      });
-    }
-    return basePages[index];
-  }
 
   // Build logical sections: dedupe by section.id, preserve first-seen order and page index
   type LogicalSection = {
@@ -102,12 +82,17 @@ export function reflowTemplateByA4(original: AuditTemplate): AuditTemplate {
   );
 
   let pageIndex = 0;
-  let currentPage: Page = ensurePage(pageIndex);
+  let currentPage: Page = basePages[pageIndex];
   let currentHeight = 0;
 
   function advanceToPage(targetIndex: number) {
-    pageIndex = targetIndex;
-    currentPage = ensurePage(pageIndex);
+    if (targetIndex >= basePages.length) {
+      // Don't create new pages, just return the last available page
+      pageIndex = basePages.length - 1;
+    } else {
+      pageIndex = targetIndex;
+    }
+    currentPage = basePages[pageIndex];
     currentHeight = 0;
   }
 

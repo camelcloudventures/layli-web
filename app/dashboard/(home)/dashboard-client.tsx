@@ -28,7 +28,7 @@ export function DashboardClient() {
   const { summaryMetrics, issuesData } = useAnalyticsComprehensive();
   const { inspections: inspectionsData, isLoading: inspectionsDataLoading } =
     useInspections();
-  const { issues: issuesDataList, isLoading: issuesDataLoading } = useIssues();
+  const { issues: issuesDataList } = useIssues();
 
   console.log("notifications are", notifications);
 
@@ -186,40 +186,44 @@ export function DashboardClient() {
       date: new Date(inspection.created_at).toISOString().split("T")[0],
       assignedTo: inspection.assignees?.[0]?.full_name || "Unassigned",
     }));
-  // Prepare data for reports
+
+  // Prepare data for reports using REAL DATA
   const reportData = {
-    // Audit Summary Report Data
+    // Audit Summary Report Data - Using real data
     auditSummary: {
       totalInspections: summaryMetrics?.totalInspections || 0,
-      completedInspections: Math.floor(
-        (summaryMetrics?.totalInspections || 0) * 0.8
-      ),
-      pendingInspections: Math.floor(
-        (summaryMetrics?.totalInspections || 0) * 0.2
-      ),
-      totalIssues: issuesDataLoading ? issuesDataList.length : 0,
-      resolvedIssues: issuesDataLoading
-        ? issuesDataList.filter((issue) => issue.status === "closed").length
-        : 0,
+      completedInspections: recentInspections.filter(
+        (inspection) => inspection.status === "completed"
+      ).length,
+      pendingInspections: recentInspections.filter(
+        (inspection) => inspection.status === "pending"
+      ).length,
+      totalIssues: issuesDataList.length,
+      resolvedIssues: issuesDataList.filter(
+        (issue) => issue.status === "closed"
+      ).length,
       recentInspections: recentInspections,
     },
-    // Issues Report Data
+    // Issues Report Data - Using real data
     issues: {
-      totalIssues: issuesDataLoading ? issuesDataList.length : 0,
-      resolvedIssues: issuesDataLoading
-        ? issuesDataList.filter((issue) => issue.status === "closed").length
-        : 0,
-      openIssues: issuesDataLoading
-        ? issuesDataList.filter((issue) => issue.status === "open").length
-        : 0,
+      totalIssues: issuesDataList.length,
+      resolvedIssues: issuesDataList.filter(
+        (issue) => issue.status === "closed"
+      ).length,
+      openIssues: issuesDataList.filter((issue) => issue.status === "open")
+        .length,
       issuesByCategory: issuesData?.issuesByCategory || {},
-      criticalIssues: issuesDataLoading
-        ? issuesDataList
-            .filter(
-              (issue) => issue.priority === "high" && issue.status === "open"
-            )
-            .slice(0, 3)
-        : [],
+      criticalIssues: issuesDataList
+        .filter((issue) => issue.priority === "high" && issue.status === "open")
+        .slice(0, 3)
+        .map((issue) => ({
+          id: issue.id,
+          title: issue.title,
+          category: issue.category,
+          priority: issue.priority,
+          due_at: issue.due_at,
+          assignees: issue.assignees,
+        })),
       topRecurringIssues: issuesData?.topRecurringIssues || [],
     },
   };

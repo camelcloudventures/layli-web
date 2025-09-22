@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { FileText, Layers, Flag } from "lucide-react";
+import { FileText, Flag } from "lucide-react";
 import { ReportDialog } from "../components/report-dialog";
 
 type IProps = {
@@ -67,10 +67,10 @@ export default function Reports({
             Reports
           </h3>
           <p className="text-sm text-muted-foreground">
-            Generate and view reports for your audits
+            Generate and view reports for your audits and issues
           </p>
         </div>
-        <div className="p-6 pt-0">
+        <div className="p-6 pt-0 ">
           <div className="grid gap-4 md:grid-cols-3">
             <div className="rounded-lg border text-card-foreground flex flex-col items-center p-4 text-center">
               <FileText className="h-10 w-10 text-primary mb-2" />
@@ -89,23 +89,7 @@ export default function Reports({
                 Generate
               </Button>
             </div>
-            <div className="rounded-lg border text-card-foreground flex flex-col items-center p-4 text-center">
-              <Layers className="h-10 w-10 text-primary mb-2" />
-              <h3 className="font-medium">Compliance Report</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Detailed compliance status
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-auto"
-                onClick={() =>
-                  setReportDialogState({ open: true, type: "compliance" })
-                }
-              >
-                Generate
-              </Button>
-            </div>
+
             <div className="rounded-lg border text-card-foreground flex flex-col items-center p-4 text-center">
               <Flag className="h-10 w-10 text-primary mb-2" />
               <h3 className="font-medium">Issues Report</h3>

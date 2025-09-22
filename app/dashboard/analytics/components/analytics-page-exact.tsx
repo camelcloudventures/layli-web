@@ -221,7 +221,7 @@ export default function AnalyticsPageExact() {
         }
         className="w-full"
       >
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid p-1 grid-cols-4">
           <TabsTrigger value="inspections">Inspections</TabsTrigger>
           <TabsTrigger value="issues">Issues</TabsTrigger>
           <TabsTrigger value="actions">Actions</TabsTrigger>

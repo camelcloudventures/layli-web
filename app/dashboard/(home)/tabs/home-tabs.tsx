@@ -35,6 +35,20 @@ type IProps = {
     rate: number;
   }[];
   summary?: AnalyticsSummary | null;
+  issuesData?: {
+    issuesByCategory: Record<string, number>;
+    topRecurringIssues: Array<{
+      title: string;
+      occurrences: number;
+      category: string;
+    }>;
+  };
+  summaryMetrics?: {
+    totalInspections: number;
+    averageScore: number;
+    openIssues: number;
+    actionCompletionRate: number;
+  };
   reportData?: {
     auditSummary: {
       totalInspections: number;
@@ -79,7 +93,7 @@ type IProps = {
 export default function HomeTabs({
   stats,
   notifications,
-
+  summaryMetrics,
   reportData,
 }: IProps) {
   const [selectedTab, setSelectedTab] = useState("overview");
@@ -126,7 +140,7 @@ export default function HomeTabs({
       case "notifications":
         return <Notifications notifications={notifications} />;
       default:
-        return <Overview stats={stats} />;
+        return <Overview stats={stats} summaryMetrics={summaryMetrics} />;
     }
   }
 

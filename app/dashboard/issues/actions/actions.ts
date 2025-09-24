@@ -15,6 +15,7 @@ export async function createIssue(
   const cause = formData.get("cause");
   const due_at = formData.get("date");
   const title = formData.get("title");
+  const site_id = formData.get("site_id");
   const images = JSON.parse(formData.get("images") as string);
 
   const attachments = images?.map(
@@ -32,6 +33,7 @@ export async function createIssue(
     due_at,
     cause,
     title,
+    site_id,
     attachments,
     reporter,
   };

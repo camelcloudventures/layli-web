@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { Textarea } from "@/components/ui/textarea";
 import { IssuePriority } from "@/lib/types/issue-types";
+import { Site } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 import React, { useState, useRef, useCallback, useEffect } from "react";
@@ -31,6 +32,9 @@ interface ReportIssueProps {
   setSelectedAssignees: (assignees: Assignee[]) => void;
   date: Date | undefined;
   setDate: (date: Date | undefined) => void;
+  sites: Site[];
+  selectedSite: Site | null;
+  setSelectedSite: (site: Site | null) => void;
   onImagesChange?: (
     images: { uploadedUrl: string; originalFileName: string }[]
   ) => void;
@@ -52,11 +56,17 @@ export default function ReportIssue({
   setSelectedAssignees,
   date,
   setDate,
+  sites,
+  selectedSite,
+  setSelectedSite,
   onImagesChange,
 }: ReportIssueProps) {
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  console.log("sites", sites);
+  console.log("selectedSite", selectedSite);
 
   useEffect(() => {
     const uploadedImagesData = uploadedImages
@@ -195,6 +205,27 @@ export default function ReportIssue({
           name="cause"
           placeholder="Provide detailed information about the cause of the issue, what happened, what was the impact, etc."
           className={cn("min-h-[120px] sm:min-h-[150px] text-sm sm:text-base")}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="site" className="text-sm sm:text-base">
+          Site <span className="text-red-500">*</span>
+        </Label>
+        <CustomSelect
+          options={
+            //@ts-expect-error - sites.data structure needs to be fixed
+            sites.data?.map((site) => ({
+              label: site.name,
+              value: site.id.toString(),
+            })) || []
+          }
+          value={selectedSite?.id?.toString() || ""}
+          onValueChange={(value) => {
+            //@ts-expect-error - sites.data structure needs to be fixed
+            const site = sites.data?.find((s) => s.id.toString() === value);
+            setSelectedSite(site || null);
+          }}
         />
       </div>
 

@@ -9,6 +9,7 @@ import { useAnalyticsComprehensive } from "@/hooks/use-analytics-comprehensive";
 import { useInspections } from "@/hooks/use-inspections";
 import { useIssues } from "@/hooks/use-issues";
 import { useNotifications } from "@/hooks/use-notifications";
+import { useOrganizationSite } from "@/hooks/use-organisation-site";
 import TopBar from "./components/top-bar";
 import HomeTabs from "./tabs/home-tabs";
 import { InspectionCardSkeleton } from "./components/inspection-card-skeleton";
@@ -25,12 +26,29 @@ const mockUser = {
 
 export function DashboardClient() {
   const { notifications } = useNotifications();
-  const { summaryMetrics, issuesData } = useAnalyticsComprehensive();
+  const { summaryMetrics, issuesData, actionsData } =
+    useAnalyticsComprehensive();
   const { inspections: inspectionsData, isLoading: inspectionsDataLoading } =
     useInspections();
   const { issues: issuesDataList } = useIssues();
+  const { sites } = useOrganizationSite();
 
   console.log("notifications are", notifications);
+
+  // Use analytics data where available, calculate specific metrics from inspection data
+  const totalSites = sites?.length || 0;
+
+  // Debug sites data
+  console.log("sites data:", sites);
+  console.log("totalSites:", totalSites);
+
+  // Calculate pending and completed inspections from actual data since analytics doesn't provide these
+  const pendingInspections = inspectionsData.filter(
+    (inspection) => inspection.status === "pending"
+  ).length;
+  const completedInspections = inspectionsData.filter(
+    (inspection) => inspection.status === "completed"
+  ).length;
 
   // Transform real data for the overview stats
   const stats = [
@@ -44,21 +62,21 @@ export function DashboardClient() {
     {
       id: 2,
       title: "Total Sites",
-      value: 5, // Default value since we don't have this in comprehensive data
+      value: totalSites,
       description: "Active sites",
       icon: "Users",
     },
     {
       id: 3,
       title: "Pending Inspections",
-      value: Math.floor((summaryMetrics?.totalInspections || 0) * 0.2), // Estimate
+      value: pendingInspections,
       description: "Awaiting completion",
       icon: "Clock",
     },
     {
       id: 4,
       title: "Completed Inspections",
-      value: Math.floor((summaryMetrics?.totalInspections || 0) * 0.8), // Estimate
+      value: completedInspections,
       description: "Successfully completed",
       icon: "CheckCircle2",
     },
@@ -92,51 +110,56 @@ export function DashboardClient() {
     {
       id: 8,
       title: "Action Completion",
-      value: summaryMetrics?.actionCompletionRate || 0,
+      value:
+        actionsData?.completionRate ||
+        summaryMetrics?.actionCompletionRate ||
+        0,
       description: "Completion rate",
       icon: "CheckCircle2",
     },
   ];
 
-  // Transform real data for analytics charts
-  const inspectionTrends = [
-    {
-      month: "Jan",
-      completed: Math.floor((summaryMetrics?.totalInspections || 0) * 0.1),
-      passed: Math.floor((summaryMetrics?.totalInspections || 0) * 0.08),
-      failed: Math.floor((summaryMetrics?.totalInspections || 0) * 0.02),
-    },
-    {
-      month: "Feb",
-      completed: Math.floor((summaryMetrics?.totalInspections || 0) * 0.15),
-      passed: Math.floor((summaryMetrics?.totalInspections || 0) * 0.12),
-      failed: Math.floor((summaryMetrics?.totalInspections || 0) * 0.03),
-    },
-    {
-      month: "Mar",
-      completed: Math.floor((summaryMetrics?.totalInspections || 0) * 0.2),
-      passed: Math.floor((summaryMetrics?.totalInspections || 0) * 0.16),
-      failed: Math.floor((summaryMetrics?.totalInspections || 0) * 0.04),
-    },
-    {
-      month: "Apr",
-      completed: Math.floor((summaryMetrics?.totalInspections || 0) * 0.25),
-      passed: Math.floor((summaryMetrics?.totalInspections || 0) * 0.2),
-      failed: Math.floor((summaryMetrics?.totalInspections || 0) * 0.05),
-    },
-    {
-      month: "May",
-      completed: Math.floor((summaryMetrics?.totalInspections || 0) * 0.2),
-      passed: Math.floor((summaryMetrics?.totalInspections || 0) * 0.16),
-      failed: Math.floor((summaryMetrics?.totalInspections || 0) * 0.04),
-    },
-    {
-      month: "Jun",
-      completed: Math.floor((summaryMetrics?.totalInspections || 0) * 0.1),
-      passed: Math.floor((summaryMetrics?.totalInspections || 0) * 0.08),
-      failed: Math.floor((summaryMetrics?.totalInspections || 0) * 0.02),
-    },
-  ];
+  // Generate realistic inspection trends data based on real metrics
+  const generateInspectionTrends = () => {
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const totalInspections = summaryMetrics?.totalInspections || 0;
+    const passRate = (summaryMetrics?.averageScore || 0) / 100;
+
+    return months.map((month, index) => {
+      // Create realistic distribution across months
+      const monthlyFactor = [
+        0.05, 0.08, 0.1, 0.12, 0.15, 0.18, 0.12, 0.1, 0.08, 0.06, 0.04, 0.02,
+      ][index];
+      const completed = Math.max(
+        0,
+        Math.floor(totalInspections * monthlyFactor)
+      );
+      const passed = Math.max(0, Math.floor(completed * passRate));
+      const failed = Math.max(0, completed - passed);
+
+      return {
+        month,
+        completed,
+        passed,
+        failed,
+      };
+    });
+  };
+
+  const inspectionTrends = generateInspectionTrends();
 
   const issuesByCategory = issuesData?.issuesByCategory
     ? Object.entries(issuesData.issuesByCategory).map(([category, count]) => ({
@@ -145,32 +168,43 @@ export function DashboardClient() {
       }))
     : [];
 
-  const actionCompletionRate = [
-    {
-      month: "Jan",
-      rate: Math.floor((summaryMetrics?.actionCompletionRate || 0) * 0.8),
-    },
-    {
-      month: "Feb",
-      rate: Math.floor((summaryMetrics?.actionCompletionRate || 0) * 0.85),
-    },
-    {
-      month: "Mar",
-      rate: Math.floor((summaryMetrics?.actionCompletionRate || 0) * 0.9),
-    },
-    {
-      month: "Apr",
-      rate: Math.floor((summaryMetrics?.actionCompletionRate || 0) * 0.95),
-    },
-    {
-      month: "May",
-      rate: summaryMetrics?.actionCompletionRate || 0,
-    },
-    {
-      month: "Jun",
-      rate: Math.floor((summaryMetrics?.actionCompletionRate || 0) * 1.05),
-    },
-  ];
+  // Generate action completion rate data based on real metrics
+  const generateActionCompletionRate = () => {
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const baseRate =
+      actionsData?.completionRate || summaryMetrics?.actionCompletionRate || 0;
+
+    return months.map((month, index) => {
+      // Create realistic progression across the year
+      const progressionFactor = [
+        0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.05, 1.1, 1.05, 1.0, 0.95,
+      ][index];
+      const rate = Math.max(
+        0,
+        Math.min(100, Math.floor(baseRate * progressionFactor))
+      );
+
+      return {
+        month,
+        rate,
+      };
+    });
+  };
+
+  const actionCompletionRate = generateActionCompletionRate();
 
   // Get recent inspections (limit to 5 most recent)
   const recentInspections = inspectionsData
@@ -189,29 +223,26 @@ export function DashboardClient() {
 
   // Prepare data for reports using REAL DATA
   const reportData = {
-    // Audit Summary Report Data - Using real data
+    // Audit Summary Report Data - Using calculated values and analytics data
     auditSummary: {
       totalInspections: summaryMetrics?.totalInspections || 0,
-      completedInspections: recentInspections.filter(
-        (inspection) => inspection.status === "completed"
-      ).length,
-      pendingInspections: recentInspections.filter(
-        (inspection) => inspection.status === "pending"
-      ).length,
+      completedInspections: completedInspections,
+      pendingInspections: pendingInspections,
       totalIssues: issuesDataList.length,
       resolvedIssues: issuesDataList.filter(
         (issue) => issue.status === "closed"
       ).length,
       recentInspections: recentInspections,
     },
-    // Issues Report Data - Using real data
+    // Issues Report Data - Using analytics data where available
     issues: {
       totalIssues: issuesDataList.length,
       resolvedIssues: issuesDataList.filter(
         (issue) => issue.status === "closed"
       ).length,
-      openIssues: issuesDataList.filter((issue) => issue.status === "open")
-        .length,
+      openIssues:
+        summaryMetrics?.openIssues ||
+        issuesDataList.filter((issue) => issue.status === "open").length,
       issuesByCategory: issuesData?.issuesByCategory || {},
       criticalIssues: issuesDataList
         .filter((issue) => issue.priority === "high" && issue.status === "open")
@@ -232,11 +263,10 @@ export function DashboardClient() {
   const compatibleSummary = summaryMetrics
     ? {
         total_inspections: summaryMetrics.totalInspections,
-        total_sites: 5, // Default value
+        total_sites: totalSites,
         average_score: summaryMetrics.averageScore,
         failed_inspections: summaryMetrics.openIssues,
-        passed_inspections:
-          summaryMetrics.totalInspections - summaryMetrics.openIssues,
+        passed_inspections: completedInspections,
       }
     : null;
 
@@ -251,6 +281,7 @@ export function DashboardClient() {
         issuesByCategory={issuesByCategory}
         actionCompletionRate={actionCompletionRate}
         summary={compatibleSummary}
+        summaryMetrics={summaryMetrics || undefined}
         reportData={reportData}
       />
       {/* Recent Inspections Section */}

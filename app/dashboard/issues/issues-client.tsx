@@ -2,12 +2,14 @@
 
 import { useIssues } from "@/hooks/use-issues";
 import { useUsers } from "@/hooks/use-users";
+import { useSites } from "@/hooks/use-sites";
 import IssueSearch from "./components/issue-search";
 import Issues from "./components/issues";
 import IssuesTable from "./components/issues-table";
 
 export default function IssuesClient() {
   const { users } = useUsers();
+  const { sites } = useSites();
 
   const { issues, isLoading: isLoadingIssues } = useIssues();
 
@@ -21,7 +23,7 @@ export default function IssuesClient() {
 
   return (
     <div className="space-y-4">
-      <Issues users={users || []} issues={issues || []} />
+      <Issues users={users || []} sites={sites || []} issues={issues || []} />
       <IssueSearch />
 
       <IssuesTable

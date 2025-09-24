@@ -20,8 +20,19 @@ export interface IssuesAnalytics {
 }
 
 export interface ActionsAnalytics {
-  byStatus: Record<string, number>;
-  byPriority: Record<string, number>;
+  byStatus: {
+    pending: number;
+    in_progress: number;
+    done: number;
+  };
+  byPriority: {
+    high: number;
+    medium: number;
+    low: number;
+  };
+  completionRate: number;
+  overdueActions: number;
+  totalActions: number;
 }
 
 export interface SchedulesAnalytics {

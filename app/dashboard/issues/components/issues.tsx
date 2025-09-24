@@ -1,7 +1,7 @@
 "use client";
 
 import PageHeader from "@/components/custom/page-header";
-import { User } from "@/lib/types";
+import { User, Site } from "@/lib/types";
 import { ReportIssueForm } from "./report-issue-form";
 import { Download, Plus } from "lucide-react";
 import { useState } from "react";
@@ -71,9 +71,11 @@ function convertToCSV(issues: Issue[]) {
 
 export default function Issues({
   users,
+  sites,
   issues,
 }: {
   users: User[];
+  sites: Site[];
   issues: Issue[];
 }) {
   const [isReportIssueDialogOpen, setIsReportIssueDialogOpen] = useState(false);
@@ -119,6 +121,7 @@ export default function Issues({
           </DialogHeader>
           <ReportIssueForm
             users={users}
+            sites={sites}
             onCancel={() => setIsReportIssueDialogOpen(false)}
           />
         </DialogContent>

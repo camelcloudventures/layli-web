@@ -20,6 +20,12 @@ type IProps = {
     description: string;
     icon: string;
   }[];
+  summaryMetrics?: {
+    totalInspections: number;
+    averageScore: number;
+    openIssues: number;
+    actionCompletionRate: number;
+  };
 };
 
 const iconMap = {
@@ -31,7 +37,7 @@ const iconMap = {
   Layers,
 };
 
-export default function Overview({ stats }: IProps) {
+export default function Overview({ stats, summaryMetrics }: IProps) {
   // Find stats with proper fallbacks
   const totalInspections =
     stats.find((stat) => stat.title === "Total Inspections")?.value || 0;
@@ -39,13 +45,14 @@ export default function Overview({ stats }: IProps) {
     stats.find((stat) => stat.title === "Completed Inspections")?.value || 0;
   const averageScore =
     stats.find((stat) => stat.title === "Average Score")?.value || 0;
-  const failedInspections =
-    stats.find((stat) => stat.title === "Failed Inspections")?.value || 0;
+  // Remove unused failedInspections since we're using analytics data
 
   // Calculate derived metrics
   const complianceScore = averageScore; // Use average score as compliance score
-  const issuesIdentified = failedInspections;
-  const issuesResolved = completedInspections;
+
+  // Use analytics data for issues
+  const issuesIdentified = summaryMetrics?.openIssues || 0;
+  const issuesResolved = completedInspections; // Keep this as completed inspections for now
   const auditProgress =
     totalInspections > 0
       ? Math.round((completedInspections / totalInspections) * 100)
@@ -139,13 +146,6 @@ export default function Overview({ stats }: IProps) {
               }
               className="h-2"
             />
-            <p className="text-xs text-muted-foreground">
-              {hasRealData && issuesIdentified > 0
-                ? `${((issuesResolved / issuesIdentified) * 100).toFixed(
-                    0
-                  )}% resolution rate`
-                : "No issues data available"}
-            </p>
           </div>
         </div>
         <div className="rounded-lg border text-card-foreground">

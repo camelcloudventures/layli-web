@@ -6,6 +6,7 @@ import {
   getRiskAnalytics,
   getComplianceAnalytics,
   getIssuesAnalyticsNew,
+  getActionsAnalytics,
   TimeFilter,
 } from "@/app/dashboard/analytics/actions/actions";
 
@@ -16,6 +17,7 @@ export function useAnalyticsComprehensive() {
     riskData,
     complianceData,
     issuesData,
+    actionsData,
     currentTab,
     timeFilter,
     isLoading,
@@ -26,6 +28,7 @@ export function useAnalyticsComprehensive() {
     setRiskData,
     setComplianceData,
     setIssuesData,
+    setActionsData,
     setCurrentTab,
     setTimeFilter,
     setLoading,
@@ -41,13 +44,14 @@ export function useAnalyticsComprehensive() {
         setLoading(true);
         setError(null);
 
-        const [comprehensive, locations, risk, compliance, issues] =
+        const [comprehensive, locations, risk, compliance, issues, actions] =
           await Promise.all([
             getComprehensiveAnalytics(filter),
             getLocationAnalytics(filter),
             getRiskAnalytics(filter),
             getComplianceAnalytics(filter),
             getIssuesAnalyticsNew(),
+            getActionsAnalytics(),
           ]);
 
         if (comprehensive) setComprehensiveData(comprehensive);
@@ -55,6 +59,7 @@ export function useAnalyticsComprehensive() {
         if (risk) setRiskData(risk);
         if (compliance) setComplianceData(compliance);
         if (issues) setIssuesData(issues);
+        if (actions) setActionsData(actions);
 
         setLastUpdated(new Date());
       } catch (err) {
@@ -191,6 +196,7 @@ export function useAnalyticsComprehensive() {
     riskData,
     complianceData,
     issuesData,
+    actionsData,
 
     // UI State
     currentTab,

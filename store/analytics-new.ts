@@ -4,6 +4,7 @@ import {
   RiskAnalytics,
   ComplianceAnalytics,
   IssuesAnalyticsNew,
+  ActionsAnalytics,
   TimeFilter,
 } from "@/app/dashboard/analytics/actions/actions";
 import { create } from "zustand";
@@ -15,6 +16,7 @@ interface AnalyticsStore {
   riskData: RiskAnalytics | null;
   complianceData: ComplianceAnalytics | null;
   issuesData: IssuesAnalyticsNew | null;
+  actionsData: ActionsAnalytics | null;
 
   // UI State
   currentTab: "inspections" | "issues" | "actions" | "locations";
@@ -29,6 +31,7 @@ interface AnalyticsStore {
   setRiskData: (data: RiskAnalytics) => void;
   setComplianceData: (data: ComplianceAnalytics) => void;
   setIssuesData: (data: IssuesAnalyticsNew) => void;
+  setActionsData: (data: ActionsAnalytics) => void;
   setCurrentTab: (
     tab: "inspections" | "issues" | "actions" | "locations"
   ) => void;
@@ -46,6 +49,7 @@ export const useAnalyticsStore = create<AnalyticsStore>()((set) => ({
   riskData: null,
   complianceData: null,
   issuesData: null,
+  actionsData: null,
   currentTab: "inspections",
   timeFilter: "month",
   isLoading: false,
@@ -58,6 +62,7 @@ export const useAnalyticsStore = create<AnalyticsStore>()((set) => ({
   setRiskData: (data) => set({ riskData: data }),
   setComplianceData: (data) => set({ complianceData: data }),
   setIssuesData: (data) => set({ issuesData: data }),
+  setActionsData: (data) => set({ actionsData: data }),
   setCurrentTab: (tab) => set({ currentTab: tab }),
   setTimeFilter: (filter) => set({ timeFilter: filter }),
   setLoading: (loading) => set({ isLoading: loading }),
@@ -70,6 +75,7 @@ export const useAnalyticsStore = create<AnalyticsStore>()((set) => ({
       riskData: null,
       complianceData: null,
       issuesData: null,
+      actionsData: null,
       error: null,
       lastUpdated: null,
     }),

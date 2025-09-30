@@ -100,3 +100,49 @@ export async function updateScheduleStatus(
     return res as UpdateScheduleStatusResponse;
   return { error: "Unexpected response format" };
 }
+
+export type CreateInspectionFromScheduleResponse = {
+  success?: string;
+  error?: string;
+  data?: {
+    inspection: {
+      id: string;
+      title: string;
+      description: string;
+      template_id: number;
+      schedule_id: string;
+      assignees: Array<{
+        id: string;
+        full_name: string;
+        email: string;
+        role: string;
+      }>;
+      site_id: string;
+      organization_id: string;
+      due_date: string;
+      prepared_by: string;
+      status: string;
+      created_at: string;
+      updated_at: string;
+    };
+    schedule_id: string;
+    created_from_schedule: boolean;
+  };
+};
+
+export async function createInspectionFromSchedule(
+  scheduleId: string,
+  preparedBy: string
+): Promise<CreateInspectionFromScheduleResponse> {
+  const res = await POST(`/schedules/${scheduleId}/create-inspection`, {
+    prepared_by: preparedBy,
+  });
+
+  revalidateTag("schedules");
+  revalidateTag("inspections");
+
+  if (!res) return { error: "No response from server" };
+  if ("success" in res || "error" in res || "data" in res)
+    return res as CreateInspectionFromScheduleResponse;
+  return { error: "Unexpected response format" };
+}

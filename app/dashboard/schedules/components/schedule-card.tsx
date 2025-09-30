@@ -1,18 +1,20 @@
-'use client'
+"use client";
 
-import type { Schedule } from '@/lib/types/schedule-types'
-import { ScheduleActions } from './schedule-actions'
-import { ScheduleInfo } from './schedule-info'
-import { ScheduleFooter } from './schedule-footer'
-import HasPermission from '../../components/has-permission'
-import { Permission } from '@/lib/auth/auth'
-import { formatDate, formatTime12hr } from '@/utils/data-utils'
+import type { Schedule } from "@/lib/types/schedule-types";
+import { ScheduleActions } from "./schedule-actions";
+import { ScheduleInfo } from "./schedule-info";
+import { ScheduleFooter } from "./schedule-footer";
+import HasPermission from "../../components/has-permission";
+import { Permission } from "@/lib/auth/auth";
+import { formatDate, formatTime12hr } from "@/utils/data-utils";
 
 interface ScheduleCardProps {
-  schedule: Schedule
-  onEdit: (schedule: Schedule) => void
-  onDelete: (schedule: Schedule) => void
-  onViewDetails: (schedule: Schedule) => void
+  schedule: Schedule;
+  onEdit: (schedule: Schedule) => void;
+  onDelete: (schedule: Schedule) => void;
+  onViewDetails: (schedule: Schedule) => void;
+  onCreateInspection: (schedule: Schedule) => void;
+  isLoadingInspection?: boolean;
 }
 
 export function ScheduleCard({
@@ -20,6 +22,8 @@ export function ScheduleCard({
   onEdit,
   onDelete,
   onViewDetails,
+  onCreateInspection,
+  isLoadingInspection = false,
 }: ScheduleCardProps) {
   return (
     <div className="border rounded-md overflow-hidden bg-white">
@@ -31,16 +35,16 @@ export function ScheduleCard({
             </div>
 
             <div className="text-sm text-muted-foreground">
-              Starts on {formatDate(schedule.next_date)}{' '}
-              {formatTime12hr(schedule?.start_time || '')}
+              Starts on {formatDate(schedule.next_date)}{" "}
+              {formatTime12hr(schedule?.start_time || "")}
               <span
                 aria-hidden="true"
                 className="mx-1 text-black text-xl font-bold"
               >
                 ·
               </span>
-              Due {formatDate(schedule.next_date)}{' '}
-              {formatTime12hr(schedule?.end_time || '')}
+              Due {formatDate(schedule.next_date)}{" "}
+              {formatTime12hr(schedule?.end_time || "")}
             </div>
           </div>
           <HasPermission permission={Permission.MANAGE_SCHEDULES}>
@@ -53,7 +57,12 @@ export function ScheduleCard({
         </div>
         <ScheduleInfo schedule={schedule} />
       </div>
-      <ScheduleFooter schedule={schedule} onViewDetails={onViewDetails} />
+      <ScheduleFooter
+        schedule={schedule}
+        onViewDetails={onViewDetails}
+        onCreateInspection={onCreateInspection}
+        isLoadingInspection={isLoadingInspection}
+      />
     </div>
-  )
+  );
 }

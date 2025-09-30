@@ -24,8 +24,6 @@ import {
   Area,
 } from "recharts";
 import {
-  TrendingUp,
-  TrendingDown,
   AlertTriangle,
   CheckCircle,
   Clock,
@@ -250,12 +248,6 @@ export default function AnalyticsPageExact() {
                 {data.summaryMetrics.totalInspections}
               </span>
               <span className="text-xs text-gray-500">Last 6 months</span>
-              <div className="flex items-center mt-2 text-green-600">
-                <TrendingUp className="h-4 w-4 mr-1" />
-                <span className="text-sm font-medium">
-                  +{data.trendIndicators[0]?.value}% from previous period
-                </span>
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -272,12 +264,6 @@ export default function AnalyticsPageExact() {
               <span className="text-xs text-gray-500">
                 Across all inspections
               </span>
-              <div className="flex items-center mt-2 text-green-600">
-                <TrendingUp className="h-4 w-4 mr-1" />
-                <span className="text-sm font-medium">
-                  +{data.trendIndicators[1]?.value}% from previous period
-                </span>
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -292,12 +278,6 @@ export default function AnalyticsPageExact() {
                 {data.summaryMetrics.openIssues}
               </span>
               <span className="text-xs text-gray-500">Requiring attention</span>
-              <div className="flex items-center mt-2 text-red-600">
-                <TrendingDown className="h-4 w-4 mr-1" />
-                <span className="text-sm font-medium">
-                  {data.trendIndicators[2]?.value}% from previous period
-                </span>
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -314,12 +294,6 @@ export default function AnalyticsPageExact() {
               <span className="text-xs text-gray-500">
                 On-time completion rate
               </span>
-              <div className="flex items-center mt-2 text-green-600">
-                <TrendingUp className="h-4 w-4 mr-1" />
-                <span className="text-sm font-medium">
-                  +{data.trendIndicators[3]?.value}% from previous period
-                </span>
-              </div>
             </div>
           </CardContent>
         </Card>

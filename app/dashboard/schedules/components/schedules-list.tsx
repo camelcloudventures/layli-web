@@ -14,11 +14,15 @@ import { useSchedulesStore } from "@/store/schedules";
 import { Trash2Icon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { getUser } from "@/utils/common";
 import HasPermission from "../../components/has-permission";
 import {
   deleteSchedule,
   updateScheduleStatus,
   UpdateScheduleStatusResponse,
+  createInspectionFromSchedule,
+  CreateInspectionFromScheduleResponse,
 } from "../actions/actions";
 import type {
   SiteOption,
@@ -49,6 +53,7 @@ export function SchedulesList({
   isLoading,
 }: SchedulesListProps) {
   const { removeSchedule, setSchedules } = useSchedulesStore();
+  const router = useRouter();
   console.log("schedules", schedules);
   const [searchQuery, setSearchQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -57,6 +62,9 @@ export function SchedulesList({
     null
   );
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [loadingInspectionId, setLoadingInspectionId] = useState<string | null>(
+    null
+  );
 
   const filteredSchedules = useMemo(() => {
     if (!searchQuery.trim()) return schedules;
@@ -109,6 +117,34 @@ export function SchedulesList({
       }
     } else if (res?.error) {
       toast.error(res.error);
+    }
+  }
+
+  async function handleCreateInspection(schedule: Schedule) {
+    const scheduleId = String(schedule.id);
+    setLoadingInspectionId(scheduleId);
+
+    try {
+      const user = await getUser();
+      if (!user?.id) {
+        toast.error("User not found");
+        return;
+      }
+
+      const res: CreateInspectionFromScheduleResponse =
+        await createInspectionFromSchedule(scheduleId, user.id);
+
+      if (res?.success && res.data) {
+        toast.success("Inspection created successfully");
+        router.push(`/dashboard/inspections/${res.data.inspection.id}/edit`);
+      } else {
+        toast.error(res?.error || "Failed to create inspection");
+      }
+    } catch (error) {
+      console.error("Error creating inspection:", error);
+      toast.error("Failed to create inspection");
+    } finally {
+      setLoadingInspectionId(null);
     }
   }
 
@@ -196,6 +232,8 @@ export function SchedulesList({
                 setSelectedSchedule(schedule);
                 setDetailsOpen(true);
               }}
+              onCreateInspection={handleCreateInspection}
+              isLoadingInspection={loadingInspectionId === String(schedule.id)}
             />
           ))
         )}

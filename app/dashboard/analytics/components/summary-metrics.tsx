@@ -1,12 +1,13 @@
 "use client";
 
 import { useAnalyticsComprehensive } from "@/hooks/use-analytics-comprehensive";
+import { useInspections } from "@/hooks/use-inspections";
 import { Card, CardContent } from "@/components/ui/card";
 import LoadingSkeleton from "./widgets/loading-skeleton";
 
 export default function SummaryMetrics() {
-  const { summaryMetrics, isLoading } =
-    useAnalyticsComprehensive();
+  const { inspections: inspectionsData } = useInspections();
+  const { summaryMetrics, isLoading } = useAnalyticsComprehensive();
 
   if (isLoading) {
     return (
@@ -25,7 +26,7 @@ export default function SummaryMetrics() {
   const metrics = [
     {
       title: "Total Inspections",
-      value: summaryMetrics.totalInspections,
+      value: inspectionsData.length,
       description: "Last period",
       icon: "📊",
     },
@@ -49,7 +50,6 @@ export default function SummaryMetrics() {
     },
   ];
 
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {metrics.map((metric, index) => (
@@ -67,7 +67,6 @@ export default function SummaryMetrics() {
               </div>
               <div className="text-2xl">{metric.icon}</div>
             </div>
-
           </CardContent>
 
           {/* Subtle gradient overlay */}

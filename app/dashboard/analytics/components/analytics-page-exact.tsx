@@ -1,6 +1,7 @@
 "use client";
 
 import { useAnalyticsComprehensive } from "@/hooks/use-analytics-comprehensive";
+import { useInspections } from "@/hooks/use-inspections";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -23,13 +24,10 @@ import {
   AreaChart,
   Area,
 } from "recharts";
-import {
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-} from "lucide-react";
+import { AlertTriangle, CheckCircle, Clock } from "lucide-react";
 
 export default function AnalyticsPageExact() {
+  const { inspections: inspectionsData } = useInspections();
   const {
     summaryMetrics,
     locationData,
@@ -102,7 +100,7 @@ export default function AnalyticsPageExact() {
       { label: "Completion", value: 0, color: "green" },
     ],
     inspectionTrends: (() => {
-      const totalInspections = summaryMetrics?.totalInspections || 0;
+      const totalInspections = inspectionsData.length;
       const months = getMonthsForFilter(timeFilter);
 
       if (totalInspections === 0) {
@@ -134,7 +132,7 @@ export default function AnalyticsPageExact() {
       });
     })(),
     passFailData: (() => {
-      const totalInspections = summaryMetrics?.totalInspections || 0;
+      const totalInspections = inspectionsData.length;
 
       if (totalInspections === 0) {
         return [
@@ -245,7 +243,7 @@ export default function AnalyticsPageExact() {
                 Total Inspections
               </span>
               <span className="text-3xl font-bold text-gray-900">
-                {data.summaryMetrics.totalInspections}
+                {inspectionsData.length}
               </span>
               <span className="text-xs text-gray-500">Last 6 months</span>
             </div>

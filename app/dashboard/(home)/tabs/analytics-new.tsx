@@ -1,6 +1,7 @@
 "use client";
 
 import { useAnalyticsComprehensive } from "@/hooks/use-analytics-comprehensive";
+import { useInspections } from "@/hooks/use-inspections";
 // import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   BarChart,
@@ -25,6 +26,7 @@ import EmptyState from "../../analytics/components/empty-state";
 const COLORS = ["#3B82F6", "#60A5FA", "#93C5FD", "#DBEAFE"];
 
 export default function AnalyticsNew() {
+  const { inspections: inspectionsData } = useInspections();
   const {
     summaryMetrics,
 
@@ -104,7 +106,7 @@ export default function AnalyticsNew() {
       "Nov",
       "Dec",
     ];
-    const totalInspections = summaryMetrics.totalInspections;
+    const totalInspections = inspectionsData.length;
     const passRate = summaryMetrics.averageScore / 100;
 
     return months.map((month, index) => {
@@ -186,7 +188,7 @@ export default function AnalyticsNew() {
               Total Inspections
             </span>
             <span className="text-3xl font-bold text-text-primary">
-              {summaryMetrics.totalInspections}
+              {inspectionsData.length}
             </span>
             <span className="text-xs text-muted-foreground">
               All time inspections

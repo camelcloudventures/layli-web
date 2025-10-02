@@ -44,19 +44,21 @@ export function DashboardClient() {
   console.log("totalSites:", totalSites);
 
   // Calculate pending and completed inspections from actual data since analytics doesn't provide these
+  console.log("inspections data:", inspectionsData);
   const pendingInspections = inspectionsData.filter(
-    (inspection) => inspection.status === "pending"
+    (inspection) =>
+      inspection.status === "pending" || inspection.status === "paused"
   ).length;
   const completedInspections = inspectionsData.filter(
     (inspection) => inspection.status === "completed"
   ).length;
-
+  const inspectionCount = inspectionsData.length;
   // Transform real data for the overview stats
   const stats = [
     {
       id: 1,
       title: "Total Inspections",
-      value: summaryMetrics?.totalInspections || 0,
+      value: inspectionCount,
       description: "All time inspections",
       icon: "FileText",
     },

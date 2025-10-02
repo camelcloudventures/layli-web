@@ -9,7 +9,7 @@ import { useAnalyticsComprehensive } from "@/hooks/use-analytics-comprehensive";
 import { useInspections } from "@/hooks/use-inspections";
 import { useIssues } from "@/hooks/use-issues";
 import { useNotifications } from "@/hooks/use-notifications";
-import { useOrganizationSite } from "@/hooks/use-organisation-site";
+import { useSites } from "@/hooks/use-sites";
 import TopBar from "./components/top-bar";
 import HomeTabs from "./tabs/home-tabs";
 import { InspectionCardSkeleton } from "./components/inspection-card-skeleton";
@@ -31,7 +31,7 @@ export function DashboardClient() {
   const { inspections: inspectionsData, isLoading: inspectionsDataLoading } =
     useInspections();
   const { issues: issuesDataList } = useIssues();
-  const { sites } = useOrganizationSite();
+  const { sites } = useSites();
 
   console.log("notifications are", notifications);
 

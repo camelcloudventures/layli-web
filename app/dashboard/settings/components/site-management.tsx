@@ -11,31 +11,24 @@ import { Plus } from "lucide-react";
 import { SitesForm } from "./sites-form";
 import { useState } from "react";
 import { SiteFormData } from "../actions/types";
-import { Site } from "@/lib/types";
 import { DataTable } from "@/components/custom/data-table";
 import { columns } from "../../sites/components/columns";
 import { useCreateOrganizationSiteMutation } from "../../sites/actions/mutation";
 import { toast } from "sonner";
-import { useOrganizationSite } from "@/hooks/use-organisation-site";
+import { useSites } from "@/hooks/use-sites";
 import { SitesLoadingSkeleton } from "./sites-loading-skeleton";
 
 export function SiteManagement() {
   const [isCreateSiteDialogOpen, setIsCreateSiteDialogOpen] = useState(false);
-  const {
-    sites: organizationSites,
-    isLoading: isOrganizationSitesLoading,
-    addSite,
-  } = useOrganizationSite();
+  const { sites: organizationSites, isLoading: isOrganizationSitesLoading } =
+    useSites();
 
   const { mutate: addSiteMutation, isPending: isAddSiteMutationPending } =
     useCreateOrganizationSiteMutation();
 
   const handleSiteSubmit = (data: SiteFormData) => {
-    console.log("============THIS FUNCTION WAS CALLED============-");
     addSiteMutation(data, {
-      onSuccess: (data) => {
-        console.log(data);
-        addSite(data as Site);
+      onSuccess: () => {
         toast.success("Site created successfully");
         setIsCreateSiteDialogOpen(false);
       },

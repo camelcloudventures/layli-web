@@ -11,15 +11,14 @@ export function useSites() {
     }))
   );
 
-  const enabled = !sites || sites.length === 0;
-  const { data: fetchedSites, isLoading } = useGetSites(enabled);
-  console.log("fetched sites", fetchedSites);
+  // Always allow fetching - let React Query handle caching
+  const { data: fetchedSites, isLoading } = useGetSites(true);
 
   useEffect(() => {
-    if (fetchedSites && sites.length === 0) {
+    if (fetchedSites) {
       setSites(fetchedSites);
     }
-  }, [fetchedSites, sites, setSites]);
+  }, [fetchedSites, setSites]);
 
   return { sites, isLoading };
 }

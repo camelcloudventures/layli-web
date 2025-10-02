@@ -32,11 +32,12 @@ export function DashboardClient() {
     useInspections();
   const { issues: issuesDataList } = useIssues();
   const { sites } = useSites();
+  const sitesData = sites.data;
 
   console.log("notifications are", notifications);
 
   // Use analytics data where available, calculate specific metrics from inspection data
-  const totalSites = sites?.length || 0;
+  const totalSites = sitesData?.length || 0;
 
   // Debug sites data
   console.log("sites data:", sites);

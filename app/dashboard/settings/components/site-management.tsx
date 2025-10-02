@@ -20,8 +20,8 @@ import { SitesLoadingSkeleton } from "./sites-loading-skeleton";
 
 export function SiteManagement() {
   const [isCreateSiteDialogOpen, setIsCreateSiteDialogOpen] = useState(false);
-  const { sites: organizationSites, isLoading: isOrganizationSitesLoading } =
-    useSites();
+  const { sites, isLoading: isOrganizationSitesLoading } = useSites();
+  const organizationSites = sites.data;
 
   const { mutate: addSiteMutation, isPending: isAddSiteMutationPending } =
     useCreateOrganizationSiteMutation();

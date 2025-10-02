@@ -15,10 +15,14 @@ export function useSites() {
   const { data: fetchedSites, isLoading } = useGetSites(true);
 
   useEffect(() => {
-    if (fetchedSites) {
-      setSites(fetchedSites);
+    if (fetchedSites?.data) {
+      setSites(fetchedSites.data);
     }
   }, [fetchedSites, setSites]);
 
-  return { sites, isLoading };
+  // Return sites in the expected format for components that use sites.data
+  return {
+    sites: { data: sites },
+    isLoading,
+  };
 }

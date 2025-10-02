@@ -4,8 +4,8 @@ import { Site } from "@/lib/types";
 import { revalidateTag } from "next/cache";
 import { SiteFormData } from "../../settings/actions/types";
 
-export async function getSites(): Promise<Site[] | null> {
-  return await GET("/sites", ["sites"]);
+export async function getSites(): Promise<{ data: Site[] } | null> {
+  return await GET<{ data: Site[] }>("/sites", ["sites"]);
 }
 
 export async function createOrganizationSite(formData: SiteFormData) {

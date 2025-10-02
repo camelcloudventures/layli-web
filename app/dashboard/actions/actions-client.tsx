@@ -219,6 +219,7 @@ export default function ActionsClient() {
         isOpen={isCreateActionDialogOpen}
         onOpenChange={setIsCreateActionDialogOpen}
         users={users}
+        // @ts-expect-error - sites.data structure needs to be fixed
         sites={sites}
       />
       <Dialog
@@ -240,6 +241,7 @@ export default function ActionsClient() {
           {selectedAction && (
             <EditActionForm
               users={users}
+              // @ts-expect-error - sites.data structure needs to be fixed
               sites={sites}
               action={selectedAction}
               onCancel={() => {

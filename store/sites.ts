@@ -13,24 +13,11 @@ export const useSitesStore = create<SitesStore>()((set) => ({
   sites: [],
   setSites: (sites) => set({ sites }),
   updateSite: (siteId, name) => {
-    console.log("updateSite called with siteId:", siteId, "and name:", name);
-    set((state) => {
-      console.log("Current sites:", state.sites);
-      const updatedSites = state.sites.map((site) => {
-        console.log(
-          `Comparing store site.id (${
-            site.id
-          }, type: ${typeof site.id}) with received siteId (${siteId}, type: ${typeof siteId})`
-        );
-        if (String(site.id) === siteId) {
-          console.log("Match found for site.id:", site.id);
-          return { ...site, name };
-        }
-        return site;
-      });
-      console.log("Updated sites:", updatedSites);
-      return { sites: updatedSites };
-    });
+    set((state) => ({
+      sites: state.sites.map((site) =>
+        String(site.id) === siteId ? { ...site, name } : site
+      ),
+    }));
   },
   removeSite: (siteId) =>
     set((state) => ({

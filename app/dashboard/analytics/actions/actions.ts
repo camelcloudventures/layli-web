@@ -204,6 +204,8 @@ export async function getComprehensiveAnalytics(
       success: string;
       data: ComprehensiveAnalytics;
     };
+
+    console.log("Comprehensive analytics response:", response);
     if (response.success) {
       return response.data;
     }

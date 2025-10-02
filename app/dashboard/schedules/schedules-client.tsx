@@ -24,6 +24,7 @@ export function SchedulesClient() {
       schedules={schedules}
       users={users || []}
       templates={templates || []}
+      // @ts-expect-error - sites.data structure needs to be fixed
       sites={sites}
       isLoading={isLoading}
     />

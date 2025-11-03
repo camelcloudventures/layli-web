@@ -77,8 +77,14 @@ const quickActions = {
     { label: "View Reports", icon: BarChart3, href: "/dashboard/analytics" },
   ],
 };
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function TopBar({ user }: { user: any }) {
+interface User {
+  fullName: string;
+  email: string;
+  role: "admin" | "auditor" | "supervisor";
+  image?: string;
+}
+
+export default function TopBar({ user }: { user: User }) {
   // Role-based quick actions
   const userActions =
     quickActions[user.role as keyof typeof quickActions] ||

@@ -5,7 +5,6 @@ import { createClient } from "@/utils/supabase/server";
 import { GET, POST } from "@/app/backend/apiMethods";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { User } from "@/lib/types";
 
 export async function signUp(formData: FormData) {
   const supabase = await createClient();
@@ -48,8 +47,8 @@ export async function signUp(formData: FormData) {
       user: authUser!.user?.id,
     };
   } catch (err) {
-    //@ts-expect-error - error is not typed
-    return { error: err.message };
+    const error = err as Error;
+    return { error: error.message };
   }
 }
 
@@ -76,6 +75,9 @@ export async function signIn(formData: FormData) {
       refresh_token: signInData.session?.refresh_token,
     });
 
+    console.log("access_token", signInData.session?.access_token);
+    console.log("refresh_token", signInData.session?.refresh_token);
+
     if (setSessionError) {
       return { error: setSessionError.message };
     }
@@ -90,12 +92,14 @@ export async function signIn(formData: FormData) {
     return {
       success: "Signed in successfully! Redirecting...",
       user: signInData.user,
-      organizations: orgContext.data.organizations,
-      activeOrganization: orgContext.data.activeOrganization,
+      //@ts-expect-error - orgContext.data is not typed
+      organizations: orgContext.data?.organizations,
+      //@ts-expect-error - orgContext.data is not typed
+      activeOrganization: orgContext.data?.activeOrganization,
     };
   } catch (err) {
-    //@ts-expect-error - error is not typed
-    return { error: err.message };
+    const error = err as Error;
+    return { error: error.message };
   }
 }
 
@@ -127,8 +131,8 @@ export async function updateProfile(formData: FormData) {
     if (error) return { error: error.message };
     return { success: "Profile updated successfully." };
   } catch (err) {
-    //@ts-expect-error - error is not typed
-    return { error: err.message };
+    const error = err as Error;
+    return { error: error.message };
   }
 }
 
@@ -161,8 +165,6 @@ export async function acceptInvite(
       return { error: sessionError.message };
     }
 
-    console.log("sessionData", sessionData);
-
     const password = formData.get("password") as string;
     const { error: updateError } = await supabase.auth.updateUser({
       password,
@@ -172,14 +174,8 @@ export async function acceptInvite(
     }
 
     const validateRes = await GET(`/invites/validate/${token}`);
-    console.log("=============THIS WAS CALLED=============");
-    console.log("validateRes", validateRes);
-
-    console.log("Token value", token);
-    //@ts-expect-error - error is not typed
     if (!validateRes?.success) {
-      //@ts-expect-error - error is not typed
-      return { error: validateRes?.error };
+      return { error: validateRes?.error || "Invalid invite token" };
     }
 
     const fullName = formData.get("fullName") as string;
@@ -231,12 +227,12 @@ export async function acceptInvite(
 
     return { success: "Account setup complete! Redirecting..." };
   } catch (error) {
-    //@ts-expect-error - error is not typed
-    return { error: error.message };
+    const err = error as Error;
+    return { error: err.message };
   }
 }
 
-export async function getUsers(): Promise<{ data: User[] } | null> {
+export async function getUsers() {
   return await GET("/users", ["users"]);
 }
 
@@ -288,20 +284,20 @@ export async function createOrganization(formData: FormData, user: string) {
     // Skip organization check since this is creating a new organization
     // and there won't be an active organization yet
     const res = await POST("/organizations/create", data, false);
-    console.log("res from createOrganization", res);
     return res;
   } catch (error) {
-    //@ts-expect-error - error is not typed
-    return { error: error.message };
+    const err = error as Error;
+    return { error: err.message };
   }
 }
 
 export async function getUserOrganizations() {
   const response = await GET<OrgResponse>("/auth/context", undefined, true);
-  console.log("response from getUserOrganizations", response);
 
+  //@ts-expect-error - response.data is not typed
   if (response?.success && response?.data?.activeOrganization) {
     const cookieStore = await cookies();
+    //@ts-expect-error - response.data is not typed
     cookieStore.set("active_org", response.data.activeOrganization.id, {
       path: "/",
       sameSite: "lax",
@@ -333,7 +329,7 @@ export async function resetPasswordAction(formData: FormData) {
       message: `Reset email sent to ${email}. Click the link to reset your password`,
     };
   } catch (error) {
-    //@ts-expect-error - error is not typed
-    return { error: error.message || "Failed to send reset email" };
+    const err = error as Error;
+    return { error: err.message || "Failed to send reset email" };
   }
 }

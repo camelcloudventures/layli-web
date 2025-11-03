@@ -2,7 +2,6 @@
 
 import { GET, POST, UPDATE } from "@/app/backend/apiMethods";
 import { revalidateTag } from "next/cache";
-import { InviteResponse } from "./types";
 export async function inviteUser(
   formData: FormData,
   userId: string,
@@ -27,12 +26,24 @@ export async function inviteUser(
   return res;
 }
 
-export async function getInvites(): Promise<InviteResponse | null> {
+export async function getInvites() {
   return await GET(`/invites/organization/users`, ["invites"]);
 }
 
 export async function updateUserRole(userId: string, role: string) {
   const res = await UPDATE(`/invites/update/${userId}`, { role });
   revalidateTag("invites");
+  return res;
+}
+
+export async function updateOrganization(orgId: string, formData: FormData) {
+  const name = formData.get("name") as string;
+
+  if (!name) {
+    return { error: "Organization name is required" };
+  }
+
+  const res = await UPDATE(`/organizations/${orgId}/update`, { name });
+
   return res;
 }

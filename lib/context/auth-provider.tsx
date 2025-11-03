@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   createContext,
@@ -8,97 +8,101 @@ import {
   useCallback,
   ReactNode,
   Suspense,
-} from 'react'
-import { createClient } from '@/utils/supabase/client'
+} from "react";
+import { createClient } from "@/utils/supabase/client";
 import {
   getUserOrganizations,
   logout,
   signIn,
   signUp,
-} from '@/app/auth/actions/actions'
-import { Org } from '@/lib/types'
+} from "@/app/auth/actions/actions";
+import { Org } from "@/lib/types";
 
 interface AuthUser {
-  id: string
-  email: string
-  full_name?: string
-  role?: string
-  phone_number?: string
-  image?: string | undefined
-  [key: string]: string | undefined
+  id: string;
+  email: string;
+  full_name?: string;
+  role?: string;
+  phone_number?: string;
+  image?: string | undefined;
+  [key: string]: string | undefined;
 }
 
 interface OrgContextResponse {
-  success: boolean
-  error?: string
+  success: boolean;
+  error?: string;
   data?: {
-    user: AuthUser
-    organizations: Org[]
+    user: AuthUser;
+    organizations: Org[];
     orgMemberships: {
-      organization_id: string
-      role: string
-      is_default: boolean
-    }[]
-    activeOrganization: Org
-  }
+      organization_id: string;
+      role: string;
+      is_default: boolean;
+    }[];
+    activeOrganization: Org;
+  };
 }
 
 interface AuthContextProps {
-  user: AuthUser | null
-  loading: boolean
-  signIn: typeof signIn
-  signUp: typeof signUp
-  signOut: () => Promise<void>
-  refreshUser: () => Promise<void>
-  orgs: Org[]
-  activeOrg: Org | null
+  user: AuthUser | null;
+  loading: boolean;
+  signIn: typeof signIn;
+  signUp: typeof signUp;
+  signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
+  updateActiveOrg: (updatedOrg: Org) => void;
+  orgs: Org[];
+  activeOrg: Org | null;
 }
 
-const AuthContext = createContext<AuthContextProps | undefined>(undefined)
+const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [orgs, setOrgs] = useState<Org[]>([])
-  const [activeOrg, setActiveOrg] = useState<Org | null>(null)
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [orgs, setOrgs] = useState<Org[]>([]);
+  const [activeOrg, setActiveOrg] = useState<Org | null>(null);
   const fetchUser = useCallback(async () => {
     try {
-      setLoading(true)
-      const supabase = createClient()
-      const { data } = await supabase.auth.getUser()
+      setLoading(true);
+      const supabase = createClient();
+      const { data } = await supabase.auth.getUser();
 
       if (
         !data?.user ||
-        typeof data.user.id !== 'string' ||
-        typeof data.user.email !== 'string'
+        typeof data.user.id !== "string" ||
+        typeof data.user.email !== "string"
       ) {
-        setUser(null)
-        setOrgs([])
-        setActiveOrg(null)
-        return
+        setUser(null);
+        setOrgs([]);
+        setActiveOrg(null);
+        return;
       }
 
       // Fetch profile data
       const { data: profileData, error: profileError } = await supabase
-        .from('profile')
-        .select('*')
-        .eq('id', data.user.id)
-        .single()
+        .from("profile")
+        .select("*")
+        .eq("id", data.user.id)
+        .single();
 
       if (profileError) {
-        console.error('Error fetching profile:', profileError)
+        console.error("Error fetching profile:", profileError);
       }
 
       // Always fetch org context when user exists
-      const orgContext = (await getUserOrganizations()) as OrgContextResponse
-      console.log('orgContext', orgContext)
+      const orgContext = (await getUserOrganizations()) as OrgContextResponse;
+      console.log("orgContext", orgContext);
 
       if (!orgContext?.success) {
-        console.error('Error fetching organization context:', orgContext?.error)
+        console.error(
+          "Error fetching organization context:",
+          orgContext?.error
+        );
         // Don't set user to null here, just keep existing org state
       } else if (orgContext.data) {
-        setOrgs(orgContext.data.organizations)
-        setActiveOrg(orgContext.data.activeOrganization)
+        setOrgs(orgContext.data.organizations);
+        setActiveOrg(orgContext.data.activeOrganization);
       }
 
       setUser({
@@ -106,38 +110,45 @@ function AuthProvider({ children }: { children: ReactNode }) {
         email: data.user.email,
         ...data.user.user_metadata,
         ...(profileData || {}),
-      })
+      });
     } catch (error) {
-      console.error('Error in fetchUser:', error)
-      setUser(null)
-      setOrgs([])
-      setActiveOrg(null)
+      console.error("Error in fetchUser:", error);
+      setUser(null);
+      setOrgs([]);
+      setActiveOrg(null);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    fetchUser()
+    fetchUser();
     // Optionally, subscribe to auth state changes
-    const supabase = createClient()
+    const supabase = createClient();
     const { data: listener } = supabase.auth.onAuthStateChange(() => {
-      fetchUser()
-    })
+      fetchUser();
+    });
 
     return () => {
-      listener?.subscription.unsubscribe()
-    }
-  }, [fetchUser])
+      listener?.subscription.unsubscribe();
+    };
+  }, [fetchUser]);
 
   const handleSignOut = async () => {
-    setLoading(true)
-    await logout()
-    setUser(null)
-    setOrgs([])
-    setActiveOrg(null)
-    setLoading(false)
-  }
+    setLoading(true);
+    await logout();
+    setUser(null);
+    setOrgs([]);
+    setActiveOrg(null);
+    setLoading(false);
+  };
+
+  const updateActiveOrg = useCallback((updatedOrg: Org) => {
+    setActiveOrg(updatedOrg);
+    setOrgs((prevOrgs) =>
+      prevOrgs.map((org) => (org.id === updatedOrg.id ? updatedOrg : org))
+    );
+  }, []);
 
   const value: AuthContextProps = {
     user,
@@ -146,9 +157,10 @@ function AuthProvider({ children }: { children: ReactNode }) {
     signUp,
     signOut: handleSignOut,
     refreshUser: fetchUser,
+    updateActiveOrg,
     orgs,
     activeOrg,
-  }
+  };
 
   return (
     <AuthContext.Provider value={value}>
@@ -158,13 +170,13 @@ function AuthProvider({ children }: { children: ReactNode }) {
         {children}
       </Suspense>
     </AuthContext.Provider>
-  )
+  );
 }
 
 function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) throw new Error('useAuth must be used within an AuthProvider')
-  return context
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
+  return context;
 }
 
-export { AuthProvider, useAuth }
+export { AuthProvider, useAuth };

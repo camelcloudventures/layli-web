@@ -275,6 +275,7 @@ export function DashboardClient() {
 
   return (
     <div className="flex flex-col gap-6 w-full">
+      {/* @ts-expect-error - mockUser is not typed */}
       <TopBar user={mockUser} />
 
       <HomeTabs

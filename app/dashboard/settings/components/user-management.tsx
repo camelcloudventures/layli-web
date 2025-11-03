@@ -151,7 +151,7 @@ export function UserManagement() {
         </Dialog>
       </div>
 
-      <div className="border rounded-md">
+      <div className="border h-[500px] overflow-hidden overflow-y-auto  rounded-md">
         <DataTable columns={columns} data={invites} />
       </div>
     </div>

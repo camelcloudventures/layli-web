@@ -45,7 +45,7 @@ export async function createIssue(
   return response;
 }
 
-export async function getIssues(): Promise<IssuesResponse | null> {
+export async function getIssues() {
   return await GET<IssuesResponse>("/issues", ["issues"]);
 }
 

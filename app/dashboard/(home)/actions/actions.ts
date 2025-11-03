@@ -1,10 +1,9 @@
 "use server";
 
 import { GET, PATCH } from "@/app/backend/apiMethods";
-import { NotificationResponse } from "@/lib/types/notifications";
 import { revalidateTag } from "next/cache";
 
-export async function getNotifications(): Promise<NotificationResponse | null> {
+export async function getNotifications() {
   return await GET("/notifications", ["notifications"]);
 }
 
@@ -13,8 +12,12 @@ export async function markNotificationAsRead(id: string) {
 }
 
 export async function markAllAsRead(ids: string[]) {
-  for (const id of ids) {
-    markNotificationAsRead(id);
+  try {
+    for (const id of ids) {
+      await markNotificationAsRead(id);
+    }
     revalidateTag("notifications");
+  } catch (error) {
+    console.error("Failed to mark notifications as read:", error);
   }
 }

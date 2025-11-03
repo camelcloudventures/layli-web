@@ -116,7 +116,7 @@ export type TimeFilter = "month" | "6months" | "year";
 export async function getAnalyticsSummary(): Promise<AnalyticsSummary | null> {
   try {
     const response = (await GET("/analytics/summary")) as {
-      success: string;
+      success: boolean;
       data: AnalyticsSummary;
     };
     if (response.success) {
@@ -132,7 +132,7 @@ export async function getAnalyticsSummary(): Promise<AnalyticsSummary | null> {
 export async function getIssuesAnalytics(): Promise<IssuesAnalytics | null> {
   try {
     const response = (await GET("/analytics/issues")) as {
-      success: string;
+      success: boolean;
       data: IssuesAnalytics;
     };
     if (response.success) {
@@ -148,7 +148,7 @@ export async function getIssuesAnalytics(): Promise<IssuesAnalytics | null> {
 export async function getActionsAnalytics(): Promise<ActionsAnalytics | null> {
   try {
     const response = (await GET("/analytics/actions")) as {
-      success: string;
+      success: boolean;
       data: ActionsAnalytics;
     };
     if (response.success) {
@@ -164,7 +164,7 @@ export async function getActionsAnalytics(): Promise<ActionsAnalytics | null> {
 export async function getSchedulesAnalytics(): Promise<SchedulesAnalytics | null> {
   try {
     const response = (await GET("/analytics/schedules")) as {
-      success: string;
+      success: boolean;
       data: SchedulesAnalytics;
     };
     if (response.success) {
@@ -180,7 +180,7 @@ export async function getSchedulesAnalytics(): Promise<SchedulesAnalytics | null
 export async function getInspectionsAnalytics(): Promise<InspectionsAnalytics | null> {
   try {
     const response = (await GET("/analytics/inspections")) as {
-      success: string;
+      success: boolean;
       data: InspectionsAnalytics;
     };
     if (response.success) {
@@ -201,7 +201,7 @@ export async function getComprehensiveAnalytics(
     const response = (await GET(
       `/analytics/comprehensive?timeFilter=${timeFilter}`
     )) as {
-      success: string;
+      success: boolean;
       data: ComprehensiveAnalytics;
     };
 
@@ -223,7 +223,7 @@ export async function getLocationAnalytics(
     const response = (await GET(
       `/analytics/locations?timeFilter=${timeFilter}`
     )) as {
-      success: string;
+      success: boolean;
       data: LocationAnalytics;
     };
     if (response.success) {
@@ -243,7 +243,7 @@ export async function getRiskAnalytics(
     const response = (await GET(
       `/analytics/risk?timeFilter=${timeFilter}`
     )) as {
-      success: string;
+      success: boolean;
       data: RiskAnalytics;
     };
     if (response.success) {
@@ -263,7 +263,7 @@ export async function getComplianceAnalytics(
     const response = (await GET(
       `/analytics/compliance?timeFilter=${timeFilter}`
     )) as {
-      success: string;
+      success: boolean;
       data: ComplianceAnalytics;
     };
     if (response.success) {
@@ -279,7 +279,7 @@ export async function getComplianceAnalytics(
 export async function getIssuesAnalyticsNew(): Promise<IssuesAnalyticsNew | null> {
   try {
     const response = (await GET("/analytics/issues")) as {
-      success: string;
+      success: boolean;
       data: IssuesAnalyticsNew;
     };
     if (response.success) {

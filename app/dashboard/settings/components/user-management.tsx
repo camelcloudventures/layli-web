@@ -44,6 +44,7 @@ export interface Invite {
   created_at: string;
   used: boolean;
   user_id?: string;
+  revoked?: boolean;
 }
 
 export function UserManagement() {
@@ -76,10 +77,12 @@ export function UserManagement() {
       return;
     }
 
+    //@ts-expect-error - res.data is not typed
     if (res.data && res.data.length > 0) {
+      //@ts-expect-error - res.data is not typed
       addInvite(res.data[0] as Invite);
     }
-    toast.success(res.success || "Invitation sent successfully");
+    toast.success(res?.success || "Invitation sent successfully");
     setInviteForm({ role: inviteForm.role });
     setIsInviteDialogOpen(false);
   };

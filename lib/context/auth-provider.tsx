@@ -95,6 +95,22 @@ function AuthProvider({ children }: { children: ReactNode }) {
       console.log("orgContext", orgContext);
 
       if (!orgContext?.success) {
+        // Check if user was removed from all organizations
+        const errorMessage = orgContext?.error || "";
+        const isRemovedUser = errorMessage.includes(
+          "removed from this organization"
+        );
+
+        if (isRemovedUser) {
+          // User was removed - clear org state and sign out
+          setOrgs([]);
+          setActiveOrg(null);
+          setUser(null);
+          // Sign out the user (this will redirect)
+          logout();
+          return;
+        }
+
         console.error(
           "Error fetching organization context:",
           orgContext?.error

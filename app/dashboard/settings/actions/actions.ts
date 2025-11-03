@@ -1,6 +1,6 @@
 "use server";
 
-import { GET, POST, UPDATE } from "@/app/backend/apiMethods";
+import { GET, POST, UPDATE, DELETE } from "@/app/backend/apiMethods";
 import { revalidateTag } from "next/cache";
 export async function inviteUser(
   formData: FormData,
@@ -45,5 +45,23 @@ export async function updateOrganization(orgId: string, formData: FormData) {
 
   const res = await UPDATE(`/organizations/${orgId}/update`, { name });
 
+  return res;
+}
+
+export async function removeUser(userId: string) {
+  const res = await DELETE(`/invites/user/${userId}`, undefined, ["invites"]);
+  revalidateTag("invites");
+  return res;
+}
+
+export async function revokeInvite(inviteId: string) {
+  const res = await POST(`/invites/${inviteId}/revoke`, {});
+  revalidateTag("invites");
+  return res;
+}
+
+export async function resendInvite(inviteId: string) {
+  const res = await POST(`/invites/${inviteId}/resend`, {});
+  revalidateTag("invites");
   return res;
 }

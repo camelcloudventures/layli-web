@@ -86,16 +86,27 @@ export async function signIn(formData: FormData) {
     const orgContext = await getUserOrganizations();
 
     if (!orgContext?.success) {
-      return { error: "Failed to load organization data" };
+      return { error: orgContext?.error || "Failed to load organization data" };
+    }
+
+    // Check if user has been removed from all organizations
+    //@ts-expect-error - orgContext.data is not typed
+    const organizations = orgContext.data?.organizations || [];
+    //@ts-expect-error - orgContext.data is not typed
+    const activeOrganization = orgContext.data?.activeOrganization;
+
+    if (organizations.length === 0 || !activeOrganization) {
+      return {
+        error:
+          "You have been removed from this organization. Please contact your administrator for assistance.",
+      };
     }
 
     return {
       success: "Signed in successfully! Redirecting...",
       user: signInData.user,
-      //@ts-expect-error - orgContext.data is not typed
-      organizations: orgContext.data?.organizations,
-      //@ts-expect-error - orgContext.data is not typed
-      activeOrganization: orgContext.data?.activeOrganization,
+      organizations,
+      activeOrganization,
     };
   } catch (err) {
     const error = err as Error;
@@ -294,11 +305,23 @@ export async function createOrganization(formData: FormData, user: string) {
 export async function getUserOrganizations() {
   const response = await GET<OrgResponse>("/auth/context", undefined, true);
 
+  // Check if user has no organizations (removed from all)
   //@ts-expect-error - response.data is not typed
-  if (response?.success && response?.data?.activeOrganization) {
+  const organizations = response?.data?.organizations || [];
+  //@ts-expect-error - response.data is not typed
+  const activeOrganization = response?.data?.activeOrganization;
+
+  if (response?.success && organizations.length === 0) {
+    return {
+      success: false,
+      error:
+        "You have been removed from this organization. Please contact your administrator for assistance.",
+    };
+  }
+
+  if (response?.success && activeOrganization) {
     const cookieStore = await cookies();
-    //@ts-expect-error - response.data is not typed
-    cookieStore.set("active_org", response.data.activeOrganization.id, {
+    cookieStore.set("active_org", activeOrganization.id, {
       path: "/",
       sameSite: "lax",
     });

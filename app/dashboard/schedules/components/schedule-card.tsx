@@ -6,7 +6,7 @@ import { ScheduleInfo } from "./schedule-info";
 import { ScheduleFooter } from "./schedule-footer";
 import HasPermission from "../../components/has-permission";
 import { Permission } from "@/lib/auth/auth";
-import { formatDate, formatTime12hr } from "@/utils/data-utils";
+import { Badge } from "@/components/ui/badge";
 
 interface ScheduleCardProps {
   schedule: Schedule;
@@ -30,22 +30,23 @@ export function ScheduleCard({
       <div className="p-6 space-y-4">
         <div className="flex justify-between">
           <div>
-            <div className="font-semibold text-lg text-gray-900">
+            <div className="text-xs font-medium text-muted-foreground  mb-1">
+              Title
+            </div>
+            <div className="font-semibold text-lg text-gray-900 mb-2">
               {schedule.title}
             </div>
 
-            <div className="text-sm text-muted-foreground">
-              Starts on {formatDate(schedule.next_date)}{" "}
-              {formatTime12hr(schedule?.start_time || "")}
-              <span
-                aria-hidden="true"
-                className="mx-1 text-black text-xl font-bold"
-              >
-                ·
-              </span>
-              Due {formatDate(schedule.next_date)}{" "}
-              {formatTime12hr(schedule?.end_time || "")}
-            </div>
+            {schedule.site?.name && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-muted-foreground ">
+                  Site:
+                </span>
+                <Badge variant="outline" className="text-sm">
+                  {schedule.site.name}
+                </Badge>
+              </div>
+            )}
           </div>
           <HasPermission permission={Permission.MANAGE_SCHEDULES}>
             <ScheduleActions

@@ -110,3 +110,15 @@ export async function pauseInspection(inspection_id: string) {
   revalidateTag("inspections");
   return res;
 }
+
+export async function updateInspectionAssignees(
+  inspection_id: string,
+  assignees: Assignees[]
+) {
+  const res = await PUT(`/inspections/${inspection_id}/assignees`, {
+    assignees,
+  });
+  revalidateTag("inspections");
+  revalidatePath(`/dashboard/inspections`);
+  return res;
+}

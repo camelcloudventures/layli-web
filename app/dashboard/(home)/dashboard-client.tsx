@@ -280,7 +280,6 @@ export function DashboardClient() {
 
       <HomeTabs
         stats={stats}
-        notifications={notifications || []}
         inspectionTrends={inspectionTrends}
         issuesByCategory={issuesByCategory}
         actionCompletionRate={actionCompletionRate}

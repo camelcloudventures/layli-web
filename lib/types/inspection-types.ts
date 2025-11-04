@@ -184,6 +184,13 @@ export enum InspectionStatus {
   CANCELLED = "cancelled",
 }
 
+export interface InspectionAssignee {
+  id: string;
+  full_name: string;
+  email: string;
+  role: string;
+}
+
 export interface Inspection {
   id: string;
   title: string;
@@ -194,6 +201,7 @@ export interface Inspection {
   prepared_by: string;
   assignee_id: string | null;
   assignee_ids: string[];
+  assignees?: InspectionAssignee[];
   site_id: string | null;
   site: Site | null;
   template_id: string | null;

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { UserAccountNav } from "@/components/layout/user-account-nav";
-import { Menu } from "lucide-react";
+import { Menu, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
@@ -11,13 +11,17 @@ import { useEffect, useState } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/lib/context/auth-provider";
 import Image from "next/image";
+import { NotificationPanel } from "@/components/layout/notification-panel";
+import { useNotifications } from "@/hooks/use-notifications";
 
 export function DashboardHeader() {
   const { activeOrg } = useAuth();
   const [open, setOpen] = useState(false);
+  const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
   const isMobile = useMobile();
+  const { notifications } = useNotifications();
 
-  console.log("activeOrg", activeOrg);
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   // Close mobile nav when screen size changes
   useEffect(() => {
@@ -59,10 +63,30 @@ export function DashboardHeader() {
             <h1 className="text-xl font-bold">{activeOrg?.name}</h1>
           </Link>
         </div>
-        <div className="flex  items-center gap-2">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative h-8 w-8"
+            onClick={() => setNotificationPanelOpen(true)}
+            aria-label={`Notifications${
+              unreadCount > 0 ? ` (${unreadCount} unread)` : ""
+            }`}
+          >
+            <Bell className="h-5 w-5" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold ring-2 ring-white">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
+          </Button>
           <UserAccountNav />
         </div>
       </div>
+      <NotificationPanel
+        open={notificationPanelOpen}
+        onOpenChange={setNotificationPanelOpen}
+      />
     </header>
   );
 }

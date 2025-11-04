@@ -26,16 +26,26 @@ import {
   XCircle,
   ArrowUpDown,
   Loader2,
+  Users,
 } from "lucide-react";
 import { downloadInspectionPDF } from "../[id]/report/utils/pdf-generator";
 import { useState } from "react";
 import { toast } from "sonner";
 import Link from "next/link";
+import { UserOption } from "@/app/dashboard/schedules/types/schedule-form-types";
+import { ManageAssigneesDialog } from "./manage-assignees-dialog";
 
 // Separate component for actions
-function InspectionActions({ inspection }: { inspection: Inspection }) {
+function InspectionActions({
+  inspection,
+  users,
+}: {
+  inspection: Inspection;
+  users: UserOption[];
+}) {
   "use client";
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isManageAssigneesOpen, setIsManageAssigneesOpen] = useState(false);
 
   const handleDownloadReport = () => {
     setIsDownloading(true);
@@ -108,59 +118,78 @@ function InspectionActions({ inspection }: { inspection: Inspection }) {
   if (inspection.status === InspectionStatus.PENDING) {
     console.log("inspections this side are 11111111111111", inspection);
 
-    return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuSeparator />
+    function handleManageAssignees() {
+      setIsManageAssigneesOpen(true);
+    }
 
-          <DropdownMenuItem asChild>
-            <Link href={`/dashboard/inspections/${inspection.id}/edit`}>
-              <Edit className="mr-2 h-4 w-4" />
-              Start Inspection
-            </Link>
-          </DropdownMenuItem>
-          {/* <DropdownMenuItem onClick={handleDownloadReport}>
-            <Download className="mr-2 h-4 w-4" />
-            View Inspection
-          </DropdownMenuItem> */}
-        </DropdownMenuContent>
-      </DropdownMenu>
+    function handleSuccess() {
+      // Refresh inspections list - the store will be updated by the action
+      // The component will re-render when the store updates
+    }
+
+    return (
+      <>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+
+            <DropdownMenuItem asChild>
+              <Link href={`/dashboard/inspections/${inspection.id}/edit`}>
+                <Edit className="mr-2 h-4 w-4" />
+                Start Inspection
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleManageAssignees}>
+              <Users className="mr-2 h-4 w-4" />
+              Manage Assignees
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <ManageAssigneesDialog
+          isOpen={isManageAssigneesOpen}
+          onOpenChange={setIsManageAssigneesOpen}
+          inspection={inspection}
+          users={users}
+          onSuccess={handleSuccess}
+        />
+      </>
     );
   }
 
   return null;
 }
 
-export const columns: ColumnDef<Inspection>[] = [
-  {
-    accessorKey: "title",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="p-0 hover:bg-transparent"
-        >
-          Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
+export function columns(users: UserOption[]): ColumnDef<Inspection>[] {
+  return [
+    {
+      accessorKey: "title",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="p-0 hover:bg-transparent"
+          >
+            Name
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
     },
-  },
-  {
-    accessorKey: "site",
-    header: "Location",
-    cell: ({ row }) => {
-      const site = row.original.site;
-      return site?.name || "N/A";
+    {
+      accessorKey: "site",
+      header: "Location",
+      cell: ({ row }) => {
+        const site = row.original.site;
+        return site?.name || "N/A";
+      },
     },
-  },
   {
     accessorKey: "due_date",
     header: ({ column }) => {
@@ -259,6 +288,9 @@ export const columns: ColumnDef<Inspection>[] = [
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => <InspectionActions inspection={row.original} />,
+    cell: ({ row }) => (
+      <InspectionActions inspection={row.original} users={users} />
+    ),
   },
-];
+  ];
+}

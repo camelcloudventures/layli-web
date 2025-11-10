@@ -12,7 +12,10 @@ import {
   DialogHeader,
   DialogContent,
 } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Issue } from "@/lib/types/issue-types";
+
+type FilterMode = "active" | "closed";
 
 function downloadCSV(csv: string, filename: string) {
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -73,16 +76,24 @@ export default function Issues({
   users,
   sites,
   issues,
+  filterMode,
+  onFilterChange,
 }: {
   users: User[];
   sites: Site[];
   issues: Issue[];
+  filterMode: FilterMode;
+  onFilterChange: (mode: FilterMode) => void;
 }) {
   const [isReportIssueDialogOpen, setIsReportIssueDialogOpen] = useState(false);
 
   function handleExportCSV() {
     const csv = convertToCSV(issues);
     downloadCSV(csv, "issues.csv");
+  }
+
+  function handleFilterChange(value: string) {
+    onFilterChange(value as FilterMode);
   }
 
   return (
@@ -106,6 +117,19 @@ export default function Issues({
             },
           ]}
         />
+      </div>
+
+      <div className="flex items-center justify-between">
+        <Tabs
+          value={filterMode}
+          onValueChange={handleFilterChange}
+          className="w-full"
+        >
+          <TabsList className="grid w-[300px] grid-cols-2">
+            <TabsTrigger value="active">Active</TabsTrigger>
+            <TabsTrigger value="closed">Closed/Resolved</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
       <Dialog

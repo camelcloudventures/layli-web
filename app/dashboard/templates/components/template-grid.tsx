@@ -13,6 +13,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import HasPermission from "@/app/dashboard/components/has-permission";
+import { Permission } from "@/lib/auth/auth";
 
 interface TemplateGridProps {
   templates: AuditTemplate[];
@@ -95,12 +97,14 @@ export function TemplateGrid({ templates }: TemplateGridProps) {
                       Preview
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href={`/dashboard/templates/${template.id}/edit`}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
-                    </Link>
-                  </DropdownMenuItem>
+                  <HasPermission permission={Permission.EDIT_TEMPLATES}>
+                    <DropdownMenuItem asChild>
+                      <Link href={`/dashboard/templates/${template.id}/edit`}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </Link>
+                    </DropdownMenuItem>
+                  </HasPermission>
                   <DropdownMenuItem>
                     <Copy className="mr-2 h-4 w-4" />
                     Duplicate

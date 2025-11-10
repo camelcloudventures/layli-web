@@ -1,6 +1,6 @@
 "use client";
 
-import { type Dispatch, type SetStateAction, useState } from "react";
+import { type Dispatch, type SetStateAction, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -52,7 +52,20 @@ export function QuestionsManager({
   section,
   handleQuestionAddition,
 }: QuestionsManagerProps) {
-  const [expandedQuestions, setExpandedQuestions] = useState<string[]>([]);
+  // Auto-expand all questions by default when editing
+  const [expandedQuestions, setExpandedQuestions] = useState<string[]>(() => {
+    return section.questions.map((q) => q.id);
+  });
+
+  // Update expanded questions when section questions change
+  useEffect(() => {
+    const allQuestionIds = section.questions.map((q) => q.id);
+    setExpandedQuestions((prev) => {
+      // Keep existing expanded questions, add new ones
+      const newIds = allQuestionIds.filter((id) => !prev.includes(id));
+      return [...prev, ...newIds];
+    });
+  }, [section.questions]);
 
   // For real pages, render the questions that actually belong to this section on this page
   const questionsForThisSectionOnThisPage = section.questions;
@@ -517,8 +530,8 @@ export function QuestionsManager({
                         />
                       )}
 
-                      {/* Flagging UI for all logical field types, only if 'Flag Critical Issue' is toggled on */}
-                      {question.is_flagged &&
+                      {/* Flagging UI for all logical field types - show if is_flagged is true OR if flag_rule exists */}
+                      {(question.is_flagged || question.flag_rule) &&
                         (question.field_type === "TEXT" ||
                           question.field_type === "NUMBER" ||
                           question.field_type === "SLIDER" ||

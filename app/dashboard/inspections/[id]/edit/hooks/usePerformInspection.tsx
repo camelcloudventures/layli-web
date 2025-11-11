@@ -73,6 +73,82 @@ export function usePerformInspection(inspection: Inspection) {
   const [isCreateActionDialogOpen, setIsCreateActionDialogOpen] =
     useState(false);
 
+  // Server-confirmed responses used for conditional visibility
+  const [persistedResponses, setPersistedResponses] = useState<
+    Record<number, Response>
+  >(() =>
+    inspection.responses.reduce((acc, response) => {
+      acc[response.question_id] = response;
+      return acc;
+    }, {} as Record<number, Response>)
+  );
+
+  const handleFieldSave = useCallback(
+    async (questionId: number) => {
+      const responseData = unsavedChanges[questionId];
+      if (!responseData) return;
+
+      setSavingFields((prev) => ({ ...prev, [questionId]: true }));
+      try {
+        const result = await saveResponse(
+          currentInspection.id,
+          String(questionId),
+          responseData
+        );
+
+        if (typeof result === "object" && result !== null && "data" in result) {
+          const updatedInspection = result.data as unknown as Inspection;
+          setCurrentInspection(updatedInspection);
+          // Update persisted (server-confirmed) responses map
+          setPersistedResponses(
+            updatedInspection.responses.reduce((acc, response) => {
+              acc[response.question_id] = response;
+              return acc;
+            }, {} as Record<number, Response>)
+          );
+          setInspections((prev) =>
+            prev.map((i) =>
+              i.id === updatedInspection.id ? updatedInspection : i
+            )
+          );
+
+          setUnsavedChanges((prev) => {
+            const next = { ...prev };
+            delete next[questionId];
+            return next;
+          });
+
+          toast.success(result.success);
+        } else {
+          toast.error("Failed to save response: unexpected format");
+        }
+      } catch (error) {
+        console.error("Error saving response:", error);
+        toast.error("Failed to save response");
+      } finally {
+        setSavingFields((prev) => {
+          const next = { ...prev };
+          delete next[questionId];
+          return next;
+        });
+      }
+    },
+    [unsavedChanges, currentInspection.id, setInspections]
+  );
+
+  // Debounce setup
+  useEffect(() => {
+    if (Object.keys(unsavedChanges).length > 0) {
+      const timer = setTimeout(() => {
+        Object.keys(unsavedChanges).forEach((questionId) => {
+          handleFieldSave(Number(questionId));
+        });
+      }, 2000); // 2-second delay
+
+      return () => clearTimeout(timer);
+    }
+  }, [unsavedChanges, handleFieldSave]);
+
   // Persist unsavedChanges to sessionStorage
   useEffect(() => {
     try {
@@ -177,54 +253,6 @@ export function usePerformInspection(inspection: Inspection) {
       window.sessionStorage.removeItem(getSessionStorageKey());
     }
   }, [getSessionStorageKey]);
-
-  // Handle individual field save
-  const handleFieldSave = async (questionId: number) => {
-    if (!unsavedChanges[questionId]) return;
-
-    setSavingFields((prev) => ({ ...prev, [questionId]: true }));
-    try {
-      const result = await saveResponse(
-        currentInspection.id,
-        String(questionId),
-        unsavedChanges[questionId]
-      );
-
-      if (typeof result === "object" && result !== null && "data" in result) {
-        const updatedInspection = result.data as Inspection;
-        setCurrentInspection(updatedInspection);
-        // reflect in global list
-        setInspections((prev) =>
-          prev.map((i) =>
-            //eslint-disable-next-line @typescript-eslint/no-explicit-any
-            i.id === updatedInspection.id ? (updatedInspection as any) : i
-          )
-        );
-
-        // Remove from unsaved changes
-        setUnsavedChanges((prev) => {
-          const next = { ...prev };
-          delete next[questionId];
-          return next;
-        });
-
-        toast.success(result.success);
-      } else {
-        // Handle cases where the response might be a simple message
-        console.warn("Received unexpected response format:", result);
-        toast.error("Failed to save response: unexpected format");
-      }
-    } catch (error) {
-      console.error("Error saving response:", error);
-      toast.error("Failed to save response");
-    } finally {
-      setSavingFields((prev) => {
-        const next = { ...prev };
-        delete next[questionId];
-        return next;
-      });
-    }
-  };
 
   const responses = useMemo(
     () =>
@@ -441,6 +469,7 @@ export function usePerformInspection(inspection: Inspection) {
         }
         router.push(`/dashboard/inspections/`);
       } else {
+        // @ts-expect-error - res is of type ApiResponse<unknown>
         toast.error(res?.message || "Failed to pause inspection");
       }
     } catch (error) {
@@ -455,6 +484,7 @@ export function usePerformInspection(inspection: Inspection) {
     setIsSubmitting(true);
     try {
       const res = await completeInspection(currentInspection.id);
+      // @ts-expect-error - res is of type ApiResponse<unknown>
       toast.success(res.success);
       setUnsavedChanges({});
       clearSessionStorage();
@@ -693,6 +723,7 @@ export function usePerformInspection(inspection: Inspection) {
 
   return {
     currentInspection,
+    persistedResponses,
     handleAttachFile,
     setCurrentInspection,
     isSubmitting,
@@ -710,12 +741,8 @@ export function usePerformInspection(inspection: Inspection) {
     selectedFile,
     setSelectedFile,
     router,
-    handleFieldSave,
     unsavedChanges,
-    setUnsavedChanges,
     savingFields,
-    handleAddANote,
-    setSavingFields,
     handleComplete,
     handleResponse,
     completionPercentage,
@@ -729,5 +756,6 @@ export function usePerformInspection(inspection: Inspection) {
     isCreateActionDialogOpen,
     setIsCreateActionDialogOpen,
     handleActionCreated,
+    handleAddANote,
   };
 }

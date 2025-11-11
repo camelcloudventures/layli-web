@@ -21,7 +21,6 @@ import { TemplatePreview } from "../../components/template-preview";
 import Image from "next/image";
 import { useAuth } from "@/lib/context/auth-provider";
 import { AuditTemplate } from "@/lib/types/audit-types";
-import { omit } from "lodash";
 import SubmitBtn from "@/components/custom/submit-btn";
 import { getPreloadedQuestions } from "@/components/template-cover-page/template-cover-page";
 import { useTemplatesStore } from "@/store/templates";
@@ -33,8 +32,8 @@ export default function CreateAuditForm() {
   const [activeTab, setActiveTab] = useState("details");
 
   // Generate unique IDs for the cover page and section
-  const coverPageId = `cover-page-${Date.now()}`;
-  const coverSectionId = `cover-section-${Date.now()}`;
+  const coverPageId = `temp-page-${Date.now()}`;
+  const coverSectionId = `temp-section-${Date.now()}`;
 
   // Create the cover section
   const coverSection = {
@@ -120,16 +119,71 @@ export default function CreateAuditForm() {
   // }
 
   async function handleSubmit(formData: FormData) {
+    // Preflight validation: ensure parent/trigger references point to existing temp IDs
+    function validateTemplateForSubmission() {
+      const allQuestions = new Map<string, { field_type: string; response_options?: { id: string; label: string }[] }>();
+      template.pages.forEach((p) =>
+        p.sections.forEach((s) =>
+          s.questions.forEach((q) =>
+            allQuestions.set(q.id, {
+              field_type: q.field_type,
+              response_options: q.response_options,
+            })
+          )
+        )
+      );
+
+      for (const page of template.pages) {
+        for (const section of page.sections) {
+          for (const q of section.questions) {
+            if (q.parent_question_id) {
+              const parent = allQuestions.get(q.parent_question_id);
+              if (!parent) {
+                toast.error(
+                  `Invalid conditional: parent question ${q.parent_question_id} not found for "${q.text}".`
+                );
+                return false;
+              }
+              if (!q.trigger) {
+                toast.error(
+                  `Invalid conditional: missing trigger for "${q.text}".`
+                );
+                return false;
+              }
+              const { value } = q.trigger;
+              const isSelectType =
+                parent.field_type === "SELECT" ||
+                parent.field_type === "MULTI_SELECT" ||
+                parent.field_type === "CHECKBOX";
+              if (isSelectType) {
+                const hasOption =
+                  parent.response_options?.some((opt) => opt.id === String(value)) ??
+                  false;
+                if (!hasOption) {
+                  toast.error(
+                    `Invalid conditional: trigger value does not match any option on parent for "${q.text}".`
+                  );
+                  return false;
+                }
+              }
+            }
+          }
+        }
+      }
+      return true;
+    }
+
+    if (!validateTemplateForSubmission()) {
+      return;
+    }
+
     const updatePages = template.pages.map((page) => ({
-      ...omit(page, ["id", "template_id"]),
+      ...page,
       sections: page.sections.map((section) => ({
-        ...omit(section, ["id"]),
+        ...section,
         questions: section.questions.map((question) => ({
-          ...omit(question, ["id"]),
-          response_options:
-            question.response_options?.map((option) =>
-              omit(option, ["id", "question_id"])
-            ) ?? [],
+          ...question,
+          response_options: question.response_options ?? [],
         })),
       })),
     }));

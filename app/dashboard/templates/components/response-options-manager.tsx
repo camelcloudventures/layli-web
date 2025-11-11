@@ -35,7 +35,9 @@ export function ResponseOptionsManager({
   question,
 }: ResponseOptionsManagerProps) {
   const addResponseOption = () => {
-    const tempId = `temp-${Date.now()}`;
+    const tempId = `temp-ro-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 8)}`;
     const newOption: NewResponseOption = {
       question_id: question.id,
       label: "New Option",
@@ -190,8 +192,10 @@ export function ResponseOptionsManager({
           );
           options.forEach((opt) => {
             if (!existingValues.has(opt.label.toLowerCase())) {
-              targetQuestion.response_options!.push({
-                id: `temp-${Date.now()}-${Math.random()}`,
+          targetQuestion.response_options!.push({
+            id: `temp-ro-${Date.now()}-${Math.random()
+              .toString(36)
+              .slice(2, 8)}`,
                 question_id: question.id,
                 label: opt.label,
                 code: "",

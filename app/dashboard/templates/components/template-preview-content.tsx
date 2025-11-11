@@ -10,10 +10,12 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
+  GitBranch,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ImageUpload } from "./image-upload";
@@ -168,6 +170,15 @@ export function TemplatePreviewContent({
                                 <AlertTriangle className="h-3 w-3" />
                                 Critical
                               </span>
+                            )}
+                            {question.parent_question_id && (
+                              <Badge
+                                variant="outline"
+                                className="ml-2 text-xs bg-blue-50 text-blue-700 border-blue-200"
+                              >
+                                <GitBranch className="mr-1 h-3 w-3" />
+                                Conditional
+                              </Badge>
                             )}
                           </div>
                           <HasPermission permission={Permission.EDIT_TEMPLATES}>
@@ -353,6 +364,29 @@ function renderQuestionInput(question: Question) {
               aria-label="Longitude"
             />
           </div>
+        </div>
+      );
+    case "CHECKBOX":
+      if (
+        !question.response_options ||
+        question.response_options.length === 0
+      ) {
+        return (
+          <p className="text-sm text-muted-foreground">
+            No options defined for this question
+          </p>
+        );
+      }
+      return (
+        <div className="space-y-2">
+          {question.response_options.map((option) => (
+            <div key={option.id} className="flex items-center space-x-2">
+              <Checkbox id={`${question.id}-${option.id}`} />
+              <Label htmlFor={`${question.id}-${option.id}`}>
+                {option.label}
+              </Label>
+            </div>
+          ))}
         </div>
       );
 

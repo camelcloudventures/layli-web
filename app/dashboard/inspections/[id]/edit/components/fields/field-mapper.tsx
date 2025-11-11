@@ -11,6 +11,7 @@ import { SignatureField } from './signature-field'
 import { SliderField } from './slider-field'
 import { TextField } from './text-field'
 import { FileField } from './file-field'
+import { CheckboxField } from './checkbox-field'
 import type {
   Question,
   Response,
@@ -96,6 +97,15 @@ export function FieldMapper({
       case 'DATE':
         return (
           <DateField
+            question={question}
+            response={response}
+            onResponse={onResponse}
+            isDisabled={isDisabled}
+          />
+        )
+      case 'CHECKBOX':
+        return (
+          <CheckboxField
             question={question}
             response={response}
             onResponse={onResponse}

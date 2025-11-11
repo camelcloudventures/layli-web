@@ -15,6 +15,7 @@ function getQuestionHeight(question: Question): number {
       return 120;
     case "SELECT":
     case "MULTI_SELECT":
+    case "CHECKBOX":
     case "LOCATION":
     case "SLIDER":
     case "BOOLEAN":

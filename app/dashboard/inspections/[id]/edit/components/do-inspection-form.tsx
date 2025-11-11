@@ -20,6 +20,7 @@ interface Props {
 export function DoInspectionForm({ inspection, sites }: Props) {
   const {
     currentInspection,
+    persistedResponses,
     isSubmitting,
     pause,
     isNoteDialogOpen,
@@ -32,7 +33,6 @@ export function DoInspectionForm({ inspection, sites }: Props) {
     selectedFile,
     setSelectedFile,
     router,
-    handleFieldSave,
     unsavedChanges,
     savingFields,
     handleComplete,
@@ -122,10 +122,11 @@ export function DoInspectionForm({ inspection, sites }: Props) {
       <CurrentInspection
         currentInspection={currentInspection}
         responses={responses}
+        persistedResponses={persistedResponses}
         unsavedChanges={unsavedChanges}
         savingFields={savingFields}
         handleResponse={handleResponse}
-        handleFieldSave={handleFieldSave}
+        handleFieldSave={() => {}}
         setActiveQuestionId={setActiveQuestionId}
         setNote={setNote}
         setIsNoteDialogOpen={setIsNoteDialogOpen}

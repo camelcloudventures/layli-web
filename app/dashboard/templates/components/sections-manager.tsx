@@ -1,7 +1,8 @@
 "use client";
 
 import { type Dispatch, type SetStateAction, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -51,7 +52,9 @@ export function SectionsManager({
   console.log("page", page);
 
   const addNewSection = () => {
-    const tempId = `temp-${Date.now()}`;
+    const tempId = `temp-section-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 8)}`;
     // Count unique logical sections by id across the whole template
     const uniqueSectionIds = new Set<string>();
     template.pages.forEach((p) =>
@@ -210,42 +213,52 @@ export function SectionsManager({
                   <span>{section.title}</span>
                 </div>
                 <div className="flex items-center gap-1 mr-2">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    disabled={section.ordinal === 1}
+                  <div
                     onClick={(e) => {
                       e.stopPropagation();
-                      moveSectionUp(section.id);
+                      if (section.ordinal !== 1) {
+                        moveSectionUp(section.id);
+                      }
                     }}
+                    className={cn(
+                      buttonVariants({ variant: "ghost", size: "icon" }),
+                      section.ordinal === 1 && "opacity-50 cursor-not-allowed pointer-events-none"
+                    )}
+                    role="button"
+                    tabIndex={section.ordinal === 1 ? -1 : 0}
+                    aria-disabled={section.ordinal === 1}
                   >
                     <ChevronUp className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    disabled={section.ordinal === page.sections.length}
+                  </div>
+                  <div
                     onClick={(e) => {
                       e.stopPropagation();
-                      moveSectionDown(section.id);
+                      if (section.ordinal !== page.sections.length) {
+                        moveSectionDown(section.id);
+                      }
                     }}
+                    className={cn(
+                      buttonVariants({ variant: "ghost", size: "icon" }),
+                      section.ordinal === page.sections.length && "opacity-50 cursor-not-allowed pointer-events-none"
+                    )}
+                    role="button"
+                    tabIndex={section.ordinal === page.sections.length ? -1 : 0}
+                    aria-disabled={section.ordinal === page.sections.length}
                   >
                     <ChevronDown className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
+                  </div>
+                  <div
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDeleteSection(section.id);
                     }}
+                    className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
+                    role="button"
+                    tabIndex={0}
                     aria-label="Delete Section"
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  </div>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-4 pt-2 pb-4">

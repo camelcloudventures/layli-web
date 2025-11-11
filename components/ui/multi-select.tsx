@@ -36,7 +36,7 @@ export function MultiSelect({
       <Select
         name={name}
         required={required}
-        value={value[0] || ""} // Use first value for the select
+        value={value.length > 0 ? value[0] : undefined} // Use first value or undefined to show placeholder
         onValueChange={(newValue) => {
           if (!newValue) return;
           const newValues = value.includes(newValue)

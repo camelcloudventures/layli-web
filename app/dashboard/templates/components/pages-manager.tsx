@@ -25,6 +25,10 @@ interface PagesManagerProps {
 
 export function PagesManager({ template, setTemplate }: PagesManagerProps) {
   const [activePage, setActivePage] = useState<string | null>(null);
+  function generateTempId(prefix: string) {
+    const rand = Math.random().toString(36).slice(2, 8);
+    return `${prefix}-${Date.now()}-${rand}`;
+  }
 
   useEffect(() => {
     // Set initial active page or handle active page deletion
@@ -63,7 +67,7 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
   };
 
   const handleAddPage = () => {
-    const newPageId = Date.now().toString();
+    const newPageId = generateTempId("temp-page");
     const newPage: Page = {
       id: newPageId,
       template_id: template.id,
@@ -131,7 +135,7 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
       return;
     }
 
-    const qId = Date.now().toString();
+    const qId = generateTempId("temp-q");
     const { pageIndex, sectionIndex } = lastFragment;
     draft.pages[pageIndex].sections[sectionIndex].questions.push({
       ...newQuestion,

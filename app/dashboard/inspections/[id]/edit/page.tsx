@@ -24,6 +24,7 @@ export default async function EditInspectionPage({
     notFound();
   }
 
+  console.log("inspection data", inspectionResult.data);
   return (
     <DoInspectionForm
       // @ts-expect-error - this is a temporary fix to get the inspection to display

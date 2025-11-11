@@ -250,6 +250,52 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
       return "No response";
     }
 
+    // Handle CHECKBOX questions (similar to MULTI_SELECT)
+    if (question.field_type === "CHECKBOX") {
+      // First check if response_value contains comma-separated labels
+      if (response.response_value && question.response_options) {
+        // Split by comma and check if each part matches an option label
+        const responseValues = response.response_value
+          .split(",")
+          .map((v) => v.trim());
+        const validLabels = responseValues.filter((value) =>
+          question.response_options.some(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (option: any) => option.label === value
+          )
+        );
+        if (validLabels.length > 0) {
+          return validLabels.join(", ");
+        }
+      }
+      // Fallback: check if we have selected_options with IDs
+      if (
+        response.selected_options &&
+        response.selected_options.length > 0 &&
+        question.response_options
+      ) {
+        const selectedLabels = response.selected_options
+          .map((optionId) => {
+            // Convert to number if it's a string
+            const numericId =
+              typeof optionId === "string" ? parseInt(optionId) : optionId;
+            const option = question.response_options.find(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (o: any) => o.id === numericId
+            );
+            return option ? option.label : null;
+          })
+          .filter(Boolean)
+          .join(", ");
+        return selectedLabels || "No response";
+      }
+      // Final fallback to response_value
+      if (response.response_value) {
+        return response.response_value;
+      }
+      return "No response";
+    }
+
     // Handle TEXT questions
     if (question.field_type === "TEXT") {
       if (response.text_value) {

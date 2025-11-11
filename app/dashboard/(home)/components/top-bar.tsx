@@ -31,7 +31,7 @@ const createOptions = {
     },
     { label: "Create Schedule", icon: Calendar, href: "/dashboard/schedules" },
     { label: "Create Action", icon: ListChecks, href: "/dashboard/actions" },
-    { label: "Create User", icon: Users, href: "/dashboard/settings" },
+    { label: "Create User", icon: Users, href: "/dashboard/settings?tab=advanced" },
   ],
   auditor: [
     {

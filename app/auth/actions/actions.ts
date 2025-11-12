@@ -184,7 +184,9 @@ export async function acceptInvite(
       return { error: updateError.message };
     }
 
+    console.log("token sent to validate", token);
     const validateRes = await GET(`/invites/validate/${token}`);
+    console.log("validateRes", validateRes);
     if (!validateRes?.success) {
       return { error: validateRes?.error || "Invalid invite token" };
     }

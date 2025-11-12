@@ -6,7 +6,8 @@ export async function inviteUser(
   formData: FormData,
   userId: string,
   role: string,
-  orgId: string
+  orgId: string,
+  site_ids: number[] = []
 ) {
   const email = formData.get("email");
 
@@ -16,6 +17,7 @@ export async function inviteUser(
     email,
     role: role,
     user: userId,
+    site_ids,
   };
   console.log("orgId", orgId);
 

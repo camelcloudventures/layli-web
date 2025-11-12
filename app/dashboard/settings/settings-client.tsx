@@ -67,18 +67,20 @@ export function SettingsClient() {
           </div>
         </TabsContent>
 
-        <TabsContent value="advanced">
-          <Card>
-            <CardHeader>
-              <CardTitle>User Management</CardTitle>
-              <CardDescription>Invite users and manage roles</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-10">
-              <UserManagement />
-              <SiteManagement />
-            </CardContent>
-          </Card>
-        </TabsContent>
+        <HasPermission permission={Permission.MANAGE_USERS}>
+          <TabsContent value="advanced">
+            <Card>
+              <CardHeader>
+                <CardTitle>User Management</CardTitle>
+                <CardDescription>Invite users and manage roles</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-10">
+                <UserManagement />
+                <SiteManagement />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </HasPermission>
       </Tabs>
     </div>
   );

@@ -32,6 +32,9 @@ import { toast } from "sonner";
 import { columns } from "./columns";
 import { useInvites } from "@/hooks/use-invites";
 import { useInvitesStore } from "@/store/invites";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { useSites } from "@/hooks/use-sites";
+import { cn } from "@/lib/utils";
 
 type UserRole = "admin" | "auditor" | "supervisor";
 
@@ -45,18 +48,22 @@ export interface Invite {
   used: boolean;
   user_id?: string;
   revoked?: boolean;
+  site_ids?: number[];
+  sites?: { id: string | number; name?: string }[];
 }
 
 export function UserManagement() {
   const { user, activeOrg } = useAuth();
   const { invites } = useInvites();
   const addInvite = useInvitesStore((state) => state.addInvite);
+  const { sites, isLoading: isSitesLoading } = useSites();
 
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [inviteForm, setInviteForm] = useState({
     role: "auditor" as UserRole,
   });
+  const [selectedSiteIds, setSelectedSiteIds] = useState<string[]>([]);
 
   const handleInviteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -64,12 +71,23 @@ export function UserManagement() {
   };
 
   const handleInviteSubmit = async (formData: FormData) => {
+    if (selectedSiteIds.length === 0) {
+      toast.error("Please select at least one site");
+      return;
+    }
+
+    // Convert selectedSiteIds to numbers for the action
+    const siteIdsNumbers = selectedSiteIds
+      .map((id) => Number(id))
+      .filter((n) => Number.isFinite(n));
+
     setIsLoading(true);
     const res = await inviteUser(
       formData,
       user?.id || "",
       inviteForm.role,
-      activeOrg?.id || ""
+      activeOrg?.id || "",
+      siteIdsNumbers
     );
     setIsLoading(false);
     if (res?.error) {
@@ -139,6 +157,31 @@ export function UserManagement() {
                       <SelectItem value="auditor">Auditor</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                <div
+                  className={cn(
+                    "grid gap-2",
+                    selectedSiteIds?.length <= 4 ? "mb-12" : ""
+                  )}
+                >
+                  <Label htmlFor="site_ids">
+                    Sites <span className="text-red-500">*</span>
+                  </Label>
+                  <MultiSelect
+                    name="site_ids"
+                    required
+                    value={selectedSiteIds}
+                    onValueChange={setSelectedSiteIds}
+                    placeholder={
+                      isSitesLoading ? "Loading sites..." : "Select sites"
+                    }
+                    options={
+                      sites?.data?.map((site) => ({
+                        value: String(site.id),
+                        label: site.name,
+                      })) || []
+                    }
+                  />
                 </div>
               </div>
               <DialogFooter>

@@ -334,6 +334,32 @@ export const columns: ColumnDef<Invite>[] = [
     },
   },
   {
+    id: "sites",
+    header: "Sites",
+    cell: ({ row }) => {
+      const invite = row.original as Invite & {
+        sites?: { id: string | number; name?: string }[];
+        site_ids?: number[];
+      };
+      const siteNames =
+        invite?.sites?.map((s) => s?.name).filter(Boolean) as string[] | undefined;
+      if (siteNames && siteNames.length > 0) {
+        const shown = siteNames.slice(0, 2).join(", ");
+        const extra = siteNames.length > 2 ? ` +${siteNames.length - 2}` : "";
+        return <span>{shown}{extra}</span>;
+      }
+      const count = invite?.site_ids?.length || 0;
+      if (count > 0) {
+        return (
+          <Badge className="bg-gray-100 text-gray-800">
+            {count} {count > 1 ? "sites" : "site"}
+          </Badge>
+        );
+      }
+      return <span className="text-gray-400">—</span>;
+    },
+  },
+  {
     accessorKey: "created_at",
     header: "Invited At",
     cell: ({ row }) => {

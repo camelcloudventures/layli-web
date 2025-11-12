@@ -186,9 +186,37 @@ export async function acceptInvite(
 
     console.log("token sent to validate", token);
     const validateRes = await GET(`/invites/validate/${token}`);
-    console.log("validateRes", validateRes);
+    console.log("validateRes===========>", validateRes);
     if (!validateRes?.success) {
       return { error: validateRes?.error || "Invalid invite token" };
+    }
+
+    // Add user to site_members table if site_ids are provided
+    if (
+      //@ts-expect-error - validateRes.data is not typed
+      Array.isArray(validateRes?.data?.site_ids) &&
+      //@ts-expect-error - validateRes.data is not typed
+      validateRes?.data?.site_ids?.length > 0
+    ) {
+      //@ts-expect-error - validateRes.data is not typed
+      const siteMemberRows = validateRes?.data?.site_ids?.map(
+        (siteId: number) => ({
+          site_id: siteId,
+          user_id: sessionData.user?.id,
+          //@ts-expect-error - validateRes.data is not typed
+          organization_id: validateRes?.data?.organization_id,
+        })
+      );
+
+      const { error: siteMembersError } = await supabase
+        .from("site_members")
+        .upsert(siteMemberRows, { onConflict: "site_id,user_id" });
+
+      console.log("siteMembersError=======", siteMembersError);
+
+      if (siteMembersError) {
+        return { error: siteMembersError.message };
+      }
     }
 
     const fullName = formData.get("fullName") as string;

@@ -10,6 +10,8 @@ import { useAuth } from "@/lib/context/auth-provider";
 import SubmitBtn from "@/components/custom/submit-btn";
 import { useUserProfile } from "../hooks/useUserProfile";
 import { useOrganizationUpdate } from "../hooks/useOrganizationUpdate";
+import HasPermission from "../../components/has-permission";
+import { Permission } from "@/lib/auth/auth";
 
 export function UserProfileForm() {
   const { user, activeOrg } = useAuth();
@@ -98,31 +100,35 @@ export function UserProfileForm() {
         />
       </form>
 
-      {activeOrg && (
-        <div className="mt-8 pt-8 border-t">
-          <h2 className="text-lg font-semibold mb-4">Organization Settings</h2>
-          <form action={handleUpdateOrganization} className="space-y-6">
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="organizationName">Organization Name</Label>
-                <Input
-                  id="organizationName"
-                  name="name"
-                  defaultValue={activeOrg?.name}
-                  required
-                />
+      <HasPermission permission={Permission.MANAGE_USERS}>
+        {activeOrg && (
+          <div className="mt-8 pt-8 border-t">
+            <h2 className="text-lg font-semibold mb-4">
+              Organization Settings
+            </h2>
+            <form action={handleUpdateOrganization} className="space-y-6">
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="organizationName">Organization Name</Label>
+                  <Input
+                    id="organizationName"
+                    name="name"
+                    defaultValue={activeOrg?.name}
+                    required
+                  />
+                </div>
               </div>
-            </div>
 
-            <SubmitBtn
-              label={updating ? "Updating..." : "Update Organization"}
-              variant="default"
-              className=""
-              isDisabled={updating}
-            />
-          </form>
-        </div>
-      )}
+              <SubmitBtn
+                label={updating ? "Updating..." : "Update Organization"}
+                variant="default"
+                className=""
+                isDisabled={updating}
+              />
+            </form>
+          </div>
+        )}
+      </HasPermission>
     </>
   );
 }

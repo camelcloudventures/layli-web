@@ -37,6 +37,7 @@ interface SectionsManagerProps {
     sectionId: string,
     newQuestion: NewSection["questions"][number]
   ) => void;
+  setActivePage: (pageId: string) => void;
 }
 
 export function SectionsManager({
@@ -44,6 +45,7 @@ export function SectionsManager({
   setTemplate,
   page,
   handleQuestionAddition,
+  setActivePage,
 }: SectionsManagerProps) {
   const [openSections, setOpenSections] = useState<string[]>([]);
 
@@ -79,6 +81,14 @@ export function SectionsManager({
       const reflowed = reflowTemplateByA4(updatedTemplate);
       setTemplate(reflowed);
       setOpenSections([...openSections, tempId]);
+      
+      // Navigate to the page where the new section ended up
+      for (const p of reflowed.pages) {
+        if (p.sections.some((s) => s.id === tempId)) {
+          setActivePage(p.id);
+          break;
+        }
+      }
     }
   };
 
@@ -197,9 +207,9 @@ export function SectionsManager({
           onValueChange={setOpenSections}
           className="space-y-4"
         >
-          {uniqueSectionsOnThisPage.map((section) => (
+          {uniqueSectionsOnThisPage.map((section, index) => (
             <AccordionItem
-              key={section.id}
+              key={`${section.id}-${page.id}-${index}`}
               value={section.id}
               className="border rounded-md"
               data-section-id={section.id}

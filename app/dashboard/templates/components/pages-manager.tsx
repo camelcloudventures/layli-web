@@ -8,10 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   GripVertical,
-  ChevronDown,
-  ChevronUp,
-  Trash2,
-  PlusCircle,
 } from "lucide-react";
 import type { AuditTemplate, Page } from "@/lib/types/audit-types";
 import { SectionsManager } from "@/app/dashboard/templates/components/sections-manager";
@@ -31,14 +27,15 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
   }
 
   useEffect(() => {
-    // Set initial active page or handle active page deletion
-    if (
-      template.pages.length > 0 &&
-      (activePage === null || !template.pages.some((p) => p.id === activePage))
-    ) {
+    // Set initial active page only if no page is active
+    // Don't reset if the current active page still exists
+    if (template.pages.length > 0 && activePage === null) {
+      setActivePage(template.pages[0].id);
+    } else if (activePage && !template.pages.some((p) => p.id === activePage)) {
+      // Only reset if the active page was deleted
       setActivePage(template.pages[0].id);
     }
-  }, [template.pages, activePage, setTemplate, template.id]);
+  }, [template.pages, activePage]);
 
   const updatePage = (pageId: string, field: keyof Page, value: string) => {
     const updatedTemplate = { ...template };
@@ -53,61 +50,6 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
     }
   };
 
-  const handleDeletePage = (pageId: string) => {
-    // Prevent deleting the last page
-    if (template.pages.length <= 1) {
-      alert("You cannot delete the last page.");
-      return;
-    }
-    const updatedTemplate = {
-      ...template,
-      pages: template.pages.filter((page) => page.id !== pageId),
-    };
-    setTemplate(updatedTemplate);
-  };
-
-  const handleAddPage = () => {
-    const newPageId = generateTempId("temp-page");
-    const newPage: Page = {
-      id: newPageId,
-      template_id: template.id,
-      title: `Page ${template.pages.length + 1}`,
-      description: "",
-      ordinal: template.pages.length + 1,
-      sections: [],
-      created_at: new Date().toISOString(),
-    };
-
-    setTemplate((prev) => ({
-      ...prev,
-      pages: [...prev.pages, newPage],
-    }));
-    setActivePage(newPageId);
-  };
-
-  const movePageUp = (pageId: string) => {
-    const pageIndex = template.pages.findIndex((page) => page.id === pageId);
-    if (pageIndex > 0) {
-      const newPages = [...template.pages];
-      [newPages[pageIndex - 1], newPages[pageIndex]] = [
-        newPages[pageIndex],
-        newPages[pageIndex - 1],
-      ];
-      setTemplate({ ...template, pages: newPages });
-    }
-  };
-
-  const movePageDown = (pageId: string) => {
-    const pageIndex = template.pages.findIndex((page) => page.id === pageId);
-    if (pageIndex < template.pages.length - 1) {
-      const newPages = [...template.pages];
-      [newPages[pageIndex], newPages[pageIndex + 1]] = [
-        newPages[pageIndex + 1],
-        newPages[pageIndex],
-      ];
-      setTemplate({ ...template, pages: newPages });
-    }
-  };
 
   const activatePageTab = (pageId: string) => {
     setActivePage(pageId);
@@ -173,62 +115,17 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
               {template.pages.map((page) => (
                 <div
                   key={page.id}
-                  className={`flex items-center justify-between rounded-md border p-2 ${
+                  className={`flex items-center justify-between rounded-md border p-2 cursor-pointer hover:bg-accent/50 transition-colors ${
                     activePage === page.id ? "border-primary bg-primary/10" : ""
                   }`}
+                  onClick={() => activatePageTab(page.id)}
                 >
-                  <button
-                    className="flex items-center gap-2 w-full text-left"
-                    onClick={() => activatePageTab(page.id)}
-                  >
+                  <div className="flex items-center gap-2 w-full">
                     <GripVertical className="h-4 w-4 text-muted-foreground" />
                     <span className="truncate">{page.title}</span>
-                  </button>
-
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        movePageUp(page.id);
-                      }}
-                    >
-                      <ChevronUp className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        movePageDown(page.id);
-                      }}
-                    >
-                      <ChevronDown className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeletePage(page.id);
-                      }}
-                      aria-label="Delete Page"
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
                   </div>
                 </div>
               ))}
-              <Button
-                onClick={handleAddPage}
-                variant="outline"
-                className="w-full mt-4"
-              >
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Add Page
-              </Button>
             </div>
           </div>
 
@@ -242,6 +139,7 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
                 template={template}
                 setTemplate={setTemplate}
                 handleQuestionAddition={handleQuestionAddition}
+                setActivePage={setActivePage}
               />
             ) : (
               <Alert>
@@ -266,6 +164,7 @@ interface PageEditorProps {
     //eslint-disable-next-line @typescript-eslint/no-explicit-any
     newQuestion: any
   ) => void;
+  setActivePage: (pageId: string) => void;
 }
 
 function PageEditor({
@@ -274,6 +173,7 @@ function PageEditor({
   template,
   setTemplate,
   handleQuestionAddition,
+  setActivePage,
 }: PageEditorProps) {
   return (
     <Card>
@@ -312,6 +212,7 @@ function PageEditor({
             setTemplate={setTemplate}
             page={page}
             handleQuestionAddition={handleQuestionAddition}
+            setActivePage={setActivePage}
           />
         </div>
       </CardContent>

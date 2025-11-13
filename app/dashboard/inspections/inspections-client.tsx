@@ -7,6 +7,7 @@ import { InspectionList } from "./components/inspection-list";
 export default function InspectionsClient() {
   const { inspections, isLoading } = useInspections();
 
+  console.log("inspections length ", inspections.length);
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold tracking-tight">Inspections</h1>

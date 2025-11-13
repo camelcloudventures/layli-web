@@ -321,10 +321,8 @@ export function IssueDetails({ issue, onClose, assignees }: IssueDetailsProps) {
       // Step 1: Update core issue details
       const updateRes = await updateIssue(currentIssue.id, formData);
       console.log("updateRes", updateRes);
-      //@ts-expect-error - needs type
       if (!updateRes?.success) {
         success = false;
-        //@ts-expect-error - needs type
         errorMessage = updateRes?.error || errorMessage;
         throw new Error("Failed to update issue details.");
       }

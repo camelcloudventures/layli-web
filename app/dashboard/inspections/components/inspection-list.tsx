@@ -67,7 +67,7 @@ export function InspectionList({
       {loading ? (
         <Loading />
       ) : (
-        <div>
+        <div className="overflow-x-auto max-h-[800px] overflow-y-auto scrollbar-none">
           <DataTable
             columns={memoizedColumns}
             data={filteredInspections}

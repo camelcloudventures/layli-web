@@ -116,8 +116,6 @@ function InspectionActions({
   }
 
   if (inspection.status === InspectionStatus.PENDING) {
-    console.log("inspections this side are 11111111111111", inspection);
-
     function handleManageAssignees() {
       setIsManageAssigneesOpen(true);
     }
@@ -190,107 +188,107 @@ export function columns(users: UserOption[]): ColumnDef<Inspection>[] {
         return site?.name || "N/A";
       },
     },
-  {
-    accessorKey: "due_date",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="p-0 hover:bg-transparent"
-        >
-          Due Date
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
+    {
+      accessorKey: "due_date",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="p-0 hover:bg-transparent"
+          >
+            Due Date
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return row.original.due_date
+          ? format(parseISO(row.original.due_date), "MMM d, yyyy")
+          : "N/A";
+      },
     },
-    cell: ({ row }) => {
-      return row.original.due_date
-        ? format(parseISO(row.original.due_date), "MMM d, yyyy")
-        : "N/A";
+    {
+      accessorKey: "final_score",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="p-0 hover:bg-transparent"
+          >
+            Score
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return row.original.final_score !== null
+          ? `${row.original.final_score}%`
+          : "Not Completed";
+      },
     },
-  },
-  {
-    accessorKey: "final_score",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="p-0 hover:bg-transparent"
-        >
-          Score
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
+    {
+      accessorKey: "status",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="p-0 hover:bg-transparent"
+          >
+            Status
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const status = row.original.status;
+        switch (status) {
+          case InspectionStatus.COMPLETED:
+            return (
+              <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
+                <CheckCircle2 className="mr-1 h-3 w-3" />
+                Completed
+              </Badge>
+            );
+          case InspectionStatus.IN_PROGRESS:
+            return (
+              <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
+                <Clock className="mr-1 h-3 w-3" />
+                In Progress
+              </Badge>
+            );
+          case InspectionStatus.PAUSED:
+            return (
+              <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200">
+                <PauseCircle className="mr-1 h-3 w-3" />
+                Paused
+              </Badge>
+            );
+          case InspectionStatus.CANCELLED:
+            return (
+              <Badge className="bg-red-100 text-red-800 hover:bg-red-200">
+                <XCircle className="mr-1 h-3 w-3" />
+                Cancelled
+              </Badge>
+            );
+          default:
+            return (
+              <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200">
+                <AlertTriangle className="mr-1 h-3 w-3" />
+                Pending
+              </Badge>
+            );
+        }
+      },
     },
-    cell: ({ row }) => {
-      return row.original.final_score !== null
-        ? `${row.original.final_score}%`
-        : "Not Completed";
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => (
+        <InspectionActions inspection={row.original} users={users} />
+      ),
     },
-  },
-  {
-    accessorKey: "status",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="p-0 hover:bg-transparent"
-        >
-          Status
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      const status = row.original.status;
-      switch (status) {
-        case InspectionStatus.COMPLETED:
-          return (
-            <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
-              <CheckCircle2 className="mr-1 h-3 w-3" />
-              Completed
-            </Badge>
-          );
-        case InspectionStatus.IN_PROGRESS:
-          return (
-            <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
-              <Clock className="mr-1 h-3 w-3" />
-              In Progress
-            </Badge>
-          );
-        case InspectionStatus.PAUSED:
-          return (
-            <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200">
-              <PauseCircle className="mr-1 h-3 w-3" />
-              Paused
-            </Badge>
-          );
-        case InspectionStatus.CANCELLED:
-          return (
-            <Badge className="bg-red-100 text-red-800 hover:bg-red-200">
-              <XCircle className="mr-1 h-3 w-3" />
-              Cancelled
-            </Badge>
-          );
-        default:
-          return (
-            <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200">
-              <AlertTriangle className="mr-1 h-3 w-3" />
-              Pending
-            </Badge>
-          );
-      }
-    },
-  },
-  {
-    id: "actions",
-    header: "Actions",
-    cell: ({ row }) => (
-      <InspectionActions inspection={row.original} users={users} />
-    ),
-  },
   ];
 }

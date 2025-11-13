@@ -14,7 +14,7 @@ import {
   Download,
 } from "lucide-react";
 import { Inspection, InspectionResponse } from "../types/inspection-types";
-import { downloadInspectionPDF } from "../utils/pdf-generator";
+import { downloadReactPDF } from "../utils/react-pdf-generator";
 import { toast } from "sonner";
 import { useActions } from "@/hooks/use-actions";
 import Image from "next/image";
@@ -25,7 +25,7 @@ interface InspectionReportProps {
 
 export function InspectionReport({ inspection }: InspectionReportProps) {
   const [selectedPage, setSelectedPage] = useState(0);
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [isGeneratingStyledPDF, setIsGeneratingStyledPDF] = useState(false);
   const { actions } = useActions();
 
   const formatDate = (dateString: string) => {
@@ -377,25 +377,27 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
     );
   };
 
-  const handleDownloadPDF = async () => {
+  const handleDownloadStyledPDF = async () => {
+    console.log("called download styled pdf");
     try {
-      setIsGeneratingPDF(true);
+      setIsGeneratingStyledPDF(true);
 
       // Generate filename based on inspection title and date
-      const filename = `inspection-report-${inspection.title.replace(
+      const filename = `inspection-report-styled-${inspection.title.replace(
         /[^a-zA-Z0-9]/g,
         "-"
       )}-${new Date().toISOString().split("T")[0]}.pdf`;
 
-      // Download the PDF
-      downloadInspectionPDF(inspection, { filename });
+      console.log("RawInspectionData===========>", inspection);
+      // Download the styled PDF
+      await downloadReactPDF(inspection, actions, { filename });
 
-      toast.success("PDF downloaded successfully!");
+      toast.success("Styled PDF downloaded successfully!");
     } catch (error) {
-      console.error("Error generating PDF:", error);
-      toast.error("Failed to generate PDF. Please try again.");
+      console.error("Error generating styled PDF:", error);
+      toast.error("Failed to generate styled PDF. Please try again.");
     } finally {
-      setIsGeneratingPDF(false);
+      setIsGeneratingStyledPDF(false);
     }
   };
 
@@ -420,12 +422,12 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
         </div>
         <div className="flex items-center gap-3">
           <Button
-            variant="outline"
-            onClick={handleDownloadPDF}
-            disabled={isGeneratingPDF}
+            variant="default"
+            onClick={handleDownloadStyledPDF}
+            disabled={isGeneratingStyledPDF}
           >
             <Download className="w-4 h-4 mr-2" />
-            {isGeneratingPDF ? "Generating..." : "Download PDF"}
+            {isGeneratingStyledPDF ? "Generating..." : "Download  PDF"}
           </Button>
           <Link href="/dashboard/inspections">
             <Button variant="outline">Back to Inspections</Button>

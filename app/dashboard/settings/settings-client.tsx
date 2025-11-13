@@ -13,6 +13,7 @@ import { UserManagement } from "./components/user-management";
 // import { UserPreferences } from "./components/user-preferences";
 import { UserProfileForm } from "./components/user-profile-form";
 import { SiteManagement } from "./components/site-management";
+import { ChangePasswordForm } from "./components/change-password-form";
 import { useSearchParams } from "next/navigation";
 
 export function SettingsClient() {
@@ -28,9 +29,12 @@ export function SettingsClient() {
       </div>
 
       <Tabs defaultValue={tab || "general"} className="">
-        <TabsList className="w-44 ">
+        <TabsList className="grid gap-2 grid-cols-3">
           <TabsTrigger className="cursor-pointer" value="general">
             General
+          </TabsTrigger>
+          <TabsTrigger className="cursor-pointer" value="security">
+            Security
           </TabsTrigger>
           <HasPermission permission={Permission.MANAGE_USERS}>
             <TabsTrigger className="cursor-pointer" value="advanced">
@@ -65,6 +69,20 @@ export function SettingsClient() {
               </CardContent>
             </Card> */}
           </div>
+        </TabsContent>
+
+        <TabsContent value="security">
+          <Card>
+            <CardHeader>
+              <CardTitle>Change Password</CardTitle>
+              <CardDescription>
+                Update your password to keep your account secure
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChangePasswordForm />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <HasPermission permission={Permission.MANAGE_USERS}>

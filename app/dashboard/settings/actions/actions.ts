@@ -2,6 +2,49 @@
 
 import { GET, POST, UPDATE, DELETE } from "@/app/backend/apiMethods";
 import { revalidateTag } from "next/cache";
+import { createClient } from "@/utils/supabase/server";
+
+export async function changePasswordAction(formData: FormData) {
+  const currentPassword = formData.get("currentPassword") as string;
+  const newPassword = formData.get("newPassword") as string;
+  const email = formData.get("email") as string;
+
+  if (!currentPassword || !newPassword || !email) {
+    return { error: "All fields are required" };
+  }
+
+  const supabase = await createClient();
+
+  try {
+    // First, verify the current password by attempting to sign in
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password: currentPassword,
+    });
+
+    if (signInError) {
+      return { error: "Current password is incorrect" };
+    }
+
+    // If verification succeeds, update to new password
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (updateError) {
+      return { error: updateError.message || "Failed to update password" };
+    }
+
+    // Sign out the user
+    await supabase.auth.signOut();
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error changing password:", error);
+    return { error: "An unexpected error occurred" };
+  }
+}
+
 export async function inviteUser(
   formData: FormData,
   userId: string,

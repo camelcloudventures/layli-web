@@ -16,6 +16,7 @@ export function useUsers() {
 
   useEffect(() => {
     if (fetchedUsers?.data && users.length === 0) {
+      // @ts-expect-error - fetchedUsers.data is not typed
       setActiveUsers(fetchedUsers.data);
     }
   }, [fetchedUsers, users, setActiveUsers]);

@@ -60,10 +60,11 @@ export default function IssuesTable({
         // Remove query param from URL
         const params = new URLSearchParams(searchParams.toString());
         params.delete("issueId");
-        router.replace(`/dashboard/issues${params.toString() ? `?${params.toString()}` : ""}`);
+        router.replace(
+          `/dashboard/issues${params.toString() ? `?${params.toString()}` : ""}`
+        );
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, issues, router]);
 
   const columns = createColumns(assignees, handleOpenDialog);

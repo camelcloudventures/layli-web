@@ -1,36 +1,37 @@
-import React from 'react';
-import { View, Text, Image } from '@react-pdf/renderer';
-import { pdfStyles, colors } from '../styles/pdf-styles';
-import { Inspection, InspectionResponse } from '../types/inspection-types';
+/* eslint-disable jsx-a11y/alt-text */
+import React from "react";
+import { View, Text, Image } from "@react-pdf/renderer";
+import { pdfStyles, colors } from "../styles/pdf-styles";
+import { Inspection, InspectionResponse } from "../types/inspection-types";
 import {
   formatResponseValue,
   getBadgeColor,
   formatDate,
   formatDateShort,
-} from '../utils/response-formatter';
+} from "../utils/response-formatter";
 
 // Badge Component
 interface BadgeProps {
   text: string;
-  color: 'red' | 'green' | 'gray' | 'teal';
+  color: "red" | "green" | "gray" | "teal";
 }
 
 export function Badge({ text, color }: BadgeProps) {
   const badgeStyle =
-    color === 'red'
+    color === "red"
       ? [pdfStyles.badge, pdfStyles.redBadge]
-      : color === 'green'
+      : color === "green"
       ? [pdfStyles.badge, pdfStyles.greenBadge]
-      : color === 'gray'
+      : color === "gray"
       ? [pdfStyles.badge, pdfStyles.grayBadge]
       : [pdfStyles.badge, { backgroundColor: colors.tealBadge }];
 
   const textStyle =
-    color === 'red'
+    color === "red"
       ? [pdfStyles.badgeText, pdfStyles.redBadgeText]
-      : color === 'green'
+      : color === "green"
       ? [pdfStyles.badgeText, pdfStyles.greenBadgeText]
-      : color === 'gray'
+      : color === "gray"
       ? [pdfStyles.badgeText, pdfStyles.grayBadgeText]
       : [pdfStyles.badgeText, { color: colors.white }];
 
@@ -54,17 +55,14 @@ export function CoverPage({
   actionCount,
 }: CoverPageProps) {
   const inspector =
-    inspection.assignees?.find((a) => a.role === 'auditor') ||
+    inspection.assignees?.find((a) => a.role === "auditor") ||
     inspection.assignees?.[0];
 
   return (
     <View style={pdfStyles.coverPage}>
       {/* Cover Image */}
       {inspection.template?.photo && (
-        <Image
-          src={inspection.template.photo}
-          style={pdfStyles.coverImage}
-        />
+        <Image src={inspection.template.photo} style={pdfStyles.coverImage} />
       )}
 
       {/* Title */}
@@ -73,11 +71,12 @@ export function CoverPage({
       {/* Date and Inspector */}
       <View style={pdfStyles.coverStatusContainer}>
         <Text style={pdfStyles.coverSubtitle}>
-          {formatDateShort(inspection.created_at)} / {inspector?.full_name || 'N/A'}
+          {formatDateShort(inspection.created_at)} /{" "}
+          {inspector?.full_name || "N/A"}
         </Text>
         <View style={pdfStyles.statusBadge}>
           <Text style={pdfStyles.statusBadgeText}>
-            {inspection.status === 'completed' ? 'Complete' : inspection.status}
+            {inspection.status === "completed" ? "Complete" : inspection.status}
           </Text>
         </View>
       </View>
@@ -88,8 +87,8 @@ export function CoverPage({
           <View style={pdfStyles.summaryItem}>
             <Text style={pdfStyles.summaryLabel}>Score</Text>
             <Text style={pdfStyles.summaryValue}>
-              {inspection.total_points_earned} / {inspection.total_points_possible} (
-              {inspection.final_score}%)
+              {inspection.total_points_earned} /{" "}
+              {inspection.total_points_possible} ({inspection.final_score}%)
             </Text>
           </View>
 
@@ -110,7 +109,7 @@ export function CoverPage({
         <View style={pdfStyles.metadataRow}>
           <Text style={pdfStyles.metadataLabel}>Site conducted</Text>
           <Text style={pdfStyles.metadataValue}>
-            {inspection.site?.name || 'Unanswered'}
+            {inspection.site?.name || "Unanswered"}
           </Text>
         </View>
 
@@ -124,14 +123,14 @@ export function CoverPage({
         <View style={pdfStyles.metadataRow}>
           <Text style={pdfStyles.metadataLabel}>Prepared by</Text>
           <Text style={pdfStyles.metadataValue}>
-            {inspector?.full_name || 'N/A'}
+            {inspector?.full_name || "N/A"}
           </Text>
         </View>
 
         <View style={pdfStyles.metadataRow}>
           <Text style={pdfStyles.metadataLabel}>Location</Text>
           <Text style={pdfStyles.metadataValue}>
-            {inspection.site?.name || 'N/A'}
+            {inspection.site?.name || "N/A"}
           </Text>
         </View>
       </View>
@@ -141,6 +140,7 @@ export function CoverPage({
 
 // Action Card Component
 interface ActionCardProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: any;
   questionText?: string;
   responseValue?: string;
@@ -166,10 +166,10 @@ export function ActionCard({
       <View style={pdfStyles.actionHeader}>
         <Text style={pdfStyles.actionStatus}>To do</Text>
         <Text style={pdfStyles.actionMeta}>
-          | Assignee: {action.assignee?.full_name || 'Unassigned'} | Priority:{' '}
-          {action.priority} | Due:{' '}
-          {action.due_date ? formatDateShort(action.due_date) : 'No due date'} |
-          Created by: {action.created_by?.full_name || 'N/A'}
+          | Assignee: {action.assignee?.full_name || "Unassigned"} | Priority:{" "}
+          {action.priority} | Due:{" "}
+          {action.due_date ? formatDateShort(action.due_date) : "No due date"} |
+          Created by: {action.created_by?.full_name || "N/A"}
         </Text>
       </View>
       <Text style={pdfStyles.actionTitle}>{action.title}</Text>
@@ -182,14 +182,20 @@ export function ActionCard({
 
 // Question Item Component
 interface QuestionItemProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   question: any;
   response: InspectionResponse;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   actions: any[];
 }
 
-export function QuestionItem({ question, response, actions }: QuestionItemProps) {
+export function QuestionItem({
+  question,
+  response,
+  actions,
+}: QuestionItemProps) {
   const formatted = formatResponseValue(response, question);
-  const badgeColor = getBadgeColor(response, question);
+  const badgeColor = getBadgeColor(response);
 
   // Find linked action
   const linkedAction = actions.find((a) => a.id === response.action_id);
@@ -249,9 +255,12 @@ export function QuestionItem({ question, response, actions }: QuestionItemProps)
 
 // Section Page Component
 interface SectionPageProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   section: any;
   responses: InspectionResponse[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sectionScore: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   actions: any[];
 }
 
@@ -277,6 +286,7 @@ export function SectionContent({
       </View>
 
       {/* Questions */}
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       {section.questions.map((question: any) => {
         const response = responses.find((r) => r.question_id === question.id);
         if (!response) return null;
@@ -297,6 +307,7 @@ export function SectionContent({
 // Flagged Items Page Component
 interface FlaggedItemsPageProps {
   inspection: Inspection;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   actions: any[];
 }
 
@@ -313,7 +324,9 @@ export function FlaggedItemsPage({
   const getQuestionForResponse = (response: InspectionResponse) => {
     for (const page of inspection.pages) {
       for (const section of page.sections) {
-        const question = section.questions.find((q) => q.id === response.question_id);
+        const question = section.questions.find(
+          (q) => q.id === response.question_id
+        );
         if (question) return question;
       }
     }
@@ -344,19 +357,26 @@ export function FlaggedItemsPage({
         {flaggedResponses.map((response) => {
           const question = getQuestionForResponse(response);
           const linkedAction = actions.find((a) => a.id === response.action_id);
-          const formatted = formatResponseValue(response, question || {} as any);
+          const formatted = formatResponseValue(
+            response,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            question || ({} as any)
+          );
           const sectionName = inspection.pages
             .flatMap((p) => p.sections)
-            .find((s) => s.questions.some((q) => q.id === response.question_id))
-            ?.title;
+            .find((s) =>
+              s.questions.some((q) => q.id === response.question_id)
+            )?.title;
 
           return (
             <View key={response.id} style={pdfStyles.mb16}>
               <Text style={pdfStyles.questionDescription}>
-                {sectionName} / {question?.title || question?.text}
+                {/* @ts-expect-error - question is not typed */}
+                {sectionName} / {question?.title || question?.name}
               </Text>
               <Text style={[pdfStyles.questionText, pdfStyles.mb8]}>
-                {question?.text || question?.title}
+                {/* @ts-expect-error - question is not typed */}
+                {question?.name || question?.title}
               </Text>
               {linkedAction && (
                 <ActionCard
@@ -393,9 +413,10 @@ export function MediaSummaryPage({ inspection }: MediaSummaryPageProps) {
   // Collect all photos from responses
   const photos: Array<{ url: string; caption: string }> = [];
 
-  inspection.responses.forEach((response, index) => {
+  inspection.responses.forEach((response) => {
     // Check for file attachments (photos)
     if (response.file_attachments && response.file_attachments.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       response.file_attachments.forEach((attachment: any) => {
         if (attachment?.file_path) {
           photos.push({
@@ -408,10 +429,10 @@ export function MediaSummaryPage({ inspection }: MediaSummaryPageProps) {
     // Check for response_value that's an image URL
     if (
       response.response_value &&
-      response.response_value.startsWith('http') &&
-      (response.response_value.includes('.jpg') ||
-        response.response_value.includes('.png') ||
-        response.response_value.includes('.jpeg'))
+      response.response_value.startsWith("http") &&
+      (response.response_value.includes(".jpg") ||
+        response.response_value.includes(".png") ||
+        response.response_value.includes(".jpeg"))
     ) {
       photos.push({
         url: response.response_value,
@@ -460,4 +481,3 @@ export function PageFooter({ pageNumber, totalPages }: PageFooterProps) {
     </View>
   );
 }
-

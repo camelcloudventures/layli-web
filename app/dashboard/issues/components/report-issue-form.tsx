@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import type { IssueCategory, IssuePriority } from "@/lib/types/issue-types";
+import type {
+  Issue,
+  IssueCategory,
+  IssuePriority,
+} from "@/lib/types/issue-types";
 import SelectIssueCategory from "./select-issue-category";
 import ReportIssue from "./report-issue";
 import { Assignee, User, Site } from "@/lib/types";
@@ -93,14 +97,17 @@ export function ReportIssueForm({
     };
 
     const response = await createIssue(formData, selectedAssignees, reporter);
-    if (response.success) {
-      toast.success(response.success);
+    if (response?.success) {
+      toast.success(response?.success || "Issue created successfully");
       if (response.data) {
-        setIssues((prevIssues) => [response.data, ...prevIssues]);
+        setIssues((prevIssues) => [
+          response.data as unknown as Issue,
+          ...prevIssues,
+        ]);
       }
       onCancel();
     } else {
-      toast.error(response.error);
+      toast.error((response?.error as string) || "Failed to create issue");
     }
   };
 

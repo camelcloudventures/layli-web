@@ -1,14 +1,11 @@
 "use client";
 
 import { type Dispatch, type SetStateAction, useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  GripVertical,
-} from "lucide-react";
+import { GripVertical } from "lucide-react";
 import type { AuditTemplate, Page } from "@/lib/types/audit-types";
 import { SectionsManager } from "@/app/dashboard/templates/components/sections-manager";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -49,7 +46,6 @@ export function PagesManager({ template, setTemplate }: PagesManagerProps) {
       setTemplate(updatedTemplate);
     }
   };
-
 
   const activatePageTab = (pageId: string) => {
     setActivePage(pageId);

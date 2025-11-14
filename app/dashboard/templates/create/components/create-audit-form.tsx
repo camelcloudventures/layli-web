@@ -121,7 +121,13 @@ export default function CreateAuditForm() {
   async function handleSubmit(formData: FormData) {
     // Preflight validation: ensure parent/trigger references point to existing temp IDs
     function validateTemplateForSubmission() {
-      const allQuestions = new Map<string, { field_type: string; response_options?: { id: string; label: string }[] }>();
+      const allQuestions = new Map<
+        string,
+        {
+          field_type: string;
+          response_options?: { id: string; label: string }[];
+        }
+      >();
       template.pages.forEach((p) =>
         p.sections.forEach((s) =>
           s.questions.forEach((q) =>
@@ -157,8 +163,9 @@ export default function CreateAuditForm() {
                 parent.field_type === "CHECKBOX";
               if (isSelectType) {
                 const hasOption =
-                  parent.response_options?.some((opt) => opt.id === String(value)) ??
-                  false;
+                  parent.response_options?.some(
+                    (opt) => opt.id === String(value)
+                  ) ?? false;
                 if (!hasOption) {
                   toast.error(
                     `Invalid conditional: trigger value does not match any option on parent for "${q.text}".`
@@ -197,12 +204,12 @@ export default function CreateAuditForm() {
       const createdBy = user?.id ?? "";
       const result = await createTemplate(formData, createdBy);
       console.log("result", result);
-      if (result.error) {
-        toast.error(result.error);
+      if (result?.error) {
+        toast.error(result?.error);
         return;
       }
-      if (result.data) {
-        toast.success(String(result.success));
+      if (result?.data) {
+        toast.success(String(result?.success));
         reset();
 
         // setTemplates((prev) => [result.data, ...prev]);

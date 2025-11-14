@@ -104,11 +104,11 @@ export function EditActionForm({
       loading: "Updating action...",
       success: (data) => {
         console.log("data", data);
-        //@ts-expect-error -needs type
         if (data && data.data) {
           setActions((prev) =>
-            //@ts-expect-error -needs type
-            prev.map((a) => (a.id === action.id ? data.data : a))
+            prev.map((a) =>
+              a.id === action.id ? (data.data as unknown as Action) : a
+            )
           );
         }
         return "Action updated successfully";

@@ -24,6 +24,7 @@ export function useAuditTemplates() {
   console.log("error", isError);
   useEffect(() => {
     if (fetchedAuditTemplates?.data) {
+      // @ts-expect-error - fetchedAuditTemplates.data is not typed
       setTemplates(fetchedAuditTemplates.data);
     }
   }, [fetchedAuditTemplates, setTemplates]);

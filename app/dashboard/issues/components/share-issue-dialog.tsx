@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { shareIssue } from "../actions/actions";
 import { useRemoveAssignees } from "../actions/query";
 import { useIssuesStore } from "@/store/issues";
+import { Issue } from "@/lib/types/issue-types";
 
 interface User {
   id: string;
@@ -133,14 +134,16 @@ export default function ShareIssueDialog({
         {
           onSuccess: (data) => {
             console.log("Remove assignees response:", data);
-            toast.success(data.success);
+            toast.success(data?.success || "Assignees removed successfully");
             onClose();
 
             // Update the store with the new data
-            if (data && data.data) {
+            if (data && data?.data) {
               setIssues((prevIssues) =>
                 prevIssues.map((issue) =>
-                  issue.id === issueId ? data.data : issue
+                  issue.id === issueId
+                    ? (data?.data as unknown as Issue)
+                    : issue
                 )
               );
             }
@@ -203,7 +206,9 @@ export default function ShareIssueDialog({
           if (response && response.data) {
             setIssues((prevIssues) =>
               prevIssues.map((issue) =>
-                issue.id === issueId ? response.data : issue
+                issue.id === issueId
+                  ? (response.data as unknown as Issue)
+                  : issue
               )
             );
           }

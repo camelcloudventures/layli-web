@@ -126,7 +126,6 @@ export function DoInspectionForm({ inspection, sites }: Props) {
         unsavedChanges={unsavedChanges}
         savingFields={savingFields}
         handleResponse={handleResponse}
-        handleFieldSave={() => {}}
         setActiveQuestionId={setActiveQuestionId}
         setNote={setNote}
         setIsNoteDialogOpen={setIsNoteDialogOpen}

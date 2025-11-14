@@ -23,14 +23,11 @@ export function DeleteQuestionButton({
   async function handleDelete() {
     setLoading(true);
     const result = await deleteQuestion(questionId, sectionId);
-    // @ts-expect-error --need to fix this
+
     if (result && result.success) {
-      // @ts-expect-error --need to fix this
       toast.success(result.success);
       reset(); // Reset the store to trigger a refetch
-      // @ts-expect-error --need to fix this
     } else if (result && result.error) {
-      // @ts-expect-error --need to fix this
       toast.error(result.error);
     }
 

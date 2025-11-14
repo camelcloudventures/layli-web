@@ -26,15 +26,11 @@ export function DeleteSectionButton({
 
     console.log("result", result);
 
-    // @ts-expect-error --need to fix this
     if (result && result.success) {
-      // @ts-expect-error --need to fix this
       toast.success(result.success);
       const value = reset();
       console.log("store", value);
-      // @ts-expect-error --need to fix this
     } else if (result && result.error) {
-      // @ts-expect-error --need to fix this
       toast.error(result.error);
     }
     setLoading(false);

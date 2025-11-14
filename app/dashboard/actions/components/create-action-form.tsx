@@ -103,7 +103,7 @@ export function CreateActionForm({
 
     if (result?.data?.data) {
       toast.success("Action created successfully");
-      const newAction = result.data.data as Action;
+      const newAction = result.data.data as unknown as Action;
       setActions((prev) => [newAction, ...prev]);
 
       if (onActionCreated) {
@@ -111,7 +111,7 @@ export function CreateActionForm({
       }
       onCancel();
     } else {
-      toast.error(result?.data?.message || "Failed to create action");
+      toast.error((result?.error as string) || "Failed to create action");
     }
   };
 

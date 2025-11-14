@@ -6,9 +6,7 @@ import { useState } from "react";
 import TabSelector from "./tab-selector";
 import Analytics from "./analytics-new";
 import Reports from "./reports";
-import Notifications from "./notifications";
 import Overview from "./overview";
-import { Notification } from "@/lib/types/notifications";
 import { type AnalyticsSummary } from "../../analytics/actions/actions";
 
 type IProps = {
@@ -19,7 +17,6 @@ type IProps = {
     description: string;
     icon: string;
   }[];
-  notifications: Notification[];
   inspectionTrends: {
     month: string;
     completed: number;
@@ -92,7 +89,6 @@ type IProps = {
 
 export default function HomeTabs({
   stats,
-  notifications,
   summaryMetrics,
   reportData,
 }: IProps) {
@@ -104,7 +100,6 @@ export default function HomeTabs({
     open: false,
     type: "auditSummary",
   });
-  const notificationCount = notifications?.filter((n) => !n.is_read).length;
 
   const tabs = [
     {
@@ -118,10 +113,6 @@ export default function HomeTabs({
     {
       label: "Reports",
       value: "reports",
-    },
-    {
-      label: "Notifications",
-      value: "notifications",
     },
   ];
 
@@ -137,8 +128,6 @@ export default function HomeTabs({
             reportData={reportData}
           />
         );
-      case "notifications":
-        return <Notifications notifications={notifications} />;
       default:
         return <Overview stats={stats} summaryMetrics={summaryMetrics} />;
     }
@@ -151,7 +140,7 @@ export default function HomeTabs({
         className="space-y-4  "
         onValueChange={setSelectedTab}
       >
-        <TabSelector tabs={tabs} notificationCount={notificationCount} />
+        <TabSelector tabs={tabs} />
         {renderTabContent()}
       </Tabs>
     </div>

@@ -16,30 +16,25 @@ import {
 
 import { useAuth } from "@/lib/context/auth-provider";
 import { Assignees, createInspection } from "../../actions/actions";
-import { UserOption } from "@/app/dashboard/schedules/types/schedule-form-types";
-import { MultiSelect } from "@/components/ui/multi-select";
 import { AuditTemplate } from "@/lib/types/audit-types";
 import { toast } from "sonner";
 import SubmitBtn from "@/components/custom/submit-btn";
-import { Checkbox } from "@/components/ui/checkbox";
 import TemplateSelector from "./template-selector";
 import { useInspectionStore } from "@/store/inspections";
 
 interface Props {
-  sites: { id: string; name: string }[];
-  users: UserOption[];
+  sites: { data: { id: string; name: string }[] };
   templates: AuditTemplate[];
 }
 
-export function CreateInspectionForm({ sites, users, templates }: Props) {
+export function CreateInspectionForm({ sites, templates }: Props) {
   const router = useRouter();
   const { user } = useAuth();
   const { setInspections } = useInspectionStore();
   const [isCreating, setIsCreating] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState("");
-  const [assignedTo, setAssignedTo] = useState<Assignees[]>([]);
-  const [participateInInspection, setParticipateInInspection] = useState(false);
-  const isSupervisor = user?.role === "supervisor";
+  const [selectedSite, setSelectedSite] = useState("");
+  const [scheduledDate, setScheduledDate] = useState<string>("");
+  const [hasManuallySetDate, setHasManuallySetDate] = useState(false);
 
   const [selectedTemplate, setSelectedTemplate] =
     useState<AuditTemplate | null>(null);
@@ -48,38 +43,37 @@ export function CreateInspectionForm({ sites, users, templates }: Props) {
   async function handleSubmit(formData: FormData) {
     setIsCreating(true);
     try {
-      // Add current user to assignees if participating
-      const finalAssignees: Assignees[] = [...assignedTo];
-      if (participateInInspection && user?.id) {
-        if (!finalAssignees.some((assignee) => assignee?.id === user?.id)) {
-          finalAssignees.push({
-            id: user?.id,
-            full_name: user?.full_name || "",
-            role: user?.role || "",
-            email: user?.email || "",
-          });
-        }
-      }
-
-      const inspectionData = {
+      const inspectionData: {
+        title: string;
+        description: string;
+        assignees: Assignees[];
+        site_id: string;
+        prepared_by: string;
+        due_date?: FormDataEntryValue | null;
+        template_id?: number;
+      } = {
         title: selectedTemplate
           ? selectedTemplate.title
           : (formData.get("inspection-name") as string),
         description: `Inspection for ${
-          // @ts-expect-error - sites.data structure needs to be fixed
-          sites?.data?.find((s) => s.id === selectedLocation)?.name
+          sites?.data?.find((s) => s.id === selectedSite)?.name || ""
         }`,
-        assignees: finalAssignees,
-        site_id: selectedLocation,
+        assignees: [], // No assignees initially - can be assigned later via Manage Assignees
+        site_id: selectedSite,
         prepared_by: user?.id || "",
-        due_date: formData.get("scheduled-date"),
       };
+
+      // Only include due_date if user manually set a scheduled date
+      if (hasManuallySetDate && scheduledDate) {
+        inspectionData.due_date = scheduledDate;
+      }
 
       // If using template, just send template_id
       Object.assign(inspectionData, {
         template_id: selectedTemplate?.id,
       });
 
+      //@ts-expect-error - needs type
       const result = await createInspection(inspectionData);
 
       if (result && "error" in result) {
@@ -91,6 +85,7 @@ export function CreateInspectionForm({ sites, users, templates }: Props) {
       if (result && result.data) {
         //eslint-disable-next-line @typescript-eslint/no-explicit-any
         setInspections((prev) => [result.data as any, ...prev]);
+        toast.success("Inspection created successfully");
       }
 
       // Set the created inspection for the success dialog
@@ -119,65 +114,25 @@ export function CreateInspectionForm({ sites, users, templates }: Props) {
               />
             </div>
 
-            <div className="flex items-center justify-between gap-8 mb-6">
-              <span className="w-full">
-                <Label htmlFor="location">Location</Label>
-                <Select
-                  name="location"
-                  value={selectedLocation}
-                  onValueChange={setSelectedLocation}
-                  required
-                >
-                  <SelectTrigger className="w-full" id="location">
-                    <SelectValue placeholder="Select location" />
-                  </SelectTrigger>
-                  <SelectContent className="w-full">
-                    {/* @ts-expect-error - sites.data structure needs to be fixed */}
-                    {sites?.data?.map((location) => (
-                      <SelectItem key={location.id} value={String(location.id)}>
-                        {location.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </span>
-
-              <span
-                className={`w-full ${assignedTo.length > 0 ? "mb-4" : "mb-0"}`}
+            <div className="w-full mb-6">
+              <Label htmlFor="site">Site</Label>
+              <Select
+                name="site"
+                value={selectedSite}
+                onValueChange={setSelectedSite}
+                required
               >
-                <Label htmlFor="assigned-to">Assign To</Label>
-                <MultiSelect
-                  name="assignee_ids"
-                  required
-                  value={assignedTo?.map((assignee) => assignee?.id)}
-                  onValueChange={(selectedUserIds) => {
-                    // Transform the selected user IDs to Assignees format
-                    const transformedAssignees: Assignees[] = selectedUserIds
-                      ?.map((userId) => {
-                        const user = users?.find((u) => u?.user?.id === userId);
-                        if (user) {
-                          return {
-                            id: user?.user?.id,
-                            full_name: user?.user?.full_name,
-                            role: user?.user?.role,
-                            email: user?.user?.email,
-                          };
-                        }
-                        return null;
-                      })
-                      .filter(
-                        (assignee): assignee is Assignees => assignee !== null
-                      );
-
-                    setAssignedTo(transformedAssignees);
-                  }}
-                  placeholder="Select assignees"
-                  options={users?.map((user) => ({
-                    value: user?.user?.id,
-                    label: user?.user?.full_name,
-                  }))}
-                />
-              </span>
+                <SelectTrigger className="w-full" id="site">
+                  <SelectValue placeholder="Select site" />
+                </SelectTrigger>
+                <SelectContent className="w-full">
+                  {sites?.data?.map((site) => (
+                    <SelectItem key={site.id} value={String(site.id)}>
+                      {site.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -193,32 +148,18 @@ export function CreateInspectionForm({ sites, users, templates }: Props) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="scheduled-date">Scheduled Date</Label>
+              <Label htmlFor="scheduled-date">Scheduled Date (Optional)</Label>
               <Input
                 id="scheduled-date"
                 name="scheduled-date"
                 type="date"
-                defaultValue={new Date().toISOString().split("T")[0]}
+                value={scheduledDate}
+                onChange={(e) => {
+                  setScheduledDate(e.target.value);
+                  setHasManuallySetDate(true);
+                }}
               />
             </div>
-
-            {isSupervisor && (
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="participate"
-                  checked={participateInInspection}
-                  onCheckedChange={(checked) =>
-                    setParticipateInInspection(checked as boolean)
-                  }
-                />
-                <label
-                  htmlFor="participate"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Participate in inspection
-                </label>
-              </div>
-            )}
           </CardContent>
         </Card>
         <div className="flex justify-end space-x-2 mt-6">
@@ -236,8 +177,7 @@ export function CreateInspectionForm({ sites, users, templates }: Props) {
             isDisabled={
               isCreating ||
               !selectedTemplate?.title ||
-              !selectedLocation ||
-              !assignedTo.length ||
+              !selectedSite ||
               !selectedTemplate
             }
           />

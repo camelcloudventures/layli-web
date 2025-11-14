@@ -22,15 +22,12 @@ export default function DeleteIssue({ issue, onClose }: DeleteIssueProps) {
     const response = await deleteIssue(issue.id);
     console.log("respone from delete", response);
 
-    //@ts-expect-error --need to fix this
     if (response?.success) {
-      //@ts-expect-error -e9
       toast.success(response?.success || "Issue deleted successfully");
       // Optimistically remove the issue from the store
       setIssues((prevIssues) => prevIssues.filter((i) => i.id !== issue.id));
       onClose();
     } else {
-      //@ts-expect-error --need to fix this
       toast.error(response?.error || "Failed to delete issue");
     }
 

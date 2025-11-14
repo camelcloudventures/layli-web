@@ -17,6 +17,7 @@ export function useInvites() {
 
   useEffect(() => {
     if (fetchedInvites?.data && invites.length === 0) {
+      // @ts-expect-error - fetchedInvites.data is not typed
       setInvites(fetchedInvites.data);
     }
   }, [fetchedInvites, invites, setInvites]);

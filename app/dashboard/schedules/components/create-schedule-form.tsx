@@ -100,6 +100,7 @@ export function CreateScheduleForm({
       toast.success(res?.success);
       // Add the new schedule to the existing array
       if (res?.data) {
+        // @ts-expect-error - res.data is not typed
         setSchedules((prevSchedules) => [res.data, ...prevSchedules]);
       }
       onSubmit(formData);

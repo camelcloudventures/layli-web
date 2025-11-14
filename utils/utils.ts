@@ -2,6 +2,7 @@ import { Issue } from "@/lib/types";
 import jsPDF from "jspdf";
 
 export function extractTokens(url: string) {
+  console.log("url", url);
   // Create a URL object (works in modern browsers and Node.js)
   const u = new URL(url);
 

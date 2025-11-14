@@ -7,10 +7,11 @@ import { Permission } from "@/lib/auth/auth";
 import type { Inspection } from "@/lib/types/inspection-types";
 import { Plus, Search } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import HasPermission from "../../components/has-permission";
 import { columns } from "./columns";
 import Loading from "./loading";
+import { useUsers } from "@/hooks/use-users";
 
 interface InspectionListProps {
   inspections: Inspection[];
@@ -22,6 +23,8 @@ export function InspectionList({
   loading = false,
 }: InspectionListProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const { users } = useUsers();
+  const memoizedColumns = useMemo(() => columns(users || []), [users]);
 
   // Ensure inspections is an array
   const inspectionsArray = Array.isArray(inspections) ? inspections : [];
@@ -64,9 +67,9 @@ export function InspectionList({
       {loading ? (
         <Loading />
       ) : (
-        <div>
+        <div className="overflow-x-auto max-h-[800px] overflow-y-auto scrollbar-none">
           <DataTable
-            columns={columns}
+            columns={memoizedColumns}
             data={filteredInspections}
             className="[&_table]:border-collapse [&_th]:!border-b-gray-200 [&_th]:!text-gray-600 [&_th]:!font-medium [&_td]:!py-4 [&_tr]:!border-b [&_tr]:border-gray-100 [&_tr:last-child]:!border-0 [&_tr:first-child]:!border-t-0 [&_tr]:!border-x-0"
           />

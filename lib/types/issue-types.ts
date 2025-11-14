@@ -1,5 +1,5 @@
 export type IssuePriority = "low" | "medium" | "high" | "critical";
-export type IssueStatus = "open" | "in-progress" | "resolved" | "closed";
+export type IssueStatus = "open" | "in_progress" | "resolved" | "closed";
 export type IssueCategory =
   | "safety"
   | "compliance"

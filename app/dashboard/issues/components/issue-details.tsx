@@ -74,11 +74,11 @@ function IssueDetailsForm({ issue, assignees }: IssueDetailsProps) {
       role: currentUser?.role || "",
     };
     const res = await addComment(issue.id, formData, commenter);
-    if (res.success) {
+    if (res?.success) {
       toast.success("Comment added successfully");
       setComment("");
     } else {
-      toast.error(res.error);
+      toast.error((res?.error as string) || "Failed to add comment");
     }
     setIsSendingComment(false);
   };
@@ -321,10 +321,8 @@ export function IssueDetails({ issue, onClose, assignees }: IssueDetailsProps) {
       // Step 1: Update core issue details
       const updateRes = await updateIssue(currentIssue.id, formData);
       console.log("updateRes", updateRes);
-      //@ts-expect-error - needs type
       if (!updateRes?.success) {
         success = false;
-        //@ts-expect-error - needs type
         errorMessage = updateRes?.error || errorMessage;
         throw new Error("Failed to update issue details.");
       }
@@ -337,12 +335,12 @@ export function IssueDetails({ issue, onClose, assignees }: IssueDetailsProps) {
       );
       if (attachmentsToAdd && attachmentsToAdd.length > 0) {
         const addRes = await addAttachments(currentIssue.id, attachmentsToAdd);
-        if (!addRes.success) {
+        if (!addRes?.success) {
           success = false;
-          errorMessage = addRes.error || errorMessage;
+          errorMessage = (addRes?.error as string) || errorMessage;
           throw new Error("Failed to add attachments.");
         }
-        finalIssueData = addRes.data;
+        finalIssueData = addRes?.data as unknown as Issue;
       }
 
       // Step 3: Remove attachments
@@ -357,7 +355,6 @@ export function IssueDetails({ issue, onClose, assignees }: IssueDetailsProps) {
         //@ts-expect-error - needs type
         if (!removeRes.success) {
           success = false;
-          //@ts-expect-error - needs type
           errorMessage = removeRes?.error || errorMessage;
           throw new Error("Failed to remove attachments.");
         }

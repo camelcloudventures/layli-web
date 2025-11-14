@@ -85,7 +85,8 @@ export interface Question {
     | "MULTI_SELECT"
     | "SIGNATURE"
     | "SLIDER"
-    | "ASSET";
+    | "ASSET"
+    | "CHECKBOX";
   is_flagged: boolean | null;
   risk_level: "minor" | "major" | "critical";
   section_id: number;
@@ -94,6 +95,11 @@ export interface Question {
   organization_id: string | null;
   response_options: ResponseOption[];
   multiple_selection: boolean;
+  parent_question_id?: number;
+  trigger?: {
+    value: string | number | boolean;
+    operator: "equals" | "not_equals" | "contains";
+  };
 }
 
 export interface Section {
@@ -184,6 +190,13 @@ export enum InspectionStatus {
   CANCELLED = "cancelled",
 }
 
+export interface InspectionAssignee {
+  id: string;
+  full_name: string;
+  email: string;
+  role: string;
+}
+
 export interface Inspection {
   id: string;
   title: string;
@@ -194,6 +207,7 @@ export interface Inspection {
   prepared_by: string;
   assignee_id: string | null;
   assignee_ids: string[];
+  assignees?: InspectionAssignee[];
   site_id: string | null;
   site: Site | null;
   template_id: string | null;

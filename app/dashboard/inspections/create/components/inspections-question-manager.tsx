@@ -1,33 +1,33 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
+import { useState } from "react";
 import type {
   InspectionQuestion,
   InspectionSection,
-} from '@/lib/types/inspection-types'
-import { Button } from '@/components/ui/button'
-import { PlusCircle, Trash2, ChevronUp, ChevronDown } from 'lucide-react'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
+} from "@/lib/types/inspection-types";
+import { Button } from "@/components/ui/button";
+import { PlusCircle, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectTrigger,
   SelectValue,
   SelectContent,
   SelectItem,
-} from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import {
   Card as UiCard,
   CardContent as UiCardContent,
   CardHeader as UiCardHeader,
   CardTitle as UiCardTitle,
-} from '@/components/ui/card'
+} from "@/components/ui/card";
 
 interface InspectionQuestionsManagerProps {
-  sections: InspectionSection[]
-  setSections: React.Dispatch<React.SetStateAction<InspectionSection[]>>
-  section: InspectionSection
+  sections: InspectionSection[];
+  setSections: React.Dispatch<React.SetStateAction<InspectionSection[]>>;
+  section: InspectionSection;
 }
 
 export function InspectionQuestionsManager({
@@ -35,34 +35,34 @@ export function InspectionQuestionsManager({
   setSections,
   section,
 }: InspectionQuestionsManagerProps) {
-  const [expandedQuestions, setExpandedQuestions] = useState<string[]>([])
+  const [expandedQuestions, setExpandedQuestions] = useState<string[]>([]);
 
   const addQuestion = (sectionIndex: number) => {
-    const newSections = [...sections]
+    const newSections = [...sections];
     newSections[sectionIndex].questions.push({
       id: `question-${Date.now()}-${Math.random()
         .toString(36)
         .substring(2, 9)}`,
-      name: 'New question?',
+      name: "New question?",
       response: null,
-      field_type: 'TEXT',
+      field_type: "TEXT",
       required: false,
       is_flagged: false,
       flag_rule: {},
       response_options: [],
       score: 0,
-      note: '',
+      note: "",
       attachment: null,
       action: null,
-    })
-    setSections(newSections)
+    });
+    setSections(newSections);
     setExpandedQuestions([
       ...expandedQuestions,
       newSections[sectionIndex].questions[
         newSections[sectionIndex].questions.length - 1
       ].id,
-    ])
-  }
+    ]);
+  };
 
   const updateQuestion = (
     sectionIndex: number,
@@ -74,80 +74,79 @@ export function InspectionQuestionsManager({
       | number
       | null
       | {
-          operator?: string
-          value?: string | number
-          value2?: string | number
-        },
+          operator?: string;
+          value?: string | number;
+          value2?: string | number;
+        }
   ) => {
-    const newSections = [...sections]
-    newSections[sectionIndex].questions[questionIndex][field] = value as never
+    const newSections = [...sections];
+    newSections[sectionIndex].questions[questionIndex][field] = value as never;
     // Clear response options if field type is changed from SELECT/MULTI_SELECT to something else
     if (
-      field === 'field_type' &&
-      value !== 'SELECT' &&
-      value !== 'MULTI_SELECT'
+      field === "field_type" &&
+      value !== "SELECT" &&
+      value !== "MULTI_SELECT"
     ) {
-      newSections[sectionIndex].questions[questionIndex].response_options = []
+      newSections[sectionIndex].questions[questionIndex].response_options = [];
     }
-    setSections(newSections)
-  }
+    setSections(newSections);
+  };
 
   const removeQuestion = (sectionIndex: number, questionIndex: number) => {
-    const newSections = [...sections]
-    const qid = newSections[sectionIndex].questions[questionIndex].id
-    newSections[sectionIndex].questions.splice(questionIndex, 1)
-    setSections(newSections)
-    setExpandedQuestions(expandedQuestions.filter((id) => id !== qid))
-  }
+    const newSections = [...sections];
+    const qid = newSections[sectionIndex].questions[questionIndex].id;
+    newSections[sectionIndex].questions.splice(questionIndex, 1);
+    setSections(newSections);
+    setExpandedQuestions(expandedQuestions.filter((id) => id !== qid));
+  };
 
   const moveQuestion = (
     sectionIndex: number,
     questionIndex: number,
-    direction: 'up' | 'down',
+    direction: "up" | "down"
   ) => {
     if (
-      (direction === 'up' && questionIndex === 0) ||
-      (direction === 'down' &&
+      (direction === "up" && questionIndex === 0) ||
+      (direction === "down" &&
         questionIndex === sections[sectionIndex].questions.length - 1)
     ) {
-      return
+      return;
     }
-    const newSections = [...sections]
-    const questions = [...newSections[sectionIndex].questions]
-    const newIndex = direction === 'up' ? questionIndex - 1 : questionIndex + 1
-    const temp = questions[questionIndex]
-    questions[questionIndex] = questions[newIndex]
-    questions[newIndex] = temp
-    newSections[sectionIndex].questions = questions
-    setSections(newSections)
-  }
+    const newSections = [...sections];
+    const questions = [...newSections[sectionIndex].questions];
+    const newIndex = direction === "up" ? questionIndex - 1 : questionIndex + 1;
+    const temp = questions[questionIndex];
+    questions[questionIndex] = questions[newIndex];
+    questions[newIndex] = temp;
+    newSections[sectionIndex].questions = questions;
+    setSections(newSections);
+  };
 
   const toggleQuestionExpanded = (qid: string) => {
     setExpandedQuestions((prev) =>
-      prev.includes(qid) ? prev.filter((id) => id !== qid) : [...prev, qid],
-    )
-  }
+      prev.includes(qid) ? prev.filter((id) => id !== qid) : [...prev, qid]
+    );
+  };
 
-  const sectionIndex = sections.findIndex((s) => s.id === section.id)
+  const sectionIndex = sections.findIndex((s) => s.id === section.id);
 
   // Helper for flag rule value
   function safeString(val: string | number | undefined | null): string {
-    if (typeof val === 'string') return val
-    if (typeof val === 'number') return String(val)
-    return ''
+    if (typeof val === "string") return val;
+    if (typeof val === "number") return String(val);
+    return "";
   }
 
   // Response options for select/multi-select
   function updateResponseOptions(
     sectionIndex: number,
     questionIndex: number,
-    options: string[],
+    options: string[]
   ) {
-    const newSections = [...sections]
-    newSections[sectionIndex].questions[
-      questionIndex
-    ].response_options = options
-    setSections(newSections)
+    const newSections = [...sections];
+    newSections[sectionIndex].questions[questionIndex].response_options =
+      options;
+    setSections(newSections);
   }
 
   return (
@@ -188,7 +187,7 @@ export function InspectionQuestionsManager({
             <UiCard
               key={question.id}
               className={`shadow-sm border-slate-200 ${
-                expandedQuestions.includes(question.id) ? '' : ''
+                expandedQuestions.includes(question.id) ? "" : ""
               }`}
             >
               <UiCardHeader
@@ -198,7 +197,7 @@ export function InspectionQuestionsManager({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <UiCardTitle className="text-sm">
-                      {question.name || 'New question?'}
+                      {question.name || "New question?"}
                     </UiCardTitle>
                   </div>
                   <div className="flex items-center gap-1">
@@ -207,8 +206,8 @@ export function InspectionQuestionsManager({
                       variant="ghost"
                       size="icon"
                       onClick={(e) => {
-                        e.stopPropagation()
-                        moveQuestion(sectionIndex, questionIndex, 'up')
+                        e.stopPropagation();
+                        moveQuestion(sectionIndex, questionIndex, "up");
                       }}
                       disabled={questionIndex === 0}
                     >
@@ -219,8 +218,8 @@ export function InspectionQuestionsManager({
                       variant="ghost"
                       size="icon"
                       onClick={(e) => {
-                        e.stopPropagation()
-                        moveQuestion(sectionIndex, questionIndex, 'down')
+                        e.stopPropagation();
+                        moveQuestion(sectionIndex, questionIndex, "down");
                       }}
                       disabled={questionIndex === section.questions.length - 1}
                     >
@@ -231,8 +230,8 @@ export function InspectionQuestionsManager({
                       variant="ghost"
                       size="icon"
                       onClick={(e) => {
-                        e.stopPropagation()
-                        removeQuestion(sectionIndex, questionIndex)
+                        e.stopPropagation();
+                        removeQuestion(sectionIndex, questionIndex);
                       }}
                       aria-label="Delete Question"
                     >
@@ -255,8 +254,8 @@ export function InspectionQuestionsManager({
                           updateQuestion(
                             sectionIndex,
                             questionIndex,
-                            'name',
-                            e.target.value,
+                            "name",
+                            e.target.value
                           )
                         }
                       />
@@ -266,13 +265,13 @@ export function InspectionQuestionsManager({
                         Field Type
                       </Label>
                       <Select
-                        value={question.field_type || 'TEXT'}
+                        value={question.field_type || "TEXT"}
                         onValueChange={(value) =>
                           updateQuestion(
                             sectionIndex,
                             questionIndex,
-                            'field_type',
-                            value,
+                            "field_type",
+                            value
                           )
                         }
                       >
@@ -289,6 +288,7 @@ export function InspectionQuestionsManager({
                           <SelectItem value="MULTI_SELECT">
                             Multi Select
                           </SelectItem>
+                          <SelectItem value="CHECKBOX">Checkbox</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -301,8 +301,8 @@ export function InspectionQuestionsManager({
                             updateQuestion(
                               sectionIndex,
                               questionIndex,
-                              'required',
-                              checked,
+                              "required",
+                              checked
                             )
                           }
                         />
@@ -318,8 +318,8 @@ export function InspectionQuestionsManager({
                             updateQuestion(
                               sectionIndex,
                               questionIndex,
-                              'is_flagged',
-                              checked,
+                              "is_flagged",
+                              checked
                             )
                           }
                         />
@@ -329,8 +329,8 @@ export function InspectionQuestionsManager({
                       </div>
                     </div>
                     {/* Response Options for SELECT/MULTI_SELECT */}
-                    {(question.field_type === 'SELECT' ||
-                      question.field_type === 'MULTI_SELECT') && (
+                    {(question.field_type === "SELECT" ||
+                      question.field_type === "MULTI_SELECT") && (
                       <div className="space-y-2">
                         <Label>Response Options</Label>
                         <div className="flex flex-col gap-2">
@@ -345,13 +345,13 @@ export function InspectionQuestionsManager({
                                   onChange={(e) => {
                                     const opts = [
                                       ...(question.response_options || []),
-                                    ]
-                                    opts[idx] = e.target.value
+                                    ];
+                                    opts[idx] = e.target.value;
                                     updateResponseOptions(
                                       sectionIndex,
                                       questionIndex,
-                                      opts,
-                                    )
+                                      opts
+                                    );
                                   }}
                                   className="flex-1"
                                   placeholder={`Option ${idx + 1}`}
@@ -363,20 +363,20 @@ export function InspectionQuestionsManager({
                                   onClick={() => {
                                     const opts = [
                                       ...(question.response_options || []),
-                                    ]
-                                    opts.splice(idx, 1)
+                                    ];
+                                    opts.splice(idx, 1);
                                     updateResponseOptions(
                                       sectionIndex,
                                       questionIndex,
-                                      opts,
-                                    )
+                                      opts
+                                    );
                                   }}
                                   aria-label="Remove Option"
                                 >
                                   <Trash2 className="h-4 w-4 text-destructive" />
                                 </Button>
                               </div>
-                            ),
+                            )
                           )}
                           <Button
                             type="button"
@@ -386,7 +386,7 @@ export function InspectionQuestionsManager({
                               updateResponseOptions(
                                 sectionIndex,
                                 questionIndex,
-                                [...(question.response_options || []), ''],
+                                [...(question.response_options || []), ""]
                               )
                             }
                           >
@@ -409,11 +409,11 @@ export function InspectionQuestionsManager({
                               updateQuestion(
                                 sectionIndex,
                                 questionIndex,
-                                'flag_rule',
+                                "flag_rule",
                                 {
                                   ...question.flag_rule,
                                   operator: e.target.value,
-                                },
+                                }
                               )
                             }
                           >
@@ -435,11 +435,11 @@ export function InspectionQuestionsManager({
                               updateQuestion(
                                 sectionIndex,
                                 questionIndex,
-                                'flag_rule',
+                                "flag_rule",
                                 {
                                   ...question.flag_rule,
                                   value: e.target.value,
-                                },
+                                }
                               )
                             }
                             disabled={!question.flag_rule?.operator}
@@ -455,5 +455,5 @@ export function InspectionQuestionsManager({
         </div>
       )}
     </div>
-  )
+  );
 }

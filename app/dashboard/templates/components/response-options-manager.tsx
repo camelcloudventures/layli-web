@@ -1,11 +1,11 @@
-'use client'
+"use client";
 
-import type { Dispatch, SetStateAction } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { Plus, Trash2, GripVertical } from 'lucide-react'
+import type { Dispatch, SetStateAction } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Trash2, GripVertical } from "lucide-react";
 import type {
   AuditTemplate,
   Page,
@@ -13,18 +13,18 @@ import type {
   Question,
   ResponseOption,
   NewResponseOption,
-} from '@/lib/types/audit-types'
+} from "@/lib/types/audit-types";
 import {
   PreloadedResponsePicker,
   ResponseOption as PreloadedOption,
-} from '@/components/preloaded-response-picker/preloaded-response-picker'
+} from "@/components/preloaded-response-picker/preloaded-response-picker";
 
 interface ResponseOptionsManagerProps {
-  template: AuditTemplate
-  setTemplate: Dispatch<SetStateAction<AuditTemplate>>
-  page: Page
-  section: Section
-  question: Question
+  template: AuditTemplate;
+  setTemplate: Dispatch<SetStateAction<AuditTemplate>>;
+  page: Page;
+  section: Section;
+  question: Question;
 }
 
 export function ResponseOptionsManager({
@@ -35,67 +35,69 @@ export function ResponseOptionsManager({
   question,
 }: ResponseOptionsManagerProps) {
   const addResponseOption = () => {
-    const tempId = `temp-${Date.now()}`
+    const tempId = `temp-ro-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 8)}`;
     const newOption: NewResponseOption = {
       question_id: question.id,
-      label: 'New Option',
-      code: '',
+      label: "New Option",
+      code: "",
       sort_order: question.response_options?.length || 0,
       score: 0,
       is_flagged: false,
-      color: '#e2e8f0', // Default color
-    }
+      color: "#e2e8f0", // Default color
+    };
 
-    const updatedTemplate = { ...template }
-    const pageIndex = updatedTemplate.pages.findIndex((p) => p.id === page.id)
+    const updatedTemplate = { ...template };
+    const pageIndex = updatedTemplate.pages.findIndex((p) => p.id === page.id);
 
     if (pageIndex !== -1) {
       const sectionIndex = updatedTemplate.pages[pageIndex].sections.findIndex(
-        (s) => s.id === section.id,
-      )
+        (s) => s.id === section.id
+      );
 
       if (sectionIndex !== -1) {
         const questionIndex = updatedTemplate.pages[pageIndex].sections[
           sectionIndex
-        ].questions.findIndex((q) => q.id === question.id)
+        ].questions.findIndex((q) => q.id === question.id);
 
         if (questionIndex !== -1) {
           const targetQuestion =
             updatedTemplate.pages[pageIndex].sections[sectionIndex].questions[
               questionIndex
-            ]
+            ];
 
           if (!targetQuestion.response_options) {
-            targetQuestion.response_options = []
+            targetQuestion.response_options = [];
           }
 
           targetQuestion.response_options.push({
             ...newOption,
             id: tempId,
-          } as ResponseOption)
-          setTemplate(updatedTemplate)
+          } as ResponseOption);
+          setTemplate(updatedTemplate);
         }
       }
     }
-  }
+  };
 
   const updateResponseOption = (
     optionId: string,
     field: keyof ResponseOption,
-    value: string | number | boolean,
+    value: string | number | boolean
   ) => {
-    const updatedTemplate = { ...template }
-    const pageIndex = updatedTemplate.pages.findIndex((p) => p.id === page.id)
+    const updatedTemplate = { ...template };
+    const pageIndex = updatedTemplate.pages.findIndex((p) => p.id === page.id);
 
     if (pageIndex !== -1) {
       const sectionIndex = updatedTemplate.pages[pageIndex].sections.findIndex(
-        (s) => s.id === section.id,
-      )
+        (s) => s.id === section.id
+      );
 
       if (sectionIndex !== -1) {
         const questionIndex = updatedTemplate.pages[pageIndex].sections[
           sectionIndex
-        ].questions.findIndex((q) => q.id === question.id)
+        ].questions.findIndex((q) => q.id === question.id);
 
         if (
           questionIndex !== -1 &&
@@ -106,8 +108,8 @@ export function ResponseOptionsManager({
           const optionIndex = updatedTemplate.pages[pageIndex].sections[
             sectionIndex
           ].questions[questionIndex].response_options!.findIndex(
-            (o) => o.id === optionId,
-          )
+            (o) => o.id === optionId
+          );
 
           if (optionIndex !== -1) {
             updatedTemplate.pages[pageIndex].sections[sectionIndex].questions[
@@ -116,28 +118,28 @@ export function ResponseOptionsManager({
               ...updatedTemplate.pages[pageIndex].sections[sectionIndex]
                 .questions[questionIndex].response_options![optionIndex],
               [field]: value,
-            }
+            };
 
-            setTemplate(updatedTemplate)
+            setTemplate(updatedTemplate);
           }
         }
       }
     }
-  }
+  };
 
   const deleteResponseOption = (optionId: string) => {
-    const updatedTemplate = { ...template }
-    const pageIndex = updatedTemplate.pages.findIndex((p) => p.id === page.id)
+    const updatedTemplate = { ...template };
+    const pageIndex = updatedTemplate.pages.findIndex((p) => p.id === page.id);
 
     if (pageIndex !== -1) {
       const sectionIndex = updatedTemplate.pages[pageIndex].sections.findIndex(
-        (s) => s.id === section.id,
-      )
+        (s) => s.id === section.id
+      );
 
       if (sectionIndex !== -1) {
         const questionIndex = updatedTemplate.pages[pageIndex].sections[
           sectionIndex
-        ].questions.findIndex((q) => q.id === question.id)
+        ].questions.findIndex((q) => q.id === question.id);
 
         if (
           questionIndex !== -1 &&
@@ -150,59 +152,61 @@ export function ResponseOptionsManager({
           ].response_options = updatedTemplate.pages[pageIndex].sections[
             sectionIndex
           ].questions[questionIndex].response_options!.filter(
-            (o) => o.id !== optionId,
-          )
+            (o) => o.id !== optionId
+          );
 
           // Update sort_order for remaining options
           updatedTemplate.pages[pageIndex].sections[sectionIndex].questions[
             questionIndex
           ].response_options!.forEach((option, index) => {
-            option.sort_order = index
-          })
+            option.sort_order = index;
+          });
 
-          setTemplate(updatedTemplate)
+          setTemplate(updatedTemplate);
         }
       }
     }
-  }
+  };
 
   function handleAddPreloadedOptions(options: PreloadedOption[]) {
-    const updatedTemplate = { ...template }
-    const pageIndex = updatedTemplate.pages.findIndex((p) => p.id === page.id)
+    const updatedTemplate = { ...template };
+    const pageIndex = updatedTemplate.pages.findIndex((p) => p.id === page.id);
     if (pageIndex !== -1) {
       const sectionIndex = updatedTemplate.pages[pageIndex].sections.findIndex(
-        (s) => s.id === section.id,
-      )
+        (s) => s.id === section.id
+      );
       if (sectionIndex !== -1) {
         const questionIndex = updatedTemplate.pages[pageIndex].sections[
           sectionIndex
-        ].questions.findIndex((q) => q.id === question.id)
+        ].questions.findIndex((q) => q.id === question.id);
         if (questionIndex !== -1) {
           const targetQuestion =
             updatedTemplate.pages[pageIndex].sections[sectionIndex].questions[
               questionIndex
-            ]
+            ];
           if (!targetQuestion.response_options)
-            targetQuestion.response_options = []
+            targetQuestion.response_options = [];
           // Avoid duplicates by value
           const existingValues = new Set(
-            targetQuestion.response_options.map((o) => o.label.toLowerCase()),
-          )
+            targetQuestion.response_options.map((o) => o.label.toLowerCase())
+          );
           options.forEach((opt) => {
             if (!existingValues.has(opt.label.toLowerCase())) {
-              targetQuestion.response_options!.push({
-                id: `temp-${Date.now()}-${Math.random()}`,
+          targetQuestion.response_options!.push({
+            id: `temp-ro-${Date.now()}-${Math.random()
+              .toString(36)
+              .slice(2, 8)}`,
                 question_id: question.id,
                 label: opt.label,
-                code: '',
+                code: "",
                 sort_order: targetQuestion.response_options!.length,
                 score: 0,
                 is_flagged: false,
-                color: '#e2e8f0',
-              })
+                color: "#e2e8f0",
+              });
             }
-          })
-          setTemplate(updatedTemplate)
+          });
+          setTemplate(updatedTemplate);
         }
       }
     }
@@ -242,7 +246,7 @@ export function ResponseOptionsManager({
                 <Input
                   value={option.label}
                   onChange={(e) =>
-                    updateResponseOption(option.id, 'label', e.target.value)
+                    updateResponseOption(option.id, "label", e.target.value)
                   }
                   placeholder="Option label"
                   className="mr-2"
@@ -259,7 +263,7 @@ export function ResponseOptionsManager({
                     type="color"
                     value={option.color}
                     onChange={(e) =>
-                      updateResponseOption(option.id, 'color', e.target.value)
+                      updateResponseOption(option.id, "color", e.target.value)
                     }
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     aria-label={`Choose color for ${option.label}`}
@@ -268,18 +272,16 @@ export function ResponseOptionsManager({
                 </div>
 
                 <div className="flex items-center">
-                  {question.is_flagged && (
-                    <Switch
-                      id={`option-flag-${option.id}`}
-                      checked={option.is_flagged}
-                      onCheckedChange={(checked) =>
-                        updateResponseOption(option.id, 'is_flagged', checked)
-                      }
-                      title="Flag this option"
-                      aria-label={`Flag ${option.label} as critical issue`}
-                      tabIndex={0}
-                    />
-                  )}
+                  <Switch
+                    id={`option-flag-${option.id}`}
+                    checked={option.is_flagged}
+                    onCheckedChange={(checked) =>
+                      updateResponseOption(option.id, "is_flagged", checked)
+                    }
+                    title="Flag this option"
+                    aria-label={`Flag ${option.label} as critical issue`}
+                    tabIndex={0}
+                  />
                 </div>
 
                 <Button
@@ -297,5 +299,5 @@ export function ResponseOptionsManager({
         </div>
       )}
     </div>
-  )
+  );
 }

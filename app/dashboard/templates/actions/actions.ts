@@ -10,13 +10,11 @@ export type AuditTemplateApiResponse =
   | { data: AuditTemplate }
   | null;
 
-export async function getTemplates(): Promise<TemplatesResponse | null> {
+export async function getTemplates() {
   return await GET<TemplatesResponse>(`/audit-template/get`, ["templates"]);
 }
 
-export async function getTemplate(
-  id: string
-): Promise<AuditTemplateApiResponse> {
+export async function getTemplate(id: string) {
   return await GET<AuditTemplateApiResponse>(`/audit-template/get/${id}`);
 }
 

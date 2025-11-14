@@ -21,8 +21,9 @@ import {
   DragStartEvent,
 } from "@dnd-kit/core";
 import { LayoutGrid, ListIcon, PlusCircle } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useSearchParams, useRouter } from "next/navigation";
 import { updateAction } from "./actions/actions";
 import { ActionBoard } from "./components/action-board";
 import { ActionCard } from "./components/action-card";
@@ -48,6 +49,8 @@ export default function ActionsClient() {
   const [activeAction, setActiveAction] = useState<Action | null>(null);
 
   const { actions, setActions, isLoading: isActionsLoading } = useActions();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const { users } = useUsers();
 
@@ -65,6 +68,25 @@ export default function ActionsClient() {
       setIsEditActionDialogOpen(true);
     }
   }, []);
+
+  // Handle actionId query parameter to auto-open dialog
+  useEffect(() => {
+    const actionId = searchParams.get("actionId");
+    if (actionId && actions.length > 0) {
+      const action = actions.find((a) => a.id === actionId);
+      if (action) {
+        handleEditAction(action);
+        // Remove query param from URL
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete("actionId");
+        router.replace(
+          `/dashboard/actions${
+            params.toString() ? `?${params.toString()}` : ""
+          }`
+        );
+      }
+    }
+  }, [searchParams, actions, handleEditAction, router]);
 
   // Memoize columns to prevent recreation on every render
   const memoizedColumns = useMemo(

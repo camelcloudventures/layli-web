@@ -42,12 +42,9 @@ export function MarkAsDoneDialog({
     try {
       const state = await markActionAsCompleted(action.id, formData);
 
-      //@ts-expect-error --need to fix this
       if (state?.error) {
-        //@ts-expect-error --need to fix this
-        toast.error(state?.error);
+        toast.error(state?.error as string);
       } else {
-        //@ts-expect-error --need to fix this
         toast.success(state?.success);
         //@ts-expect-error --need to fix this
         onSuccess(state?.data);

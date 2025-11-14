@@ -4,7 +4,8 @@ import { DataTable } from "@/components/custom/data-table";
 import { createColumns } from "./columns";
 import { Issue } from "@/lib/types";
 import { IssuesTableLoadingSkeleton } from "./issues-table-loading-skeleton";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +37,8 @@ export default function IssuesTable({
 }: IssuesTableProps) {
   const [activeDialog, setActiveDialog] = useState<DialogType>(null);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const handleOpenDialog = (dialog: DialogType, issue: Issue) => {
     setSelectedIssue(issue);
@@ -46,6 +49,23 @@ export default function IssuesTable({
     setSelectedIssue(null);
     setActiveDialog(null);
   };
+
+  // Handle issueId query parameter to auto-open dialog
+  useEffect(() => {
+    const issueId = searchParams.get("issueId");
+    if (issueId && issues.length > 0) {
+      const issue = issues.find((i) => i.id === issueId);
+      if (issue) {
+        handleOpenDialog("update", issue);
+        // Remove query param from URL
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete("issueId");
+        router.replace(
+          `/dashboard/issues${params.toString() ? `?${params.toString()}` : ""}`
+        );
+      }
+    }
+  }, [searchParams, issues, router]);
 
   const columns = createColumns(assignees, handleOpenDialog);
 

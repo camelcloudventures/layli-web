@@ -1,7 +1,8 @@
 "use client";
 
-import { type Dispatch, type SetStateAction, useState } from "react";
+import { type Dispatch, type SetStateAction, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   GripVertical,
   ChevronDown,
@@ -21,6 +23,7 @@ import {
   Plus,
   HelpCircle,
   Trash2,
+  GitBranch,
 } from "lucide-react";
 import type {
   AuditTemplate,
@@ -52,7 +55,20 @@ export function QuestionsManager({
   section,
   handleQuestionAddition,
 }: QuestionsManagerProps) {
-  const [expandedQuestions, setExpandedQuestions] = useState<string[]>([]);
+  // Auto-expand all questions by default when editing
+  const [expandedQuestions, setExpandedQuestions] = useState<string[]>(() => {
+    return section.questions.map((q) => q.id);
+  });
+
+  // Update expanded questions when section questions change
+  useEffect(() => {
+    const allQuestionIds = section.questions.map((q) => q.id);
+    setExpandedQuestions((prev) => {
+      // Keep existing expanded questions, add new ones
+      const newIds = allQuestionIds.filter((id) => !prev.includes(id));
+      return [...prev, ...newIds];
+    });
+  }, [section.questions]);
 
   // For real pages, render the questions that actually belong to this section on this page
   const questionsForThisSectionOnThisPage = section.questions;
@@ -257,6 +273,15 @@ export function QuestionsManager({
                     <div className="flex items-center gap-2">
                       <GripVertical className="h-4 w-4 text-muted-foreground" />
                       <CardTitle className="text-sm">{question.text}</CardTitle>
+                      {question.parent_question_id && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs bg-blue-50 text-blue-700 border-blue-200"
+                        >
+                          <GitBranch className="mr-1 h-3 w-3" />
+                          Conditional
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-1">
                       <Button
@@ -336,6 +361,7 @@ export function QuestionsManager({
                                 | "SIGNATURE"
                                 | "LOCATION"
                                 | "SLIDER"
+                                | "CHECKBOX"
                             )
                           }
                         >
@@ -357,6 +383,7 @@ export function QuestionsManager({
                             <SelectItem value="SIGNATURE">Signature</SelectItem>
                             <SelectItem value="LOCATION">Location</SelectItem>
                             <SelectItem value="SLIDER">Slider</SelectItem>
+                            <SelectItem value="CHECKBOX">Checkbox</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -387,26 +414,6 @@ export function QuestionsManager({
                             Flag Critical Issue
                           </Label>
                         </div>
-
-                        {(question.field_type === "SELECT" ||
-                          question.field_type === "MULTI_SELECT") && (
-                          <div className="flex items-center gap-2">
-                            <Switch
-                              id={`question-multiple-${question.id}`}
-                              checked={question.multiple_selection}
-                              onCheckedChange={(checked) =>
-                                updateQuestion(
-                                  question.id,
-                                  "multiple_selection",
-                                  checked
-                                )
-                              }
-                            />
-                            <Label htmlFor={`question-multiple-${question.id}`}>
-                              Multiple Selection
-                            </Label>
-                          </div>
-                        )}
                       </div>
 
                       {/* Add new field type specific UI components */}
@@ -505,9 +512,43 @@ export function QuestionsManager({
                         </div>
                       )}
 
-                      {/* Response Options Manager (for SELECT & MULTI_SELECT) */}
+                      {question.field_type === "CHECKBOX" && (
+                        <div className="space-y-2">
+                          <Label htmlFor={`checkbox-${question.id}`}>
+                            Checkbox Options
+                          </Label>
+                          {question.response_options &&
+                          question.response_options.length > 0 ? (
+                            <div className="space-y-2">
+                              {question.response_options.map((option) => (
+                                <div
+                                  key={option.id}
+                                  className="flex items-center space-x-2"
+                                >
+                                  <Checkbox
+                                    id={`${question.id}-${option.id}`}
+                                    disabled
+                                  />
+                                  <Label
+                                    htmlFor={`${question.id}-${option.id}`}
+                                  >
+                                    {option.label}
+                                  </Label>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground">
+                              No options defined. Add options below.
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Response Options Manager (for SELECT, MULTI_SELECT & CHECKBOX) */}
                       {(question.field_type === "SELECT" ||
-                        question.field_type === "MULTI_SELECT") && (
+                        question.field_type === "MULTI_SELECT" ||
+                        question.field_type === "CHECKBOX") && (
                         <ResponseOptionsManager
                           template={template}
                           setTemplate={setTemplate}
@@ -517,8 +558,8 @@ export function QuestionsManager({
                         />
                       )}
 
-                      {/* Flagging UI for all logical field types, only if 'Flag Critical Issue' is toggled on */}
-                      {question.is_flagged &&
+                      {/* Flagging UI for all logical field types - show if is_flagged is true OR if flag_rule exists */}
+                      {(question.is_flagged || question.flag_rule) &&
                         (question.field_type === "TEXT" ||
                           question.field_type === "NUMBER" ||
                           question.field_type === "SLIDER" ||
@@ -526,7 +567,8 @@ export function QuestionsManager({
                           question.field_type === "BOOLEAN" ||
                           question.field_type === "PHOTO" ||
                           question.field_type === "SIGNATURE" ||
-                          question.field_type === "LOCATION") && (
+                          question.field_type === "LOCATION" ||
+                          question.field_type === "CHECKBOX") && (
                           <div className="space-y-2">
                             <Label className="font-medium">Flag when…</Label>
                             {/* TEXT */}
@@ -807,6 +849,264 @@ export function QuestionsManager({
                             )}
                           </div>
                         )}
+
+                      {/* Conditional Question UI - Show follow-up question when parent answer meets rule */}
+                      <div className="space-y-2">
+                        <Label className="font-medium">
+                          Conditional Question (Show when…)
+                        </Label>
+                        <div className="space-y-3">
+                          {/* Parent Question Selector */}
+                          <div className="space-y-2">
+                            <Label className="text-sm text-muted-foreground">
+                              Parent Question
+                            </Label>
+                            <Select
+                              value={question.parent_question_id || "__none__"}
+                              onValueChange={(value) => {
+                                if (value === "__none__") {
+                                  // Clear parent and trigger when "None" is selected
+                                  updateQuestion(
+                                    question.id,
+                                    "parent_question_id",
+                                    undefined
+                                  );
+                                  updateQuestion(
+                                    question.id,
+                                    "trigger",
+                                    undefined
+                                  );
+                                } else {
+                                  updateQuestion(
+                                    question.id,
+                                    "parent_question_id",
+                                    value
+                                  );
+                                  // Initialize trigger if it doesn't exist
+                                  if (!question.trigger) {
+                                    updateQuestion(question.id, "trigger", {
+                                      operator: "equals",
+                                      value: "",
+                                    });
+                                  }
+                                }
+                              }}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select parent question (optional)" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="__none__">
+                                  None (Always visible)
+                                </SelectItem>
+                                {section.questions
+                                  .filter(
+                                    (q) =>
+                                      q.id !== question.id &&
+                                      !q.parent_question_id
+                                  )
+                                  .map((parentQuestion) => (
+                                    <SelectItem
+                                      key={parentQuestion.id}
+                                      value={parentQuestion.id}
+                                    >
+                                      {parentQuestion.text}
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {/* Trigger Configuration - only show if parent is selected */}
+                          {question.parent_question_id && (
+                            <>
+                              {(() => {
+                                const parentQuestion = section.questions.find(
+                                  (q) => q.id === question.parent_question_id
+                                );
+                                if (!parentQuestion) return null;
+
+                                const isSelectType =
+                                  parentQuestion.field_type === "SELECT" ||
+                                  parentQuestion.field_type ===
+                                    "MULTI_SELECT" ||
+                                  parentQuestion.field_type === "CHECKBOX";
+
+                                return (
+                                  <div className="space-y-2">
+                                    <Label className="text-sm text-muted-foreground">
+                                      Show when answer…
+                                    </Label>
+                                    <div className="flex gap-2 items-center">
+                                      <Select
+                                        value={question.trigger?.operator || ""}
+                                        onValueChange={(value) => {
+                                          updateQuestion(
+                                            question.id,
+                                            "trigger",
+                                            {
+                                              ...question.trigger,
+                                              operator: value as
+                                                | "equals"
+                                                | "not_equals"
+                                                | "contains",
+                                              value:
+                                                question.trigger?.value || "",
+                                            }
+                                          );
+                                        }}
+                                      >
+                                        <SelectTrigger className="w-[140px]">
+                                          <SelectValue placeholder="Operator" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="equals">
+                                            equals
+                                          </SelectItem>
+                                          <SelectItem value="not_equals">
+                                            not equals
+                                          </SelectItem>
+                                          <SelectItem value="contains">
+                                            contains
+                                          </SelectItem>
+                                        </SelectContent>
+                                      </Select>
+
+                                      {/* Value input - different based on parent field type */}
+                                      {question.trigger?.operator && (
+                                        <>
+                                          {isSelectType &&
+                                          parentQuestion.response_options &&
+                                          parentQuestion.response_options
+                                            .length > 0 ? (
+                                            // Response option selector for SELECT/CHECKBOX/MULTI_SELECT
+                                            <Select
+                                              value={String(
+                                                question.trigger?.value || ""
+                                              )}
+                                              onValueChange={(value) => {
+                                                updateQuestion(
+                                                  question.id,
+                                                  "trigger",
+                                                  {
+                                                    ...question.trigger,
+                                                    value: value,
+                                                  }
+                                                );
+                                              }}
+                                            >
+                                              <SelectTrigger className="flex-1">
+                                                <SelectValue placeholder="Select option" />
+                                              </SelectTrigger>
+                                              <SelectContent>
+                                                {parentQuestion.response_options.map(
+                                                  (option) => (
+                                                    <SelectItem
+                                                      key={option.id}
+                                                      value={option.id}
+                                                    >
+                                                      {option.label}
+                                                    </SelectItem>
+                                                  )
+                                                )}
+                                              </SelectContent>
+                                            </Select>
+                                          ) : parentQuestion.field_type ===
+                                            "BOOLEAN" ? (
+                                            // Boolean selector
+                                            <Select
+                                              value={String(
+                                                question.trigger?.value || ""
+                                              )}
+                                              onValueChange={(value) => {
+                                                updateQuestion(
+                                                  question.id,
+                                                  "trigger",
+                                                  {
+                                                    ...question.trigger,
+                                                    value: value === "true",
+                                                  }
+                                                );
+                                              }}
+                                            >
+                                              <SelectTrigger className="flex-1">
+                                                <SelectValue placeholder="Select value" />
+                                              </SelectTrigger>
+                                              <SelectContent>
+                                                <SelectItem value="true">
+                                                  Yes
+                                                </SelectItem>
+                                                <SelectItem value="false">
+                                                  No
+                                                </SelectItem>
+                                              </SelectContent>
+                                            </Select>
+                                          ) : parentQuestion.field_type ===
+                                              "NUMBER" ||
+                                            parentQuestion.field_type ===
+                                              "SLIDER" ? (
+                                            // Number input
+                                            <Input
+                                              type="number"
+                                              className="flex-1"
+                                              placeholder="Enter value"
+                                              value={safeString(
+                                                question.trigger?.value as
+                                                  | string
+                                                  | number
+                                                  | null
+                                                  | undefined
+                                              )}
+                                              onChange={(e) => {
+                                                const numValue =
+                                                  e.target.value === ""
+                                                    ? ""
+                                                    : Number(e.target.value);
+                                                updateQuestion(
+                                                  question.id,
+                                                  "trigger",
+                                                  {
+                                                    ...question.trigger,
+                                                    value: numValue,
+                                                  }
+                                                );
+                                              }}
+                                            />
+                                          ) : (
+                                            // Text input for TEXT, DATE, etc.
+                                            <Input
+                                              type="text"
+                                              className="flex-1"
+                                              placeholder="Enter value"
+                                              value={safeString(
+                                                question.trigger?.value as
+                                                  | string
+                                                  | number
+                                                  | null
+                                                  | undefined
+                                              )}
+                                              onChange={(e) => {
+                                                updateQuestion(
+                                                  question.id,
+                                                  "trigger",
+                                                  {
+                                                    ...question.trigger,
+                                                    value: e.target.value,
+                                                  }
+                                                );
+                                              }}
+                                            />
+                                          )}
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 )}

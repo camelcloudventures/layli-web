@@ -45,7 +45,7 @@ export function useTemplate(initialTemplate: Template) {
       }
       reset();
       router.push(`/dashboard/templates/${template.id}/preview`);
-      toast.success(result.success);
+      toast.success(result?.success || "Template updated successfully");
       return true;
     } catch {
       toast.error("Failed to update template");
@@ -60,7 +60,6 @@ export function useTemplate(initialTemplate: Template) {
       const res = await deleteTemplate(template.id);
       console.log("res", res);
 
-      //@ts-expect-error -e9
       if (res?.error) toast.error(res?.error || "Failed");
       toast.success("Template deleted successfully!");
       reset();

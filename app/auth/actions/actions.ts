@@ -239,6 +239,7 @@ export async function acceptInvite(
       .from("invites")
       .update({
         user_id: sessionData.user?.id,
+        used: true,
       })
       .eq("token", token);
 

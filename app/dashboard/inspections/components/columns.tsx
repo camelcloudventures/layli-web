@@ -27,6 +27,7 @@ import {
   ArrowUpDown,
   Loader2,
   Users,
+  Calendar,
 } from "lucide-react";
 import { downloadInspectionPDF } from "../[id]/report/utils/pdf-generator";
 import { useState } from "react";
@@ -34,6 +35,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { UserOption } from "@/app/dashboard/schedules/types/schedule-form-types";
 import { ManageAssigneesDialog } from "./manage-assignees-dialog";
+import { UpdateDueDateDialog } from "./update-due-date-dialog";
 
 // Separate component for actions
 function InspectionActions({
@@ -46,6 +48,7 @@ function InspectionActions({
   "use client";
   const [isDownloading, setIsDownloading] = useState(false);
   const [isManageAssigneesOpen, setIsManageAssigneesOpen] = useState(false);
+  const [isUpdateDueDateOpen, setIsUpdateDueDateOpen] = useState(false);
 
   const handleDownloadReport = () => {
     setIsDownloading(true);
@@ -68,37 +71,59 @@ function InspectionActions({
   };
 
   if (inspection.status === InspectionStatus.COMPLETED) {
+    function handleUpdateDueDate() {
+      setIsUpdateDueDateOpen(true);
+    }
+
+    function handleSuccess() {
+      // Refresh inspections list - the store will be updated by the action
+      // The component will re-render when the store updates
+    }
+
     return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
+      <>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuSeparator />
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
 
-          <DropdownMenuItem asChild>
-            <Link href={`/dashboard/inspections/${inspection.id}/report`}>
-              <FileText className="mr-2 h-4 w-4" />
-              View Report
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={handleDownloadReport}
-            disabled={isDownloading}
-          >
-            {isDownloading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Download className="mr-2 h-4 w-4" />
-            )}
-            Download Report
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            <DropdownMenuItem asChild>
+              <Link href={`/dashboard/inspections/${inspection.id}/report`}>
+                <FileText className="mr-2 h-4 w-4" />
+                View Report
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={handleDownloadReport}
+              disabled={isDownloading}
+            >
+              {isDownloading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="mr-2 h-4 w-4" />
+              )}
+              Download Report
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleUpdateDueDate}>
+              <Calendar className="mr-2 h-4 w-4" />
+              Update Due Date
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <UpdateDueDateDialog
+          isOpen={isUpdateDueDateOpen}
+          onOpenChange={setIsUpdateDueDateOpen}
+          inspection={inspection}
+          onSuccess={handleSuccess}
+        />
+      </>
     );
   }
 
@@ -106,18 +131,56 @@ function InspectionActions({
     inspection.status === InspectionStatus.IN_PROGRESS ||
     inspection.status === InspectionStatus.PAUSED
   ) {
+    function handleUpdateDueDate() {
+      setIsUpdateDueDateOpen(true);
+    }
+
+    function handleSuccess() {
+      // Refresh inspections list - the store will be updated by the action
+      // The component will re-render when the store updates
+    }
+
     return (
-      <Link href={`/dashboard/inspections/${inspection.id}/edit`}>
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-          <Play className="h-4 w-4" />
-        </Button>
-      </Link>
+      <>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href={`/dashboard/inspections/${inspection.id}/edit`}>
+                <Play className="mr-2 h-4 w-4" />
+                Continue Inspection
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleUpdateDueDate}>
+              <Calendar className="mr-2 h-4 w-4" />
+              Update Due Date
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <UpdateDueDateDialog
+          isOpen={isUpdateDueDateOpen}
+          onOpenChange={setIsUpdateDueDateOpen}
+          inspection={inspection}
+          onSuccess={handleSuccess}
+        />
+      </>
     );
   }
 
   if (inspection.status === InspectionStatus.PENDING) {
     function handleManageAssignees() {
       setIsManageAssigneesOpen(true);
+    }
+
+    function handleUpdateDueDate() {
+      setIsUpdateDueDateOpen(true);
     }
 
     function handleSuccess() {
@@ -147,6 +210,11 @@ function InspectionActions({
               <Users className="mr-2 h-4 w-4" />
               Manage Assignees
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleUpdateDueDate}>
+              <Calendar className="mr-2 h-4 w-4" />
+              Update Due Date
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         <ManageAssigneesDialog
@@ -154,6 +222,12 @@ function InspectionActions({
           onOpenChange={setIsManageAssigneesOpen}
           inspection={inspection}
           users={users}
+          onSuccess={handleSuccess}
+        />
+        <UpdateDueDateDialog
+          isOpen={isUpdateDueDateOpen}
+          onOpenChange={setIsUpdateDueDateOpen}
+          inspection={inspection}
           onSuccess={handleSuccess}
         />
       </>

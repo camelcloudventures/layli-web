@@ -1,6 +1,6 @@
 "use server";
 
-import { GET, POST, PUT } from "@/app/backend/apiMethods";
+import { GET, POST, PUT, PATCH } from "@/app/backend/apiMethods";
 import { Page } from "@/lib/types/audit-types";
 import { Response } from "@/lib/types/inspection-types";
 import {
@@ -117,6 +117,18 @@ export async function updateInspectionAssignees(
 ) {
   const res = await PUT(`/inspections/${inspection_id}/assignees`, {
     assignees,
+  });
+  revalidateTag("inspections");
+  revalidatePath(`/dashboard/inspections`);
+  return res;
+}
+
+export async function updateInspectionDueDate(
+  inspection_id: string,
+  due_date: string
+) {
+  const res = await PATCH(`/inspections/${inspection_id}/due-date`, {
+    due_date,
   });
   revalidateTag("inspections");
   revalidatePath(`/dashboard/inspections`);

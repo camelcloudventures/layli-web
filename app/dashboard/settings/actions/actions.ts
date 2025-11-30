@@ -83,12 +83,18 @@ export async function updateUserRole(userId: string, role: string) {
 
 export async function updateOrganization(orgId: string, formData: FormData) {
   const name = formData.get("name") as string;
+  const logo = formData.get("logo") as string | null;
 
   if (!name) {
     return { error: "Organization name is required" };
   }
 
-  const res = await UPDATE(`/organizations/${orgId}/update`, { name });
+  const updateData: { name: string; logo?: string } = { name };
+  if (logo) {
+    updateData.logo = logo;
+  }
+
+  const res = await UPDATE(`/organizations/${orgId}/update`, updateData);
 
   return res;
 }

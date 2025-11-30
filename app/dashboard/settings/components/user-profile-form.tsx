@@ -22,7 +22,12 @@ export function UserProfileForm() {
     handleAvatarChange,
     uploading,
   } = useUserProfile();
-  const { handleUpdateOrganization, updating } = useOrganizationUpdate();
+  const {
+    handleUpdateOrganization,
+    handleLogoChange,
+    updating,
+    logoPreviewUrl,
+  } = useOrganizationUpdate();
 
   return (
     <>
@@ -107,6 +112,45 @@ export function UserProfileForm() {
               Organization Settings
             </h2>
             <form action={handleUpdateOrganization} className="space-y-6">
+              <div className="flex items-center space-x-4">
+                <Avatar className="h-20 w-20">
+                  <AvatarImage
+                    src={logoPreviewUrl || activeOrg?.logo || ""}
+                    alt={activeOrg?.name || "Organization"}
+                  />
+                  <AvatarFallback className="text-lg">
+                    {activeOrg?.name
+                      ? activeOrg.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .toUpperCase()
+                          .slice(0, 2)
+                      : "ORG"}
+                  </AvatarFallback>
+                </Avatar>
+                <Button
+                  asChild
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  aria-label="Change Logo"
+                >
+                  <label tabIndex={0}>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Change Logo
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleLogoChange}
+                      aria-label="Upload organization logo"
+                      tabIndex={-1}
+                    />
+                  </label>
+                </Button>
+              </div>
+
               <div className="grid gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="organizationName">Organization Name</Label>

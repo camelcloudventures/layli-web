@@ -53,13 +53,28 @@ export function DashboardHeader() {
             </Sheet>
           )}
           <Link href="/dashboard" className="flex items-center gap-2">
-            <Image
-              src={"/audLogo.png"}
-              alt={"Audit Management"}
-              width={40}
-              height={40}
-              className="rounded-full"
-            />
+            {activeOrg?.logo ? (
+              <Image
+                src={activeOrg.logo}
+                alt={activeOrg?.name || "Organization"}
+                width={40}
+                height={40}
+                className="rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-primary font-bold text-sm">
+                  {activeOrg?.name
+                    ? activeOrg.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase()
+                        .slice(0, 2)
+                    : "ORG"}
+                </span>
+              </div>
+            )}
             <h1 className="text-xl font-bold">{activeOrg?.name}</h1>
           </Link>
         </div>

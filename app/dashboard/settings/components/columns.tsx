@@ -8,17 +8,29 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { RoleActionItem } from "./role-action-item";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { updateUserRole } from "../actions/actions";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { DeleteDialog } from "@/components/ui/delete-dialog";
+import {
+  updateUserRole,
+  removeUser,
+  revokeInvite,
+  resendInvite,
+} from "../actions/actions";
 import { toast } from "sonner";
 import { useState } from "react";
 import { Invite } from "./user-management";
@@ -60,9 +72,16 @@ function capitalize(str: string) {
 
 function ActionsCell({ user }: { user: Invite }) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isRevokeDialogOpen, setIsRevokeDialogOpen] = useState(false);
+  const [isResendDialogOpen, setIsResendDialogOpen] = useState(false);
+
   const updateInviteRoleInStore = useInvitesStore(
     (state) => state.updateInviteRole
   );
+  const removeUserFromStore = useInvitesStore((state) => state.removeUser);
+  const revokeInviteInStore = useInvitesStore((state) => state.revokeInvite);
+  const resendInviteInStore = useInvitesStore((state) => state.resendInvite);
+
   const isActive = getUserStatus(user.used) === "active";
 
   const handleRoleChange = async (userId: string, role: string) => {
@@ -74,6 +93,62 @@ function ActionsCell({ user }: { user: Invite }) {
       toast.success(`Role updated to ${role} successfully`);
     } catch {
       toast.error("Failed to update role");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRemoveUser = async () => {
+    if (!user.user_id) return;
+    setIsLoading(true);
+    try {
+      const res = await removeUser(user.user_id);
+      if (res?.error) {
+        toast.error(res?.error || "Failed to remove user");
+        return;
+      }
+      removeUserFromStore(user.user_id);
+      toast.success(res?.success || "User removed successfully");
+    } catch {
+      toast.error("Failed to remove user");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRevokeInvite = async () => {
+    setIsLoading(true);
+    try {
+      const res = await revokeInvite(user.id);
+      if (res?.error) {
+        toast.error(res?.error || "Failed to revoke invite");
+        return;
+      }
+      revokeInviteInStore(user.id);
+      toast.success(res?.success || "Invite revoked successfully");
+      setIsRevokeDialogOpen(false);
+    } catch {
+      toast.error("Failed to revoke invite");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendInvite = async () => {
+    setIsLoading(true);
+    try {
+      const res = await resendInvite(user.id);
+      if (res?.error) {
+        toast.error(res?.error || "Failed to resend invite");
+        return;
+      }
+      if (res?.data) {
+        resendInviteInStore(user.id, res.data as Invite);
+      }
+      toast.success(res?.success || "Invite resent successfully");
+      setIsResendDialogOpen(false);
+    } catch {
+      toast.error("Failed to resend invite");
     } finally {
       setIsLoading(false);
     }
@@ -94,6 +169,22 @@ function ActionsCell({ user }: { user: Invite }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent className="z-10 bg-white" align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DeleteDialog
+            title="Remove User"
+            description={`Are you sure you want to remove ${user.email} from this organization? This action cannot be undone.`}
+            onDelete={handleRemoveUser}
+            trigger={
+              <DropdownMenuItem
+                onSelect={(e) => e.preventDefault()}
+                className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                tabIndex={0}
+                aria-label="Remove user"
+              >
+                Remove User
+              </DropdownMenuItem>
+            }
+          />
           <DropdownMenuSeparator />
           <RoleActionItem
             user={user}
@@ -119,30 +210,100 @@ function ActionsCell({ user }: { user: Invite }) {
   }
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span
-          aria-disabled="true"
-          className="inline-flex opacity-50 cursor-not-allowed"
-          tabIndex={0}
-        >
-          <Button
-            variant="ghost"
-            className="h-8 w-8 p-0 pointer-events-none"
-            tabIndex={-1}
-            aria-label="Actions unavailable"
-          >
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
             <span className="sr-only">Open menu</span>
             <MoreHorizontal className="h-4 w-4" />
           </Button>
-        </span>
-      </TooltipTrigger>
-      <TooltipContent className="">
-        <p className="font-medium">
-          Role changes are only available for active users.
-        </p>
-      </TooltipContent>
-    </Tooltip>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="z-10 bg-white" align="end">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => setIsRevokeDialogOpen(true)}
+            disabled={isLoading || user.revoked}
+            tabIndex={0}
+            aria-label="Revoke invite"
+          >
+            Revoke Invite
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => setIsResendDialogOpen(true)}
+            disabled={isLoading || user.revoked}
+            tabIndex={0}
+            aria-label="Resend invite"
+          >
+            Resend Invite
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <AlertDialog
+        open={isRevokeDialogOpen}
+        onOpenChange={setIsRevokeDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Revoke Invite</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to revoke the invitation for {user.email}?
+              They will no longer be able to use this invitation to join the
+              organization.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRevokeInvite}
+              disabled={isLoading}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Revoking...
+                </>
+              ) : (
+                "Revoke Invite"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={isResendDialogOpen}
+        onOpenChange={setIsResendDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Resend Invite</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to resend the invitation to {user.email}? A
+              new invitation email will be sent to them.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleResendInvite}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Resending...
+                </>
+              ) : (
+                "Resend Invite"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
@@ -170,6 +331,32 @@ export const columns: ColumnDef<Invite>[] = [
           {capitalize(status)}
         </Badge>
       );
+    },
+  },
+  {
+    id: "sites",
+    header: "Sites",
+    cell: ({ row }) => {
+      const invite = row.original as Invite & {
+        sites?: { id: string | number; name?: string }[];
+        site_ids?: number[];
+      };
+      const siteNames =
+        invite?.sites?.map((s) => s?.name).filter(Boolean) as string[] | undefined;
+      if (siteNames && siteNames.length > 0) {
+        const shown = siteNames.slice(0, 2).join(", ");
+        const extra = siteNames.length > 2 ? ` +${siteNames.length - 2}` : "";
+        return <span>{shown}{extra}</span>;
+      }
+      const count = invite?.site_ids?.length || 0;
+      if (count > 0) {
+        return (
+          <Badge className="bg-gray-100 text-gray-800">
+            {count} {count > 1 ? "sites" : "site"}
+          </Badge>
+        );
+      }
+      return <span className="text-gray-400">—</span>;
     },
   },
   {

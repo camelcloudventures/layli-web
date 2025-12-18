@@ -12,9 +12,9 @@ import { Permission } from "@/lib/auth/auth";
 import type { Schedule } from "@/lib/types/schedule-types";
 import { useSchedulesStore } from "@/store/schedules";
 import { Trash2Icon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getUser } from "@/utils/common";
 import HasPermission from "../../components/has-permission";
 import {
@@ -35,6 +35,7 @@ import { ScheduleCard } from "./schedule-card";
 import { ScheduleDetailsDialog } from "./schedule-details-dialog";
 import { ScheduleHeader } from "./schedule-header";
 import { ScheduleSearch } from "./schedule-search";
+import { SiteFilter } from "./site-filter";
 import SchedulesLoadingSkeleton from "./schedules-loading-skeleton";
 
 interface SchedulesListProps {
@@ -54,8 +55,10 @@ export function SchedulesList({
 }: SchedulesListProps) {
   const { removeSchedule, setSchedules } = useSchedulesStore();
   const router = useRouter();
+  const searchParams = useSearchParams();
   console.log("schedules", schedules);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSite, setSelectedSite] = useState<string>("all");
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
@@ -67,33 +70,80 @@ export function SchedulesList({
   );
 
   const filteredSchedules = useMemo(() => {
-    if (!searchQuery.trim()) return schedules;
-    const query = searchQuery.toLowerCase().trim();
-    return schedules.filter(
-      (schedule) =>
-        schedule.title.toLowerCase().includes(query) ||
-        schedule.site?.name?.toLowerCase().includes(query) ||
-        schedule.assignees?.some((assignee) =>
-          // @ts-expect-error - assignees structure needs to be fixed
-          assignee.full_name?.toLowerCase().includes(query)
-        ) ||
-        schedule.assignees?.some((assignee) =>
-          // @ts-expect-error - assignees structure needs to be fixed
-          assignee.email?.toLowerCase().includes(query)
-        ) ||
-        schedule.template?.title?.toLowerCase().includes(query) ||
-        schedule.frequency.toLowerCase().includes(query)
-    );
-  }, [searchQuery, schedules]);
+    let filtered = schedules;
+
+    // Filter by site
+    if (selectedSite !== "all") {
+      filtered = filtered.filter(
+        (schedule) => String(schedule.site_id) === selectedSite
+      );
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(
+        (schedule) =>
+          schedule.title.toLowerCase().includes(query) ||
+          schedule.site?.name?.toLowerCase().includes(query) ||
+          schedule.assignees?.some((assignee) =>
+            // @ts-expect-error - assignees structure needs to be fixed
+            assignee.full_name?.toLowerCase().includes(query)
+          ) ||
+          schedule.assignees?.some((assignee) =>
+            // @ts-expect-error - assignees structure needs to be fixed
+            assignee.email?.toLowerCase().includes(query)
+          ) ||
+          schedule.template?.title?.toLowerCase().includes(query) ||
+          schedule.frequency.toLowerCase().includes(query)
+      );
+    }
+
+    return filtered;
+  }, [searchQuery, selectedSite, schedules]);
+
+  // Handle scheduleId and scheduleTitle query parameters to auto-open dialog
+  useEffect(() => {
+    const scheduleId = searchParams.get("scheduleId");
+    const scheduleTitle = searchParams.get("scheduleTitle");
+
+    if (schedules.length > 0) {
+      let schedule: Schedule | undefined;
+
+      if (scheduleId) {
+        // Find by ID
+        schedule = schedules.find((s) => String(s.id) === scheduleId);
+      } else if (scheduleTitle) {
+        // Find by title (for notifications with empty links)
+        schedule = schedules.find(
+          (s) =>
+            s.title.toLowerCase() ===
+            decodeURIComponent(scheduleTitle).toLowerCase()
+        );
+      }
+
+      if (schedule) {
+        setSelectedSchedule(schedule);
+        setDetailsOpen(true);
+        // Remove query params from URL
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete("scheduleId");
+        params.delete("scheduleTitle");
+        router.replace(
+          `/dashboard/schedules${
+            params.toString() ? `?${params.toString()}` : ""
+          }`
+        );
+      }
+    }
+  }, [searchParams, schedules, router]);
 
   async function handleDelete(schedule: Schedule) {
     const res = await deleteSchedule(String(schedule.id));
-    //@ts-expect-error --need to fix this
     if (res?.success) {
       toast.success("Schedule deleted successfully");
       removeSchedule(String(schedule.id));
     } else {
-      //@ts-expect-error --need to fix this
       toast.error(res?.error || "Failed to delete schedule");
     }
   }
@@ -203,7 +253,16 @@ export function SchedulesList({
         />
       </HasPermission>
 
-      <ScheduleSearch value={searchQuery} onChange={setSearchQuery} />
+      <div className="flex flex-col sm:flex-row gap-4 items-center ">
+        <SiteFilter
+          sites={sites}
+          value={selectedSite}
+          onChange={setSelectedSite}
+        />
+        <div className="flex-1 w-full sm:w-auto">
+          <ScheduleSearch value={searchQuery} onChange={setSearchQuery} />
+        </div>
+      </div>
 
       <div className="space-y-4">
         {filteredSchedules?.length === 0 ? (

@@ -5,7 +5,6 @@ import { createClient } from "@/utils/supabase/server";
 import { GET, POST } from "@/app/backend/apiMethods";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { User } from "@/lib/types";
 
 export async function signUp(formData: FormData) {
   const supabase = await createClient();
@@ -48,8 +47,8 @@ export async function signUp(formData: FormData) {
       user: authUser!.user?.id,
     };
   } catch (err) {
-    //@ts-expect-error - error is not typed
-    return { error: err.message };
+    const error = err as Error;
+    return { error: error.message };
   }
 }
 
@@ -76,6 +75,9 @@ export async function signIn(formData: FormData) {
       refresh_token: signInData.session?.refresh_token,
     });
 
+    console.log("access_token", signInData.session?.access_token);
+    console.log("refresh_token", signInData.session?.refresh_token);
+
     if (setSessionError) {
       return { error: setSessionError.message };
     }
@@ -84,18 +86,31 @@ export async function signIn(formData: FormData) {
     const orgContext = await getUserOrganizations();
 
     if (!orgContext?.success) {
-      return { error: "Failed to load organization data" };
+      return { error: orgContext?.error || "Failed to load organization data" };
+    }
+
+    // Check if user has been removed from all organizations
+    //@ts-expect-error - orgContext.data is not typed
+    const organizations = orgContext.data?.organizations || [];
+    //@ts-expect-error - orgContext.data is not typed
+    const activeOrganization = orgContext.data?.activeOrganization;
+
+    if (organizations.length === 0 || !activeOrganization) {
+      return {
+        error:
+          "You have been removed from this organization. Please contact your administrator for assistance.",
+      };
     }
 
     return {
       success: "Signed in successfully! Redirecting...",
       user: signInData.user,
-      organizations: orgContext.data.organizations,
-      activeOrganization: orgContext.data.activeOrganization,
+      organizations,
+      activeOrganization,
     };
   } catch (err) {
-    //@ts-expect-error - error is not typed
-    return { error: err.message };
+    const error = err as Error;
+    return { error: error.message };
   }
 }
 
@@ -127,8 +142,8 @@ export async function updateProfile(formData: FormData) {
     if (error) return { error: error.message };
     return { success: "Profile updated successfully." };
   } catch (err) {
-    //@ts-expect-error - error is not typed
-    return { error: err.message };
+    const error = err as Error;
+    return { error: error.message };
   }
 }
 
@@ -161,8 +176,6 @@ export async function acceptInvite(
       return { error: sessionError.message };
     }
 
-    console.log("sessionData", sessionData);
-
     const password = formData.get("password") as string;
     const { error: updateError } = await supabase.auth.updateUser({
       password,
@@ -171,15 +184,39 @@ export async function acceptInvite(
       return { error: updateError.message };
     }
 
+    console.log("token sent to validate", token);
     const validateRes = await GET(`/invites/validate/${token}`);
-    console.log("=============THIS WAS CALLED=============");
-    console.log("validateRes", validateRes);
-
-    console.log("Token value", token);
-    //@ts-expect-error - error is not typed
+    console.log("validateRes===========>", validateRes);
     if (!validateRes?.success) {
-      //@ts-expect-error - error is not typed
-      return { error: validateRes?.error };
+      return { error: validateRes?.error || "Invalid invite token" };
+    }
+
+    // Add user to site_members table if site_ids are provided
+    if (
+      //@ts-expect-error - validateRes.data is not typed
+      Array.isArray(validateRes?.data?.site_ids) &&
+      //@ts-expect-error - validateRes.data is not typed
+      validateRes?.data?.site_ids?.length > 0
+    ) {
+      //@ts-expect-error - validateRes.data is not typed
+      const siteMemberRows = validateRes?.data?.site_ids?.map(
+        (siteId: number) => ({
+          site_id: siteId,
+          user_id: sessionData.user?.id,
+          //@ts-expect-error - validateRes.data is not typed
+          organization_id: validateRes?.data?.organization_id,
+        })
+      );
+
+      const { error: siteMembersError } = await supabase
+        .from("site_members")
+        .upsert(siteMemberRows, { onConflict: "site_id,user_id" });
+
+      console.log("siteMembersError=======", siteMembersError);
+
+      if (siteMembersError) {
+        return { error: siteMembersError.message };
+      }
     }
 
     const fullName = formData.get("fullName") as string;
@@ -202,6 +239,7 @@ export async function acceptInvite(
       .from("invites")
       .update({
         user_id: sessionData.user?.id,
+        used: true,
       })
       .eq("token", token);
 
@@ -231,12 +269,12 @@ export async function acceptInvite(
 
     return { success: "Account setup complete! Redirecting..." };
   } catch (error) {
-    //@ts-expect-error - error is not typed
-    return { error: error.message };
+    const err = error as Error;
+    return { error: err.message };
   }
 }
 
-export async function getUsers(): Promise<{ data: User[] } | null> {
+export async function getUsers() {
   return await GET("/users", ["users"]);
 }
 
@@ -288,21 +326,33 @@ export async function createOrganization(formData: FormData, user: string) {
     // Skip organization check since this is creating a new organization
     // and there won't be an active organization yet
     const res = await POST("/organizations/create", data, false);
-    console.log("res from createOrganization", res);
     return res;
   } catch (error) {
-    //@ts-expect-error - error is not typed
-    return { error: error.message };
+    const err = error as Error;
+    return { error: err.message };
   }
 }
 
 export async function getUserOrganizations() {
   const response = await GET<OrgResponse>("/auth/context", undefined, true);
-  console.log("response from getUserOrganizations", response);
 
-  if (response?.success && response?.data?.activeOrganization) {
+  // Check if user has no organizations (removed from all)
+  //@ts-expect-error - response.data is not typed
+  const organizations = response?.data?.organizations || [];
+  //@ts-expect-error - response.data is not typed
+  const activeOrganization = response?.data?.activeOrganization;
+
+  if (response?.success && organizations.length === 0) {
+    return {
+      success: false,
+      error:
+        "You have been removed from this organization. Please contact your administrator for assistance.",
+    };
+  }
+
+  if (response?.success && activeOrganization) {
     const cookieStore = await cookies();
-    cookieStore.set("active_org", response.data.activeOrganization.id, {
+    cookieStore.set("active_org", activeOrganization.id, {
       path: "/",
       sameSite: "lax",
     });
@@ -333,7 +383,7 @@ export async function resetPasswordAction(formData: FormData) {
       message: `Reset email sent to ${email}. Click the link to reset your password`,
     };
   } catch (error) {
-    //@ts-expect-error - error is not typed
-    return { error: error.message || "Failed to send reset email" };
+    const err = error as Error;
+    return { error: err.message || "Failed to send reset email" };
   }
 }

@@ -19,16 +19,14 @@ export function useCreateOrganizationSiteMutation() {
 export function useUpdateSiteMutation() {
   const queryClient = useQueryClient();
 
-  return useMutation<
-    { name: string } | null,
-    Error,
-    { siteId: string; name: string }
-  >({
-    mutationFn: async ({ siteId, name }) => updateSite(siteId, name),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sites"] });
-    },
-  });
+  return useMutation<{ name: string }, Error, { siteId: string; name: string }>(
+    {
+      mutationFn: async ({ siteId, name }) => updateSite(siteId, name),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["sites"] });
+      },
+    }
+  );
 }
 
 export function useDeleteSiteMutation() {

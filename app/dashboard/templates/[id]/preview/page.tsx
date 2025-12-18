@@ -27,11 +27,11 @@ export default async function TemplatePreviewPage({
 
   return (
     <div className="space-y-6">
-      <TemplatePreviewHeader template={template} />
+      <TemplatePreviewHeader template={template as AuditTemplate} />
 
       <Card>
         <CardContent>
-          <TemplatePreviewClient template={template} />
+          <TemplatePreviewClient template={template as AuditTemplate} />
         </CardContent>
       </Card>
     </div>

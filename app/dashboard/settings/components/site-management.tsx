@@ -73,7 +73,7 @@ export function SiteManagement() {
       {isOrganizationSitesLoading ? (
         <SitesLoadingSkeleton />
       ) : (
-        <div className="border rounded-md">
+        <div className="border h-[500px] overflow-hidden overflow-y-auto  rounded-md">
           <DataTable columns={columns} data={organizationSites} />
         </div>
       )}

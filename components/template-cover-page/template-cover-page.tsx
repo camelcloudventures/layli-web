@@ -1,27 +1,27 @@
-import { useState, useEffect } from 'react'
-import { v4 as uuidv4 } from 'uuid'
-import { QuestionsManager } from '@/app/dashboard/templates/components/questions-manager'
+import { useState, useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
+import { QuestionsManager } from "@/app/dashboard/templates/components/questions-manager";
 import type {
   Question,
   ResponseOption,
   AuditTemplate,
-} from '@/lib/types/audit-types'
-import type { Response } from '@/lib/types/inspection-types'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { useAuth } from '@/lib/context/auth-provider'
+} from "@/lib/types/audit-types";
+import type { Response } from "@/lib/types/inspection-types";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/lib/context/auth-provider";
 import {
   saveResponse,
   updateResponse,
-} from '@/app/dashboard/inspections/actions/actions'
+} from "@/app/dashboard/inspections/actions/actions";
 
 export interface TemplateCoverPageProps {
-  isMultiTenant?: boolean
-  pageId: string
-  sectionId: string
-  inspectionId: string
-  initialResponses?: Response[]
-  onProgressUpdate?: () => void
+  isMultiTenant?: boolean;
+  pageId: string;
+  sectionId: string;
+  inspectionId: string;
+  initialResponses?: Response[];
+  onProgressUpdate?: () => void;
 }
 
 // Helper function to create response options with proper structure
@@ -30,77 +30,75 @@ const createResponseOption = (
   code: string,
   sortOrder: number,
   isFlagged: boolean,
-  color?: string,
+  color?: string
 ): ResponseOption => ({
   id: uuidv4(),
-  question_id: '',
+  question_id: "",
   label,
   code,
   sort_order: sortOrder,
   is_flagged: isFlagged,
-  color: color || 'emerald-500',
-})
+  color: color || "emerald-500",
+});
 
 export const getPreloadedQuestions = (
   pageId: string,
   sectionId: string,
-  isMultiTenant?: boolean,
+  isMultiTenant?: boolean
 ): Question[] => [
   {
     id: uuidv4(),
     page_id: pageId,
     section_id: sectionId,
-    text: isMultiTenant ? 'Tenant' : 'Site Conducted',
+    text: isMultiTenant ? "Tenant" : "Site Conducted",
     required: true,
     multiple_selection: false,
     is_flagged: false,
-    field_type: 'TEXT',
+    field_type: "TEXT",
     ordinal: 1,
-    response_options: [createResponseOption('Site', 'TEXT', 1, false)],
+    response_options: [createResponseOption("Site", "TEXT", 1, false)],
   },
   {
     id: uuidv4(),
     page_id: pageId,
     section_id: sectionId,
-    text: 'Date',
+    text: "Date",
     required: true,
     multiple_selection: false,
     is_flagged: false,
-    field_type: 'DATE',
+    field_type: "DATE",
     ordinal: 2,
     response_options: [
-      createResponseOption('Date Input', 'DATE_INPUT', 1, false),
+      createResponseOption("Date Input", "DATE_INPUT", 1, false),
     ],
   },
   {
     id: uuidv4(),
     page_id: pageId,
     section_id: sectionId,
-    text: 'Conducted by',
+    text: "Conducted by",
     required: true,
     multiple_selection: false,
     is_flagged: false,
-    field_type: 'TEXT',
+    field_type: "TEXT",
     ordinal: 3,
     response_options: [
-      createResponseOption('Person Selection', 'TEXT', 1, false),
+      createResponseOption("Person Selection", "TEXT", 1, false),
     ],
   },
   {
     id: uuidv4(),
     page_id: pageId,
     section_id: sectionId,
-    text: 'Location',
+    text: "Location",
     required: true,
     multiple_selection: false,
     is_flagged: false,
-    field_type: 'LOCATION',
+    field_type: "TEXT",
     ordinal: 4,
-    response_options: [
-      createResponseOption('Location Input', 'LOCATION_INPUT', 1, false),
-    ],
+    response_options: [createResponseOption("Text Input", "TEXT", 1, false)],
   },
-]
+];
 
 export function TemplateCoverPage({
   isMultiTenant,
@@ -110,16 +108,18 @@ export function TemplateCoverPage({
   initialResponses,
   onProgressUpdate,
 }: TemplateCoverPageProps) {
-  const { user } = useAuth()
+  const { user } = useAuth();
   const [questions] = useState<Question[]>(
-    getPreloadedQuestions(pageId, sectionId, isMultiTenant),
-  )
-  const [responses, setResponses] = useState<Response[]>(initialResponses || [])
+    getPreloadedQuestions(pageId, sectionId, isMultiTenant)
+  );
+  const [responses, setResponses] = useState<Response[]>(
+    initialResponses || []
+  );
   const [unsavedResponses, setUnsavedResponses] = useState<
     Record<string, Response>
-  >({})
-  const [isDirty, setIsDirty] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
+  >({});
+  const [isDirty, setIsDirty] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Pre-select current user for "Prepared by" field
   useEffect(() => {
@@ -134,7 +134,7 @@ export function TemplateCoverPage({
         selected_options: [],
         response_value: user.name || user.email,
         text_value: user.name || user.email,
-        inspector_notes: '',
+        inspector_notes: "",
         file_attachments: [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -144,32 +144,32 @@ export function TemplateCoverPage({
         points_earned: 0,
         points_possible: 0,
         location_data: null,
-      }
+      };
       setUnsavedResponses((prev) => ({
         ...prev,
         [Number(questions[2].id)]: preparedByResponse,
-      }))
-      setIsDirty(true)
+      }));
+      setIsDirty(true);
     }
-  }, [user, questions, responses, inspectionId])
+  }, [user, questions, responses, inspectionId]);
 
   const handleResponseChange = (questionId: string, newResponse: Response) => {
     // Format the response based on the question type
-    const question = questions.find((q) => q.id === questionId)
-    if (!question) return
+    const question = questions.find((q) => q.id === questionId);
+    if (!question) return;
 
     const existingResponse = responses.find(
-      (r) => r.question_id === Number(questionId),
-    )
+      (r) => r.question_id === Number(questionId)
+    );
 
     //@ts-expect-error - responses is not typed
     let formattedResponse: Response = {
       id: existingResponse?.id || uuidv4(),
       question_id: Number(questionId),
       selected_options: [],
-      response_value: newResponse.response_value || '',
-      text_value: newResponse.response_value || '',
-      inspector_notes: newResponse.inspector_notes || '',
+      response_value: newResponse.response_value || "",
+      text_value: newResponse.response_value || "",
+      inspector_notes: newResponse.inspector_notes || "",
       file_attachments: newResponse.file_attachments || [],
       created_at: existingResponse?.created_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -179,122 +179,123 @@ export function TemplateCoverPage({
       points_earned: 0,
       points_possible: 0,
       location_data: null,
-    }
+    };
 
     // Add location data if it's a location question
-    if (question.field_type === 'LOCATION' && newResponse.location_data) {
+    if (question.field_type === "LOCATION" && newResponse.location_data) {
       formattedResponse = {
         ...formattedResponse,
         location_data: newResponse.location_data,
-      }
+      };
     }
 
     // Store in unsaved responses
     setUnsavedResponses((prev) => ({
       ...prev,
       [Number(questionId)]: formattedResponse,
-    }))
-    setIsDirty(true)
-  }
+    }));
+    setIsDirty(true);
+  };
 
   const handleSave = async () => {
-    if (Object.keys(unsavedResponses).length === 0) return
+    if (Object.keys(unsavedResponses).length === 0) return;
 
-    setIsSaving(true)
+    setIsSaving(true);
     try {
       // Save all unsaved responses
       const savedResponses = await Promise.all(
         Object.values(unsavedResponses).map((response) => {
           const existingResponse = responses.find(
-            (r) => r.question_id === Number(response.question_id),
-          )
+            (r) => r.question_id === Number(response.question_id)
+          );
           return existingResponse
             ? updateResponse(
                 inspectionId,
                 Number(response.question_id).toString(),
-                response,
+                response
               )
             : saveResponse(
                 inspectionId,
                 Number(response.question_id).toString(),
-                response,
-              )
-        }),
-      )
+                response
+              );
+        })
+      );
 
       // Update local state with saved responses
       setResponses((prev) => {
-        const updated = [...prev]
+        const updated = [...prev];
         savedResponses.forEach((savedResponse) => {
           const index = updated.findIndex(
-            (r) => r.question_id === Number(savedResponse.question_id),
-          )
+            (r) =>
+              r.question_id === Number((savedResponse as Response).question_id)
+          );
           if (index >= 0) {
-            updated[index] = savedResponse
+            updated[index] = savedResponse as Response;
           } else {
-            updated.push(savedResponse)
+            updated.push(savedResponse as Response);
           }
-        })
-        return updated
-      })
+        });
+        return updated;
+      });
 
       // Clear unsaved responses
-      setUnsavedResponses({})
-      setIsDirty(false)
+      setUnsavedResponses({});
+      setIsDirty(false);
 
       // Update progress
-      onProgressUpdate?.()
+      onProgressUpdate?.();
     } catch (error) {
-      console.error('Failed to save responses:', error)
+      console.error("Failed to save responses:", error);
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   // Combine saved and unsaved responses for display
-  const displayResponses = [...responses]
+  const displayResponses = [...responses];
   Object.values(unsavedResponses).forEach((unsavedResponse) => {
     const index = displayResponses.findIndex(
-      (r) => r.question_id === Number(unsavedResponse.question_id),
-    )
+      (r) => r.question_id === Number(unsavedResponse.question_id)
+    );
     if (index >= 0) {
-      displayResponses[index] = unsavedResponse
+      displayResponses[index] = unsavedResponse;
     } else {
-      displayResponses.push(unsavedResponse)
+      displayResponses.push(unsavedResponse);
     }
-  })
+  });
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Cover Page</h3>
         <div className="flex items-center gap-2">
-          <Badge variant={isDirty ? 'destructive' : 'secondary'}>
-            {isDirty ? 'Unsaved' : 'Saved'}
+          <Badge variant={isDirty ? "destructive" : "secondary"}>
+            {isDirty ? "Unsaved" : "Saved"}
           </Badge>
           <Button onClick={handleSave} disabled={!isDirty || isSaving}>
-            {isSaving ? 'Saving...' : 'Save Responses'}
+            {isSaving ? "Saving..." : "Save Responses"}
           </Button>
         </div>
       </div>
       <QuestionsManager
         template={
           {
-            id: 'cover-template',
-            title: '',
-            description: '',
+            id: "cover-template",
+            title: "",
+            description: "",
             pages: [
               {
                 id: pageId,
-                template_id: 'cover-template',
-                title: '',
-                description: '',
+                template_id: "cover-template",
+                title: "",
+                description: "",
                 ordinal: 1,
                 sections: [
                   {
                     id: sectionId,
                     page_id: pageId,
-                    title: 'Cover Page',
+                    title: "Cover Page",
                     ordinal: 1,
                     questions,
                   },
@@ -306,15 +307,15 @@ export function TemplateCoverPage({
         setTemplate={() => {}}
         page={{
           id: pageId,
-          template_id: 'cover-template',
-          title: '',
-          description: '',
+          template_id: "cover-template",
+          title: "",
+          description: "",
           ordinal: 1,
           sections: [
             {
               id: sectionId,
               page_id: pageId,
-              title: 'Cover Page',
+              title: "Cover Page",
               ordinal: 1,
               questions,
             },
@@ -323,7 +324,7 @@ export function TemplateCoverPage({
         section={{
           id: sectionId,
           page_id: pageId,
-          title: 'Cover Page',
+          title: "Cover Page",
           ordinal: 1,
           questions,
         }}
@@ -332,5 +333,5 @@ export function TemplateCoverPage({
         onResponseChange={handleResponseChange}
       />
     </div>
-  )
+  );
 }

@@ -21,7 +21,9 @@ export function useNotifications() {
 
   useEffect(() => {
     if (fetchedNotifications?.data && notifications.length === 0) {
+      // @ts-expect-error - fetchedNotifications.data is not typed
       setNotifications(fetchedNotifications.data);
+      // @ts-expect-error - fetchedNotifications.success is not typed
       setSuccess(fetchedNotifications.success);
     }
   }, [fetchedNotifications, notifications, setNotifications]);

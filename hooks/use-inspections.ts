@@ -14,9 +14,9 @@ export function useInspections() {
   const { data: inspectionsData, isLoading } = useGetInspections(
     !inspections || inspections.length === 0
   );
-
   useEffect(() => {
     if (inspectionsData?.data && inspections.length === 0) {
+      //@ts-expect-error - inspectionsData.data is not typed
       setInspections(inspectionsData.data);
     }
   }, [inspectionsData, setInspections, inspections]);

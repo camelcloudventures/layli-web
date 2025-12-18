@@ -40,13 +40,12 @@ export default function CloseIssue({ issue, onClose }: CloseIssueProps) {
     const response = await closeIssue(issue.id, solutionText);
     console.log("response for an issue", response);
     if (response) {
-      //@ts-expect-error 047
       toast.success(response.success);
-      //@ts-expect-error 047
       if (response.data) {
         setIssues((prevIssues) =>
-          //@ts-expect-error -e9
-          prevIssues.map((i) => (i.id === issue.id ? response.data : i))
+          prevIssues.map((i) =>
+            i.id === issue.id ? (response.data as unknown as Issue) : i
+          )
         );
       }
       onClose();

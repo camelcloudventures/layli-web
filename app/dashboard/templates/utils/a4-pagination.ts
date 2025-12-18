@@ -15,6 +15,7 @@ function getQuestionHeight(question: Question): number {
       return 120;
     case "SELECT":
     case "MULTI_SELECT":
+    case "CHECKBOX":
     case "LOCATION":
     case "SLIDER":
     case "BOOLEAN":
@@ -35,29 +36,29 @@ export function reflowTemplateByA4(original: AuditTemplate): AuditTemplate {
     (a, b) => a.ordinal - b.ordinal
   );
 
-  // Seed pages that will be filled by the reflow. Keep ids/titles/descriptions.
-  const basePages: Page[] = orderedPages.map((p, idx) => ({
-    id: p.id,
+  // Preserve existing pages to reuse their IDs, titles, and descriptions
+  // Start with just the first page, more will be added as needed
+  const basePages: Page[] = orderedPages.length > 0 ? [{
+    id: orderedPages[0].id,
     template_id: template.id,
-    title: p.title,
-    description: p.description,
-    ordinal: idx + 1,
+    title: orderedPages[0].title,
+    description: orderedPages[0].description,
+    ordinal: 1,
     sections: [],
-    created_at: p.created_at || new Date().toISOString(),
-  }));
+    created_at: orderedPages[0].created_at || new Date().toISOString(),
+  }] : [];
 
-  // Build logical sections: dedupe by section.id, preserve first-seen order and page index
+  // Build logical sections: dedupe by section.id, preserve first-seen order
   type LogicalSection = {
     base: Pick<Section, "id" | "title" | "created_at">;
     questions: Question[];
-    firstPageIndex: number; // index in orderedPages where this section first appeared
     orderKey: number; // stable order of first encounter in traversal
   };
 
   const logicalSectionsMap = new Map<string, LogicalSection>();
   let encounterCounter = 0;
 
-  orderedPages.forEach((p, pi) => {
+  orderedPages.forEach((p) => {
     const sectionsSorted = [...p.sections].sort(
       (a, b) => a.ordinal - b.ordinal
     );
@@ -68,7 +69,6 @@ export function reflowTemplateByA4(original: AuditTemplate): AuditTemplate {
         logicalSectionsMap.set(s.id, {
           base: { id: s.id, title: s.title, created_at: s.created_at },
           questions: [...qs],
-          firstPageIndex: pi,
           orderKey: encounterCounter++,
         });
       } else {
@@ -85,9 +85,32 @@ export function reflowTemplateByA4(original: AuditTemplate): AuditTemplate {
   let currentPage: Page = basePages[pageIndex];
   let currentHeight = 0;
 
+  function generatePageId(): string {
+    return `page-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+
   function advanceToPage(targetIndex: number) {
     if (targetIndex >= basePages.length) {
-      // Don't create new pages, just return the last available page
+      // Reuse existing page if it exists in orderedPages, otherwise create new
+      const existingPage = orderedPages[targetIndex];
+      const newPage: Page = existingPage ? {
+        id: existingPage.id, // Reuse existing page ID
+        template_id: template.id,
+        title: existingPage.title,
+        description: existingPage.description,
+        ordinal: basePages.length + 1,
+        sections: [],
+        created_at: existingPage.created_at || new Date().toISOString(),
+      } : {
+        id: generatePageId(), // Only generate new ID if page never existed
+        template_id: template.id,
+        title: `Page ${basePages.length + 1}`,
+        description: "",
+        ordinal: basePages.length + 1,
+        sections: [],
+        created_at: new Date().toISOString(),
+      };
+      basePages.push(newPage);
       pageIndex = basePages.length - 1;
     } else {
       pageIndex = targetIndex;
@@ -119,13 +142,8 @@ export function reflowTemplateByA4(original: AuditTemplate): AuditTemplate {
     currentHeight += used;
   }
 
-  // Lay out each logical section, starting on the page it was created on.
+  // Lay out each logical section sequentially with automatic page breaks
   for (const logical of logicalSections) {
-    if (pageIndex < logical.firstPageIndex) {
-      // Respect manual boundary where the section was added
-      advanceToPage(logical.firstPageIndex);
-    }
-
     const allQs = [...logical.questions].sort((a, b) => a.ordinal - b.ordinal);
     if (allQs.length === 0) {
       if (currentHeight + SECTION_HEADER_HEIGHT > A4_PAGE_HEIGHT_PX) {
@@ -161,9 +179,21 @@ export function reflowTemplateByA4(original: AuditTemplate): AuditTemplate {
     }
   }
 
-  // Fix ordinals after layout
+  // Fix ordinals after layout and remove any duplicate sections on the same page
   basePages.forEach((p, pi) => {
     p.ordinal = pi + 1;
+    
+    // Remove duplicate sections (sections with the same ID should not appear twice on same page)
+    const seenSectionIds = new Set<string>();
+    p.sections = p.sections.filter((s) => {
+      if (seenSectionIds.has(s.id)) {
+        console.warn(`Duplicate section ${s.id} found on page ${p.id}, removing duplicate`);
+        return false;
+      }
+      seenSectionIds.add(s.id);
+      return true;
+    });
+    
     p.sections.forEach((s, si) => {
       s.ordinal = si + 1;
     });

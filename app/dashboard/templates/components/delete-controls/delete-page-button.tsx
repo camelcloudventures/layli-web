@@ -28,16 +28,11 @@ export function DeletePageButton({
     const result = await deletePage(pageId, templateId);
 
     console.log("result after page deletion is here", result);
-
-    // @ts-expect-error --need to fix this
     if (result && result.success) {
-      // @ts-expect-error --need to fix this
       toast.success(result.success);
       onDeleteSuccess?.();
       reset(); // Reset the store to trigger a refetch
-      // @ts-expect-error --need to fix this
     } else if (result && result.error) {
-      // @ts-expect-error --need to fix this
       toast.error(result.error);
     }
 

@@ -6,7 +6,9 @@ import { revalidateTag } from "next/cache";
 import { ActiveUser } from "@/lib/types";
 
 export async function getSchedules(): Promise<SchedulesResponse | null> {
-  return await GET<SchedulesResponse>(`/schedules/get`, ["schedules"]);
+  return (await GET<SchedulesResponse>(`/schedules/get`, [
+    "schedules",
+  ])) as SchedulesResponse | null;
 }
 
 export async function createSchedule(formData: FormData) {
@@ -41,7 +43,9 @@ export async function createSchedule(formData: FormData) {
 }
 
 export async function getActiveUsers(): Promise<ActiveUser | null> {
-  return await GET(`/invites/organization/active-users`, ["users"]);
+  return (await GET(`/invites/organization/active-users`, [
+    "users",
+  ])) as ActiveUser | null;
 }
 
 export async function updateSchedule(formData: FormData) {

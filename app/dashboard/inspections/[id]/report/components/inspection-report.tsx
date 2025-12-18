@@ -14,7 +14,7 @@ import {
   Download,
 } from "lucide-react";
 import { Inspection, InspectionResponse } from "../types/inspection-types";
-import { downloadInspectionPDF } from "../utils/pdf-generator";
+import { downloadReactPDF } from "../utils/react-pdf-generator";
 import { toast } from "sonner";
 import { useActions } from "@/hooks/use-actions";
 import Image from "next/image";
@@ -25,7 +25,7 @@ interface InspectionReportProps {
 
 export function InspectionReport({ inspection }: InspectionReportProps) {
   const [selectedPage, setSelectedPage] = useState(0);
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [isGeneratingStyledPDF, setIsGeneratingStyledPDF] = useState(false);
   const { actions } = useActions();
 
   const formatDate = (dateString: string) => {
@@ -250,6 +250,52 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
       return "No response";
     }
 
+    // Handle CHECKBOX questions (similar to MULTI_SELECT)
+    if (question.field_type === "CHECKBOX") {
+      // First check if response_value contains comma-separated labels
+      if (response.response_value && question.response_options) {
+        // Split by comma and check if each part matches an option label
+        const responseValues = response.response_value
+          .split(",")
+          .map((v) => v.trim());
+        const validLabels = responseValues.filter((value) =>
+          question.response_options.some(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (option: any) => option.label === value
+          )
+        );
+        if (validLabels.length > 0) {
+          return validLabels.join(", ");
+        }
+      }
+      // Fallback: check if we have selected_options with IDs
+      if (
+        response.selected_options &&
+        response.selected_options.length > 0 &&
+        question.response_options
+      ) {
+        const selectedLabels = response.selected_options
+          .map((optionId) => {
+            // Convert to number if it's a string
+            const numericId =
+              typeof optionId === "string" ? parseInt(optionId) : optionId;
+            const option = question.response_options.find(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (o: any) => o.id === numericId
+            );
+            return option ? option.label : null;
+          })
+          .filter(Boolean)
+          .join(", ");
+        return selectedLabels || "No response";
+      }
+      // Final fallback to response_value
+      if (response.response_value) {
+        return response.response_value;
+      }
+      return "No response";
+    }
+
     // Handle TEXT questions
     if (question.field_type === "TEXT") {
       if (response.text_value) {
@@ -331,25 +377,27 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
     );
   };
 
-  const handleDownloadPDF = async () => {
+  const handleDownloadStyledPDF = async () => {
+    console.log("called download styled pdf");
     try {
-      setIsGeneratingPDF(true);
+      setIsGeneratingStyledPDF(true);
 
       // Generate filename based on inspection title and date
-      const filename = `inspection-report-${inspection.title.replace(
+      const filename = `inspection-report-styled-${inspection.title.replace(
         /[^a-zA-Z0-9]/g,
         "-"
       )}-${new Date().toISOString().split("T")[0]}.pdf`;
 
-      // Download the PDF
-      downloadInspectionPDF(inspection, { filename });
+      console.log("RawInspectionData===========>", inspection);
+      // Download the styled PDF
+      await downloadReactPDF(inspection, actions, { filename });
 
-      toast.success("PDF downloaded successfully!");
+      toast.success("Styled PDF downloaded successfully!");
     } catch (error) {
-      console.error("Error generating PDF:", error);
-      toast.error("Failed to generate PDF. Please try again.");
+      console.error("Error generating styled PDF:", error);
+      toast.error("Failed to generate styled PDF. Please try again.");
     } finally {
-      setIsGeneratingPDF(false);
+      setIsGeneratingStyledPDF(false);
     }
   };
 
@@ -374,12 +422,12 @@ export function InspectionReport({ inspection }: InspectionReportProps) {
         </div>
         <div className="flex items-center gap-3">
           <Button
-            variant="outline"
-            onClick={handleDownloadPDF}
-            disabled={isGeneratingPDF}
+            variant="default"
+            onClick={handleDownloadStyledPDF}
+            disabled={isGeneratingStyledPDF}
           >
             <Download className="w-4 h-4 mr-2" />
-            {isGeneratingPDF ? "Generating..." : "Download PDF"}
+            {isGeneratingStyledPDF ? "Generating..." : "Download  PDF"}
           </Button>
           <Link href="/dashboard/inspections">
             <Button variant="outline">Back to Inspections</Button>

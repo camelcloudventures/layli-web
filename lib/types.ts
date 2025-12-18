@@ -14,6 +14,7 @@ export type Org = {
   id: string;
   name: string;
   type?: string;
+  logo?: string;
   created_at: string;
   updated_at: string;
   created_by: string;

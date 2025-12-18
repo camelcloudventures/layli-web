@@ -46,7 +46,8 @@ export interface Question {
     | "LOCATION"
     | "SLIDER"
     | "PERSON"
-    | "ASSET";
+    | "ASSET"
+    | "CHECKBOX";
   ordinal: number;
   response_options?: ResponseOption[];
   location_data?: LocationData;
@@ -57,6 +58,11 @@ export interface Question {
     operator?: string;
     value?: string | number;
     value2?: string | number;
+  };
+  parent_question_id?: string;
+  trigger?: {
+    value: string | number | boolean;
+    operator: "equals" | "not_equals" | "contains";
   };
   created_at?: string;
   person_options?: PersonOption[];
@@ -164,13 +170,19 @@ export interface NewQuestion {
     | "LOCATION"
     | "SLIDER"
     | "PERSON"
-    | "ASSET";
+    | "ASSET"
+    | "CHECKBOX";
   ordinal: number;
   response_options?: NewResponseOption[];
   location_data?: LocationData;
   signature_data?: SignatureData;
   slider_value?: number;
   asset_file?: string;
+  parent_question_id?: string;
+  trigger?: {
+    value: string | number | boolean;
+    operator: "equals" | "not_equals" | "contains";
+  };
 }
 
 export interface NewSection {

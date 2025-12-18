@@ -1,23 +1,26 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
+        default:
+          "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
         destructive:
           "bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
           "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
-        secondary: "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+        secondary:
+          "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
+        ghost:
+          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
@@ -31,8 +34,8 @@ const buttonVariants = cva(
       variant: "default",
       size: "default",
     },
-  },
-)
+  }
+);
 
 function Button({
   className,
@@ -42,42 +45,49 @@ function Button({
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
+    asChild?: boolean;
   }) {
-  const Comp = asChild ? Slot : "button"
-  const isInsideButton = React.useContext(ButtonContext)
+  const Comp = asChild ? Slot : "button";
+  const isInsideButton = React.useContext(ButtonContext);
 
   // Dev warning for invalid usage
   if (
     process.env.NODE_ENV !== "production" &&
     asChild &&
     React.isValidElement(React.Children.only(props.children)) &&
-    (React.Children.only(props.children) as React.ReactElement).type === "button"
+    (React.Children.only(props.children) as React.ReactElement).type ===
+      "button"
   ) {
     console.error(
-      "Button: Do not use <Button asChild> with a <button> child. Use <a>, <span>, or another element instead.",
-    )
+      "Button: Do not use <Button asChild> with a <button> child. Use <a>, <span>, or another element instead."
+    );
   }
 
   // Check if we're inside an interactive element during development
   if (process.env.NODE_ENV !== "production" && !asChild && isInsideButton) {
     console.warn(
-      "Button: Detected nested button elements. Consider using asChild prop or a different element like <div> or <span>.",
-    )
+      "Button: Detected nested button elements. Consider using asChild prop or a different element like <div> or <span>."
+    );
   }
 
   return (
     <ButtonProvider>
-      <Comp data-slot="button" className={cn(buttonVariants({ variant, size, className }))} {...props} />
+      <Comp
+        data-slot="button"
+        className={cn(buttonVariants({ variant, size, className }))}
+        {...props}
+      />
     </ButtonProvider>
-  )
+  );
 }
 
 // Context to track if we're inside a button
-const ButtonContext = React.createContext(false)
+const ButtonContext = React.createContext(false);
 
 function ButtonProvider({ children }: { children: React.ReactNode }) {
-  return <ButtonContext.Provider value={true}>{children}</ButtonContext.Provider>
+  return (
+    <ButtonContext.Provider value={true}>{children}</ButtonContext.Provider>
+  );
 }
 
-export { Button, buttonVariants }
+export { Button, buttonVariants };

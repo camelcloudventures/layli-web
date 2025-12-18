@@ -18,6 +18,7 @@ import { UserOption } from "@/app/dashboard/schedules/types/schedule-form-types"
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useInspectionStore } from "@/store/inspections";
+import { useRouter } from "next/navigation";
 
 interface ManageAssigneesDialogProps {
   isOpen: boolean;
@@ -39,6 +40,17 @@ export function ManageAssigneesDialog({
   );
   const [isUpdating, setIsUpdating] = useState(false);
   const { setInspections } = useInspectionStore();
+  const router = useRouter();
+
+  // Handle dialog close with soft refresh to prevent freeze
+  function handleOpenChange(open: boolean) {
+    onOpenChange(open);
+    if (!open) {
+      setTimeout(() => {
+        router.refresh();
+      }, 100);
+    }
+  }
 
   // Reset selected assignees when dialog opens or inspection changes
   useEffect(() => {
@@ -91,7 +103,7 @@ export function ManageAssigneesDialog({
 
       toast.success("Assignees updated successfully");
       onSuccess?.();
-      onOpenChange(false);
+      handleOpenChange(false);
     } catch (error) {
       console.error("Error updating assignees:", error);
       toast.error("Failed to update assignees");
@@ -107,8 +119,11 @@ export function ManageAssigneesDialog({
     })) || [];
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] p-6">
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent
+        className="sm:max-w-[500px] p-6"
+        onCloseAutoFocus={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>Manage Assignees</DialogTitle>
           <DialogDescription>
@@ -151,7 +166,7 @@ export function ManageAssigneesDialog({
         <DialogFooter>
           <Button
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={() => handleOpenChange(false)}
             disabled={isUpdating}
           >
             Cancel
